@@ -9,9 +9,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindString
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.data.library.Genre
 import com.raizlabs.android.dbflow.list.FlowCursorList
@@ -120,16 +117,9 @@ constructor(context: Activity) : RecyclerView.Adapter<GenreEntryAdapter.ViewHold
   }
 
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    @BindView(R.id.line_one)
-    lateinit var title: TextView
-    @BindView(R.id.ui_item_context_indicator)
-    lateinit var indicator: LinearLayout
-    @BindString(R.string.empty)
-    lateinit var empty: String
-
-    init {
-      ButterKnife.bind(this, itemView)
-    }
+    val title: TextView = itemView.findViewById(R.id.line_one)
+    val indicator: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
+    val empty: String = itemView.context.getString(R.string.empty)
   }
 
   fun update(cursor: FlowCursorList<Genre>) {

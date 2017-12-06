@@ -28,7 +28,7 @@ object RemoteViewIntentBuilder {
           mContext,
           0,
           notificationIntent,
-          FLAG_UPDATE_CURRENT
+          FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
       }
       PLAY -> {
@@ -37,7 +37,7 @@ object RemoteViewIntentBuilder {
           mContext,
           1,
           playPressedIntent,
-          FLAG_UPDATE_CURRENT
+          FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
       }
       NEXT -> {
@@ -46,7 +46,7 @@ object RemoteViewIntentBuilder {
           mContext,
           2,
           mediaNextButtonIntent,
-          FLAG_UPDATE_CURRENT
+          FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
       }
       CLOSE -> {
@@ -55,7 +55,7 @@ object RemoteViewIntentBuilder {
           mContext,
           3,
           clearNotificationIntent,
-          FLAG_UPDATE_CURRENT
+          FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
       }
       PREVIOUS -> {
@@ -64,7 +64,7 @@ object RemoteViewIntentBuilder {
           mContext,
           4,
           mediaPreviousButtonIntent,
-          FLAG_UPDATE_CURRENT
+          FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
       }
       CANCEL -> {
@@ -73,7 +73,7 @@ object RemoteViewIntentBuilder {
           mContext,
           4,
           cancelIntent,
-          FLAG_UPDATE_CURRENT
+          FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
       }
       else -> throw IndexOutOfBoundsException()

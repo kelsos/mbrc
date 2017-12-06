@@ -9,7 +9,7 @@ import com.kelsos.mbrc.events.MessageEvent
 import com.kelsos.mbrc.events.bus.RxBus
 import com.kelsos.mbrc.model.MainDataModel
 import timber.log.Timber
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,7 +40,7 @@ constructor(
         val context = node.path("context")
           .textValue()
           .trim()
-          .toLowerCase(Locale.getDefault())
+          .lowercase(Locale.getDefault())
 
         if (context == Protocol.ClientNotAllowed) {
           bus.post(MessageEvent(ProtocolEventType.InformClientNotAllowed))

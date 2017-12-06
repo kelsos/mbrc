@@ -10,8 +10,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.data.NowPlaying
 import com.kelsos.mbrc.ui.drag.ItemTouchHelperAdapter
@@ -76,7 +74,7 @@ class NowPlayingAdapter
 
   private fun onClick(holder: TrackHolder) {
     val listener = this.listener ?: return
-    val position = holder.adapterPosition
+    val position = holder.bindingAdapterPosition
     setPlayingTrack(position)
     listener.onPress(position)
   }
@@ -170,25 +168,11 @@ class NowPlayingAdapter
   }
 
   class TrackHolder(itemView: View) : RecyclerView.ViewHolder(itemView), TouchHelperViewHolder {
-
-    @BindView(R.id.track_title)
-    lateinit var title: TextView
-
-    @BindView(R.id.track_artist)
-    lateinit var artist: TextView
-
-    @BindView(R.id.track_indicator_view)
-    lateinit var trackPlaying: ImageView
-
-    @BindView(R.id.track_container)
-    lateinit var container: ConstraintLayout
-
-    @BindView(R.id.drag_handle)
-    lateinit var dragHandle: View
-
-    init {
-      ButterKnife.bind(this, itemView)
-    }
+    val title: TextView = itemView.findViewById(R.id.track_title)
+    val artist: TextView = itemView.findViewById(R.id.track_artist)
+    val trackPlaying: ImageView = itemView.findViewById(R.id.track_indicator_view)
+    val container: ConstraintLayout = itemView.findViewById(R.id.track_container)
+    val dragHandle: View = itemView.findViewById(R.id.drag_handle)
 
     override fun onItemSelected() {
       this.itemView.setBackgroundColor(Color.DKGRAY)

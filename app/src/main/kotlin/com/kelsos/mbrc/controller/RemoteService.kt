@@ -9,6 +9,8 @@ import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.configuration.CommandRegistration
 import com.kelsos.mbrc.constants.UserInputEventType
@@ -84,7 +86,7 @@ class RemoteService : Service() {
     SERVICE_RUNNING = true
     scope = Toothpick.openScope(application)
     Toothpick.inject(this, scope)
-    this.registerReceiver(receiver, receiver.filter(this))
+    ContextCompat.registerReceiver(this, receiver, receiver.filter(this), ContextCompat.RECEIVER_NOT_EXPORTED)
   }
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -106,7 +108,7 @@ class RemoteService : Service() {
   override fun onDestroy() {
     super.onDestroy()
     SERVICE_STOPPING = true;
-    stopForeground(true)
+    ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
     this.unregisterReceiver(receiver)
     handler.postDelayed({
       remoteController.executeCommand(MessageEvent(UserInputEventType.TerminateConnection))

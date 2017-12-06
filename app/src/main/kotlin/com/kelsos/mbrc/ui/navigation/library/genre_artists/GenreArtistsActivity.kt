@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.R
@@ -27,14 +25,9 @@ class GenreArtistsActivity : FontActivity(),
   GenreArtistsView,
   MenuItemSelectedListener {
 
-  @BindView(R.id.genre_artists_recycler)
-  lateinit var recyclerView: EmptyRecyclerView
-
-  @BindView(R.id.toolbar)
-  lateinit var toolbar: MaterialToolbar
-
-  @BindView(R.id.empty_view)
-  lateinit var emptyView: ConstraintLayout
+  private lateinit var recyclerView: EmptyRecyclerView
+  private lateinit var toolbar: MaterialToolbar
+  private lateinit var emptyView: ConstraintLayout
 
   @Inject
   lateinit var adapter: ArtistEntryAdapter
@@ -58,7 +51,9 @@ class GenreArtistsActivity : FontActivity(),
     )
     Toothpick.inject(this, scope)
 
-    ButterKnife.bind(this)
+    recyclerView = findViewById(R.id.genre_artists_recycler)
+    toolbar = findViewById(R.id.toolbar)
+    emptyView = findViewById(R.id.empty_view)
 
     genre = intent?.extras?.getString(GENRE_NAME)
 

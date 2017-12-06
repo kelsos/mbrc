@@ -3,12 +3,7 @@ package com.kelsos.mbrc.mvp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.*
 import rx.Subscription
 import rx.subscriptions.CompositeSubscription
 import kotlin.coroutines.CoroutineContext
@@ -58,7 +53,6 @@ open class BasePresenter<T : BaseView>(
   protected class ViewNotAttachedException :
     RuntimeException("Please call Presenter.attach(BaseView) before calling a method on the presenter")
 
-  override fun getLifecycle(): Lifecycle {
-    return this.lifecycleRegistry
-  }
+  override val lifecycle: Lifecycle
+    get() = lifecycleRegistry
 }

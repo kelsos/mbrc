@@ -2,8 +2,6 @@ package com.kelsos.mbrc.ui.help_feedback
 
 import android.os.Bundle
 import androidx.viewpager2.widget.ViewPager2
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -12,22 +10,20 @@ import com.kelsos.mbrc.adapters.HelpFeedbackPagerAdapter
 import com.kelsos.mbrc.ui.activities.FontActivity
 
 class HelpFeedbackActivity : FontActivity() {
-
-  @BindView(R.id.toolbar)
-  lateinit var toolbar: MaterialToolbar
-
-  @BindView(R.id.feedback_tab_layout)
-  lateinit var tabLayout: TabLayout
-
-  @BindView(R.id.pager_help_feedback)
-  lateinit var viewPager: ViewPager2
+  private lateinit var toolbar: MaterialToolbar
+  private lateinit var tabLayout: TabLayout
+  private lateinit var viewPager: ViewPager2
 
   private lateinit var pagerAdapter: HelpFeedbackPagerAdapter
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_help_feedback)
-    ButterKnife.bind(this)
+
+    toolbar = findViewById(R.id.toolbar)
+    tabLayout = findViewById(R.id.feedback_tab_layout)
+    viewPager = findViewById(R.id.pager_help_feedback)
+
     setSupportActionBar(toolbar)
     val actionBar = supportActionBar
 

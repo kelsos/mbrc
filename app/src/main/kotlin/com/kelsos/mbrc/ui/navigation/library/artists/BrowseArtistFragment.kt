@@ -10,8 +10,6 @@ import android.widget.TextView
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.adapters.ArtistEntryAdapter
@@ -30,12 +28,9 @@ class BrowseArtistFragment : Fragment(),
   BrowseArtistView,
   MenuItemSelectedListener {
 
-  @BindView(R.id.library_data_list)
-  lateinit var recycler: EmptyRecyclerView
-  @BindView(R.id.empty_view)
-  lateinit var emptyView: View
-  @BindView(R.id.list_empty_title)
-  lateinit var emptyTitle: TextView
+  private lateinit var recycler: EmptyRecyclerView
+  private lateinit var emptyView: View
+  private lateinit var emptyTitle: TextView
 
   @Inject
   lateinit var adapter: ArtistEntryAdapter
@@ -86,7 +81,10 @@ class BrowseArtistFragment : Fragment(),
     savedInstanceState: Bundle?
   ): View? {
     val view = inflater.inflate(R.layout.fragment_library_search, container, false)
-    ButterKnife.bind(this, view)
+    recycler = view.findViewById(R.id.library_data_list)
+    emptyView = view.findViewById(R.id.empty_view)
+    emptyTitle = view.findViewById(R.id.list_empty_title)
+
     emptyTitle.setText(R.string.artists_list_empty)
     syncButton = view.findViewById<Button>(R.id.list_empty_sync)
     syncButton.setOnClickListener {

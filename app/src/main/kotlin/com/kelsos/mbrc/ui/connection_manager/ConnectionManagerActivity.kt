@@ -2,12 +2,10 @@ package com.kelsos.mbrc.ui.connection_manager
 
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Button
 import androidx.core.view.isGone
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
@@ -38,22 +36,18 @@ class ConnectionManagerActivity : FontActivity(),
   @Inject
   lateinit var presenter: ConnectionManagerPresenter
 
-  @BindView(R.id.connection_list)
-  lateinit var mRecyclerView: RecyclerView
+  private lateinit var recyclerView: RecyclerView
+  private lateinit var toolbar: MaterialToolbar
 
-  @BindView(R.id.toolbar)
-  lateinit var mToolbar: MaterialToolbar
   private var adapter: ConnectionAdapter? = null
   private var scope: Scope? = null
 
-  @OnClick(R.id.connection_add)
-  internal fun onAddButtonClick() {
+  private fun onAddButtonClick() {
     val settingsDialog = SettingsDialogFragment()
     settingsDialog.show(supportFragmentManager, "settings_dialog")
   }
 
-  @OnClick(R.id.connection_scan)
-  internal fun onScanButtonClick() {
+  private fun onScanButtonClick() {
     findViewById<LinearProgressIndicator>(R.id.connection_manager__progress).isGone = false
     bus.post(MessageEvent(UserInputEventType.StartDiscovery))
   }
@@ -64,14 +58,18 @@ class ConnectionManagerActivity : FontActivity(),
     super.onCreate(savedInstanceState)
     Toothpick.inject(this, scope)
     setContentView(R.layout.ui_activity_connection_manager)
-    ButterKnife.bind(this)
-    setSupportActionBar(mToolbar)
-    mRecyclerView.setHasFixedSize(true)
-    val mLayoutManager = LinearLayoutManager(this)
-    mRecyclerView.layoutManager = mLayoutManager
+    recyclerView = findViewById(R.id.connection_list)
+    toolbar = findViewById(R.id.toolbar)
+    findViewById<Button>(R.id.connection_add).setOnClickListener { onAddButtonClick() }
+    findViewById<Button>(R.id.connection_scan).setOnClickListener { onScanButtonClick() }
+
+    setSupportActionBar(toolbar)
+    recyclerView.setHasFixedSize(true)
+    val layoutManager = LinearLayoutManager(this)
+    recyclerView.layoutManager = layoutManager
     adapter = ConnectionAdapter()
     adapter!!.setChangeListener(this)
-    mRecyclerView.adapter = adapter
+    recyclerView.adapter = adapter
     presenter.attach(this)
     presenter.load()
   }
@@ -135,12 +133,12 @@ class ConnectionManagerActivity : FontActivity(),
       }
     }
 
-    Snackbar.make(mRecyclerView, message, Snackbar.LENGTH_SHORT).show()
+    Snackbar.make(recyclerView, message, Snackbar.LENGTH_SHORT).show()
   }
 
   private fun onUserNotification(event: NotifyUser) {
     val message = if (event.isFromResource) getString(event.resId) else event.message
-    Snackbar.make(mRecyclerView, message, Snackbar.LENGTH_SHORT).show()
+    Snackbar.make(recyclerView, message, Snackbar.LENGTH_SHORT).show()
   }
 
   override fun onDelete(settings: ConnectionSettings) {

@@ -7,8 +7,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.data.RadioStation
@@ -29,13 +27,13 @@ class RadioActivity : BaseActivity(),
 
   private val PRESENTER_SCOPE: Class<*> = Presenter::class.java
 
-  @BindView(R.id.swipe_layout) lateinit var swipeLayout: MultiSwipeRefreshLayout
-  @BindView(R.id.radio_list) lateinit var radioView: EmptyRecyclerView
-  @BindView(R.id.empty_view) lateinit var emptyView: View
-  @BindView(R.id.list_empty_title) lateinit var emptyViewTitle: TextView
-  @BindView(R.id.list_empty_icon) lateinit var emptyViewIcon: ImageView
-  @BindView(R.id.list_empty_subtitle) lateinit var emptyViewSubTitle: TextView
-  @BindView(R.id.empty_view_progress_bar) lateinit var emptyViewProgress: ProgressBar
+  private lateinit var swipeLayout: MultiSwipeRefreshLayout
+  private lateinit var radioView: EmptyRecyclerView
+  private lateinit var emptyView: View
+  private lateinit var emptyViewTitle: TextView
+  private lateinit var emptyViewIcon: ImageView
+  private lateinit var emptyViewSubTitle: TextView
+  private lateinit var emptyViewProgress: ProgressBar
 
   @Inject lateinit var presenter: RadioPresenter
   @Inject lateinit var adapter: RadioAdapter
@@ -53,7 +51,15 @@ class RadioActivity : BaseActivity(),
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_radio)
     Toothpick.inject(this, scope)
-    ButterKnife.bind(this)
+
+    swipeLayout = findViewById(R.id.swipe_layout)
+    radioView = findViewById(R.id.radio_list)
+    emptyView = findViewById(R.id.empty_view)
+    emptyViewTitle = findViewById(R.id.list_empty_title)
+    emptyViewIcon = findViewById(R.id.list_empty_icon)
+    emptyViewSubTitle = findViewById(R.id.list_empty_subtitle)
+    emptyViewProgress = findViewById(R.id.empty_view_progress_bar)
+
     super.setup()
     swipeLayout.setOnRefreshListener(this)
     swipeLayout.setSwipeableChildren(R.id.radio_list, R.id.empty_view)

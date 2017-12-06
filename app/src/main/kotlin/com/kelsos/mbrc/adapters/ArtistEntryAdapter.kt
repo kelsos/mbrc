@@ -9,9 +9,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindString
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.data.library.Artist
 import com.raizlabs.android.dbflow.list.FlowCursorList
@@ -61,7 +58,7 @@ class ArtistEntryAdapter
       val popupMenu = PopupMenu(it.context, it)
       popupMenu.inflate(R.menu.popup_artist)
       popupMenu.setOnMenuItemClickListener { menuItem ->
-        val position = holder.adapterPosition.toLong()
+        val position = holder.bindingAdapterPosition.toLong()
         val artist = data?.getItem(position) ?: return@setOnMenuItemClickListener  false
         listener?.onMenuItemSelected(menuItem, artist)
         true
@@ -70,7 +67,7 @@ class ArtistEntryAdapter
     }
 
     holder.itemView.setOnClickListener {
-      val position = holder.adapterPosition.toLong()
+      val position = holder.bindingAdapterPosition.toLong()
       val artist = data?.getItem(position) ?: return@setOnClickListener
       listener?.onItemClicked(artist)
     }
@@ -129,16 +126,9 @@ class ArtistEntryAdapter
   }
 
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    @BindView(R.id.line_one)
-    lateinit var title: TextView
-    @BindView(R.id.ui_item_context_indicator)
-    lateinit var indicator: LinearLayout
-    @BindString(R.string.empty)
-    lateinit var empty: String
-
-    init {
-      ButterKnife.bind(this, itemView)
-    }
+    val title: TextView = itemView.findViewById(R.id.line_one)
+    val indicator: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
+    val empty: String = itemView.context.getString(R.string.empty)
   }
 
   fun update(data: FlowCursorList<Artist>) {

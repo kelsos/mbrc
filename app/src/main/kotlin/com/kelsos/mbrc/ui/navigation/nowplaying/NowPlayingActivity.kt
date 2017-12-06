@@ -9,8 +9,6 @@ import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.data.NowPlaying
@@ -33,12 +31,10 @@ class NowPlayingActivity : BaseActivity(),
   OnStartDragListener,
   NowPlayingListener {
 
-  @BindView(R.id.now_playing_list)
-  lateinit var nowPlayingList: EmptyRecyclerView
-  @BindView(R.id.swipe_layout)
-  lateinit var swipeRefreshLayout: MultiSwipeRefreshLayout
-  @BindView(R.id.empty_view)
-  lateinit var emptyView: View
+  private lateinit var nowPlayingList: EmptyRecyclerView
+  private lateinit var swipeRefreshLayout: MultiSwipeRefreshLayout
+  private lateinit var emptyView: View
+
   @Inject
   lateinit var adapter: NowPlayingAdapter
 
@@ -90,7 +86,10 @@ class NowPlayingActivity : BaseActivity(),
     scope.installModules(SmoothieActivityModule(this), NowPlayingModule.create())
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_nowplaying)
-    ButterKnife.bind(this)
+    nowPlayingList = findViewById(R.id.now_playing_list)
+    swipeRefreshLayout = findViewById(R.id.swipe_layout)
+    emptyView = findViewById(R.id.empty_view)
+
     Toothpick.inject(this, scope)
     super.setup()
     swipeRefreshLayout.setSwipeableChildren(R.id.now_playing_list, R.id.empty_view)

@@ -11,9 +11,6 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isGone
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindString
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.data.library.Album
 import com.kelsos.mbrc.data.library.key
@@ -40,7 +37,7 @@ constructor(context: Activity) : RecyclerView.Adapter<AlbumEntryAdapter.ViewHold
       popupMenu.inflate(R.menu.popup_album)
       popupMenu.setOnMenuItemClickListener { menuItem ->
         val data = this.data ?: return@setOnMenuItemClickListener false
-        val position = holder.adapterPosition.toLong()
+        val position = holder.bindingAdapterPosition.toLong()
         val album = data.getItem(position) ?: return@setOnMenuItemClickListener false
         listener?.onMenuItemSelected(menuItem, album)
         true
@@ -50,7 +47,7 @@ constructor(context: Activity) : RecyclerView.Adapter<AlbumEntryAdapter.ViewHold
 
     holder.itemView.setOnClickListener {
       val data = this.data ?: return@setOnClickListener
-      val position = holder.adapterPosition.toLong()
+      val position = holder.bindingAdapterPosition.toLong()
       val album = data.getItem(position) ?: return@setOnClickListener
       listener?.onItemClicked(album)
     }
@@ -94,26 +91,15 @@ constructor(context: Activity) : RecyclerView.Adapter<AlbumEntryAdapter.ViewHold
   }
 
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    @BindView(R.id.line_two)
-    lateinit var artist: TextView
+    val artist: TextView = itemView.findViewById(R.id.line_two)
+    val album: TextView = itemView.findViewById(R.id.line_one)
+    val image: SquareImageView = itemView.findViewById(R.id.cover)
+    val indicator: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
 
-    @BindView(R.id.line_one)
-    lateinit var album: TextView
-
-    @BindView(R.id.cover)
-    lateinit var image: SquareImageView
-
-    @BindView(R.id.ui_item_context_indicator)
-    lateinit var indicator: LinearLayout
-
-    @BindString(R.string.unknown_artist)
-    lateinit var unknownArtist: String
-
-    @BindString(R.string.non_album_tracks)
-    lateinit var emptyAlbum: String
+    val unknownArtist: String = itemView.context.getString(R.string.unknown_artist)
+    val emptyAlbum: String = itemView.context.getString(R.string.non_album_tracks)
 
     init {
-      ButterKnife.bind(this, itemView)
       image.isGone = false
     }
   }

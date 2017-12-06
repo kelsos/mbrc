@@ -1,8 +1,9 @@
 package com.kelsos.mbrc.repository
 
 import android.app.Application
-import androidx.datastore.DataStore
-import androidx.datastore.createDataStore
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
 import com.kelsos.mbrc.di.modules.AppDispatchers
 import com.kelsos.mbrc.domain.TrackInfo
 import com.kelsos.mbrc.store.Store
@@ -16,16 +17,19 @@ import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 
+
+private val Context.cacheDataStore: DataStore<Store> by dataStore(
+  fileName = "cache_store.db",
+  serializer = StoreSerializer
+)
+
 class ModelCacheImpl
 @Inject
 constructor(
-  context: Application,
+  private val context: Application,
   private val dispatchers: AppDispatchers
 ) : ModelCache {
-
-  private val dataStore: DataStore<Store> =
-    context.createDataStore("cache_store.db", StoreSerializer)
-  private val storeFlow: Flow<Store> = dataStore.data
+  private val storeFlow: Flow<Store> = context.cacheDataStore.data
     .catch { exception ->
       // dataStore.data throws an IOException when an error is encountered when reading data
       if (exception is IOException) {
@@ -38,7 +42,7 @@ constructor(
 
 
   override suspend fun persistInfo(trackInfo: TrackInfo) = withContext(dispatchers.io) {
-    dataStore.updateData { store ->
+    context.cacheDataStore.updateData { store ->
       val track = Track.newBuilder()
         .setAlbum(trackInfo.album)
         .setArtist(trackInfo.artist)
@@ -67,7 +71,7 @@ constructor(
   }
 
   override suspend fun persistCover(cover: String) {
-    dataStore.updateData { store ->
+    context.cacheDataStore.updateData { store ->
       store.toBuilder().setCover(cover).build()
     }
   }

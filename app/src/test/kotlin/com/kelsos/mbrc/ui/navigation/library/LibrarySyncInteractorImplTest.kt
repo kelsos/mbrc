@@ -1,24 +1,17 @@
 package com.kelsos.mbrc.ui.navigation.library
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.di.modules.AppDispatchers
 import com.kelsos.mbrc.events.bus.RxBus
 import com.kelsos.mbrc.events.ui.LibraryRefreshCompleteEvent
-import com.kelsos.mbrc.repository.AlbumRepository
-import com.kelsos.mbrc.repository.ArtistRepository
-import com.kelsos.mbrc.repository.GenreRepository
-import com.kelsos.mbrc.repository.PlaylistRepository
-import com.kelsos.mbrc.repository.TrackRepository
-import io.mockk.Runs
-import io.mockk.clearMocks
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.verify
+import com.kelsos.mbrc.repository.*
+import io.mockk.*
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -34,7 +27,7 @@ class LibrarySyncInteractorImplTest {
   @Rule
   fun toothPickRule() = ToothPickRule(this)
 
-  val TEST_CASE_SCOPE: Class<*> = TestCase::class.java
+  private val TEST_CASE_SCOPE: Class<*> = TestCase::class.java
 
   lateinit var genreRepository: GenreRepository
   lateinit var artistRepository: ArtistRepository
@@ -45,11 +38,10 @@ class LibrarySyncInteractorImplTest {
 
   private lateinit var scope: Scope
 
-  private val testDispatcher = TestCoroutineDispatcher()
+  private val testDispatcher = StandardTestDispatcher()
 
   @Before
   fun setUp() {
-    testDispatcher.pauseDispatcher()
     genreRepository = mockk()
     artistRepository = mockk()
     albumRepository = mockk()
@@ -72,8 +64,9 @@ class LibrarySyncInteractorImplTest {
         bind(TrackRepository::class.java).toInstance(trackRepository)
         bind(PlaylistRepository::class.java).toInstance(playlistRepository)
         bind(RxBus::class.java).toInstance(bus)
-        bind(LibrarySyncInteractor::class.java).to(LibrarySyncInteractorImpl::class.java)
-          .singletonInScope()
+        bind(LibrarySyncInteractor::class.java).to(LibrarySyncInteractorImpl::class.java).singletonInScope()
+        bind(ObjectMapper::class.java).toInstance(ObjectMapper().registerKotlinModule())
+        bind(CoverCache::class.java).toInstance(mockk(relaxed = true))
       }
     })
 
@@ -87,7 +80,7 @@ class LibrarySyncInteractorImplTest {
   }
 
   @Test
-  fun emptyLibraryAutoSync() = testDispatcher.runBlockingTest {
+  fun emptyLibraryAutoSync() = runTest(testDispatcher) {
     val onCompleteListener = setupOnCompleteListener()
     val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
@@ -111,7 +104,7 @@ class LibrarySyncInteractorImplTest {
   }
 
   @Test
-  fun nonEmptyLibraryAutoSync() = testDispatcher.runBlockingTest {
+  fun nonEmptyLibraryAutoSync() = runTest(testDispatcher) {
     val onCompleteListener = setupOnCompleteListener()
     val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
@@ -132,7 +125,7 @@ class LibrarySyncInteractorImplTest {
   }
 
   @Test
-  fun nonEmptyLibraryManualSyncTwiceConsecutiveCalled() = testDispatcher.runBlockingTest {
+  fun nonEmptyLibraryManualSyncTwiceConsecutiveCalled() = runTest(testDispatcher) {
     val onCompleteListener = setupOnCompleteListener()
     val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
@@ -158,7 +151,7 @@ class LibrarySyncInteractorImplTest {
   }
 
   @Test
-  fun nonEmptyLibraryManualSyncAndSecondAfterCompletion() = testDispatcher.runBlockingTest {
+  fun nonEmptyLibraryManualSyncAndSecondAfterCompletion() = runTest(testDispatcher) {
     var onCompleteListener = setupOnCompleteListener()
     val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
@@ -204,7 +197,7 @@ class LibrarySyncInteractorImplTest {
   }
 
   @Test
-  fun nonEmptyLibraryManualSyncFailure() = testDispatcher.runBlockingTest {
+  fun nonEmptyLibraryManualSyncFailure() = runTest(testDispatcher) {
     val onCompleteListener = setupOnCompleteListener()
     val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
@@ -236,7 +229,7 @@ class LibrarySyncInteractorImplTest {
   }
 
   @Test
-  fun syncWithoutCompletionListener() = testDispatcher.runBlockingTest {
+  fun syncWithoutCompletionListener() = runTest(testDispatcher) {
     val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
     mockCacheState(false)
@@ -254,7 +247,7 @@ class LibrarySyncInteractorImplTest {
     verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
   }
 
-  private suspend fun mockCacheState(isEmpty: Boolean) {
+  private fun mockCacheState(isEmpty: Boolean) {
     coEvery { genreRepository.cacheIsEmpty() } returns isEmpty
     coEvery { artistRepository.cacheIsEmpty() } returns isEmpty
     coEvery { albumRepository.cacheIsEmpty() } returns isEmpty
@@ -275,7 +268,7 @@ class LibrarySyncInteractorImplTest {
     return
   }
 
-  private suspend fun mockSuccessfulRepositoryResponse() {
+  private fun mockSuccessfulRepositoryResponse() {
     coEvery { genreRepository.getRemote() } coAnswers { wait() }
     coEvery { artistRepository.getRemote() } coAnswers { wait() }
     coEvery { albumRepository.getRemote() } coAnswers { wait() }
@@ -283,7 +276,7 @@ class LibrarySyncInteractorImplTest {
     coEvery { playlistRepository.getRemote() } coAnswers { wait() }
   }
 
-  private suspend fun mockFailedRepositoryResponse() {
+  private fun mockFailedRepositoryResponse() {
     coEvery { genreRepository.getRemote() } coAnswers { wait() }
     coEvery { artistRepository.getRemote() } throws SocketTimeoutException()
     coEvery { albumRepository.getRemote() } coAnswers { wait() }

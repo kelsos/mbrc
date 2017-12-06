@@ -12,9 +12,6 @@ import android.widget.CheckBox
 import android.widget.EditText
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
 import com.kelsos.mbrc.BuildConfig.APPLICATION_ID
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.logging.LogHelper
@@ -25,14 +22,10 @@ import java.io.File
 
 class FeedbackFragment : Fragment() {
 
-  @BindView(R.id.feedback_content)
-  lateinit var feedbackEditText: EditText
-  @BindView(R.id.include_device_info)
-  lateinit var deviceInfo: CheckBox
-  @BindView(R.id.include_log_info)
-  lateinit var logInfo: CheckBox
-  @BindView(R.id.feedback_button)
-  lateinit var feedbackButton: Button
+  private lateinit var feedbackEditText: EditText
+  private lateinit var deviceInfo: CheckBox
+  private lateinit var logInfo: CheckBox
+  private lateinit var feedbackButton: Button
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -40,7 +33,12 @@ class FeedbackFragment : Fragment() {
     savedInstanceState: Bundle?
   ): View? {
     val view = inflater.inflate(R.layout.fragment_feedback, container, false)
-    ButterKnife.bind(this, view)
+    feedbackEditText = view.findViewById(R.id.feedback_content);
+    deviceInfo = view.findViewById(R.id.include_device_info)
+    logInfo = view.findViewById(R.id.include_log_info)
+    feedbackButton = view.findViewById(R.id.feedback_button)
+
+    feedbackButton.setOnClickListener { onFeedbackButtonClicked() }
 
     LogHelper.logsExist(requireContext())
       .subscribeOn(Schedulers.io())
@@ -53,8 +51,7 @@ class FeedbackFragment : Fragment() {
     return view
   }
 
-  @OnClick(R.id.feedback_button)
-  internal fun onFeedbackButtonClicked() {
+  private fun onFeedbackButtonClicked() {
     var feedbackText = feedbackEditText.text.toString().trim { it <= ' ' }
     if (TextUtils.isEmpty(feedbackText)) {
       return
@@ -109,7 +106,6 @@ class FeedbackFragment : Fragment() {
   }
 
   companion object {
-
     fun newInstance(): FeedbackFragment {
       return FeedbackFragment()
     }

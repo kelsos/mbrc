@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
-  package="com.kelsos.mbrc"
   android:installLocation="auto">
+
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+  <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+  <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+  <uses-sdk tools:overrideLibrary="timber.log" />
 
   <application
     android:name=".RemoteApplication"
@@ -13,13 +22,16 @@
     android:logo="@mipmap/ic_launcher"
     android:theme="@style/Theme.App"
     tools:ignore="UnusedAttribute">
+
     <activity
       android:name=".UpdateRequiredActivity"
       android:exported="true" />
+
     <activity
       android:name=".ui.navigation.main.MainActivity"
       android:launchMode="singleTop"
       android:windowSoftInputMode="adjustNothing" />
+
     <activity
       android:name=".ui.navigation.library.LibraryActivity"
       android:label="@string/nav_library"
@@ -30,9 +42,13 @@
         android:name="android.support.PARENT_ACTIVITY"
         android:value=".ui.navigation.main.MainActivity" />
     </activity>
+
     <activity android:name=".ui.navigation.library.album_tracks.AlbumTracksActivity" />
+
     <activity android:name=".ui.navigation.library.artist_albums.ArtistAlbumsActivity" />
+
     <activity android:name=".ui.navigation.library.genre_artists.GenreArtistsActivity" />
+
     <activity
       android:name=".ui.navigation.lyrics.LyricsActivity"
       android:label="@string/nav_lyrics"
@@ -43,6 +59,7 @@
         android:name="android.support.PARENT_ACTIVITY"
         android:value=".ui.navigation.main.MainActivity" />
     </activity>
+
     <activity
       android:name=".ui.navigation.nowplaying.NowPlayingActivity"
       android:label="@string/nav_now_playing"
@@ -53,6 +70,7 @@
         android:name="android.support.PARENT_ACTIVITY"
         android:value=".ui.navigation.main.MainActivity" />
     </activity>
+
     <activity
       android:name=".ui.navigation.playlists.PlaylistActivity"
       android:label="@string/nav_playlists"
@@ -63,6 +81,7 @@
         android:name="android.support.PARENT_ACTIVITY"
         android:value=".ui.navigation.main.MainActivity" />
     </activity>
+
     <activity
       android:name=".ui.preferences.SettingsActivity"
       android:parentActivityName=".ui.navigation.main.MainActivity">
@@ -72,6 +91,7 @@
         android:name="android.support.PARENT_ACTIVITY"
         android:value=".ui.navigation.main.MainActivity" />
     </activity>
+
     <activity
       android:name=".ui.connection_manager.ConnectionManagerActivity"
       android:parentActivityName=".ui.preferences.SettingsActivity"
@@ -82,6 +102,7 @@
         android:name="android.support.PARENT_ACTIVITY"
         android:value=".ui.preferences.SettingsActivity" />
     </activity>
+
     <activity
       android:name=".ui.help_feedback.HelpFeedbackActivity"
       android:label="@string/title_activity_help_feedback"
@@ -91,8 +112,10 @@
         android:name="android.support.PARENT_ACTIVITY"
         android:value="com.kelsos.mbrc.ui.navigation.main.MainActivity" />
     </activity>
+
     <activity
       android:name=".ui.activities.SplashActivity"
+      android:exported="true"
       android:noHistory="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -100,6 +123,7 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
+
     <activity
       android:name=".ui.navigation.radio.RadioActivity"
       android:label="@string/title_activity_radios"
@@ -109,21 +133,9 @@
         android:value="com.kelsos.mbrc.ui.navigation.main.MainActivity" />
     </activity>
 
-    <receiver android:name=".utilities.MediaButtonReceiver">
-      <intent-filter>
-        <action android:name="android.intent.action.MEDIA_BUTTON" />
-      </intent-filter>
-    </receiver>
-    <receiver android:name=".widgets.WidgetSmall">
-      <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-      </intent-filter>
-
-      <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/remote_widget_small" />
-    </receiver>
-    <receiver android:name=".widgets.WidgetNormal">
+    <receiver
+      android:name=".widgets.WidgetNormal"
+      android:exported="false">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
       </intent-filter>
@@ -133,12 +145,32 @@
         android:resource="@xml/remote_widget_normal" />
     </receiver>
 
+    <receiver
+      android:name=".utilities.MediaButtonReceiver"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MEDIA_BUTTON" />
+      </intent-filter>
+    </receiver>
+
+    <receiver
+      android:name=".widgets.WidgetSmall"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/remote_widget_small" />
+    </receiver>
+
     <service
       android:name=".controller.RemoteService"
       android:description="@string/info_service_description"
-      android:exported="false">
+      android:exported="false"
+      android:foregroundServiceType="connectedDevice">
       <intent-filter>
-        <action android:name="android.net.wifi.STATE_CHANGE" />
         <action android:name="com.kelsos.mbrc.notification.play" />
         <action android:name="com.kelsos.mbrc.notification.next" />
         <action android:name="com.kelsos.mbrc.notification.close" />
@@ -147,24 +179,15 @@
     </service>
 
     <provider
-        android:name="androidx.core.content.FileProvider"
-        android:authorities="${applicationId}.fileprovider"
-        android:grantUriPermissions="true"
-        android:exported="false">
-        <meta-data
-            android:name="android.support.FILE_PROVIDER_PATHS"
-            android:resource="@xml/filepaths"/>
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.fileprovider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/filepaths" />
     </provider>
 
   </application>
-
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-  <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
-  <uses-permission android:name="android.permission.INTERNET" />
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-  <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-  <uses-sdk tools:overrideLibrary="timber.log" />
 
 </manifest>

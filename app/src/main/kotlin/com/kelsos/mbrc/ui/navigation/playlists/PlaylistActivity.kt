@@ -5,8 +5,6 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.adapters.PlaylistAdapter
@@ -29,14 +27,10 @@ class PlaylistActivity : BaseActivity(),
 
   private val PRESENTER_SCOPE: Class<*> = Presenter::class.java
 
-  @BindView(R.id.swipe_layout)
-  lateinit var swipeLayout: MultiSwipeRefreshLayout
-  @BindView(R.id.playlist_list)
-  lateinit var playlistList: EmptyRecyclerView
-  @BindView(R.id.empty_view)
-  lateinit var emptyView: View
-  @BindView(R.id.list_empty_title)
-  lateinit var emptyViewTitle: TextView
+  private lateinit var swipeLayout: MultiSwipeRefreshLayout
+  private lateinit var playlistList: EmptyRecyclerView
+  private lateinit var emptyView: View
+  private lateinit var emptyViewTitle: TextView
 
   @Inject
   lateinit var adapter: PlaylistAdapter
@@ -47,7 +41,10 @@ class PlaylistActivity : BaseActivity(),
   public override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_playlists)
-    ButterKnife.bind(this)
+    swipeLayout = findViewById(R.id.swipe_layout)
+    playlistList = findViewById(R.id.playlist_list)
+    emptyView = findViewById(R.id.empty_view)
+    emptyViewTitle = findViewById(R.id.list_empty_title)
 
     scope = Toothpick.openScopes(application, PRESENTER_SCOPE, this)
     scope.installTestModules(SmoothieActivityModule(this), PlaylistModule())
@@ -57,8 +54,7 @@ class PlaylistActivity : BaseActivity(),
 
     swipeLayout.setSwipeableChildren(R.id.playlist_list, R.id.empty_view)
     adapter.setPlaylistPressedListener(this)
-    playlistList.layoutManager =
-      LinearLayoutManager(this)
+    playlistList.layoutManager = LinearLayoutManager(this)
     playlistList.emptyView = emptyView
     playlistList.adapter = adapter
     swipeLayout.setOnRefreshListener(this)

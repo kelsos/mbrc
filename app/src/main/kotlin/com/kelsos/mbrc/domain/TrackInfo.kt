@@ -28,12 +28,12 @@ data class TrackInfo(
 
   override fun describeContents() = 0
 
-  override fun writeToParcel(dest: Parcel?, flags: Int) {
-    dest?.writeString(artist)
-    dest?.writeString(title)
-    dest?.writeString(album)
-    dest?.writeString(year)
-    dest?.writeString(path)
+  override fun writeToParcel(dest: Parcel, flags: Int) {
+    dest.writeString(artist)
+    dest.writeString(title)
+    dest.writeString(album)
+    dest.writeString(year)
+    dest.writeString(path)
   }
 }
 

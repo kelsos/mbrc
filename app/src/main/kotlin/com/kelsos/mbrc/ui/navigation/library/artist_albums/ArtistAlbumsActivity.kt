@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.R
@@ -25,14 +23,9 @@ class ArtistAlbumsActivity : FontActivity(),
   ArtistAlbumsView,
   AlbumEntryAdapter.MenuItemSelectedListener {
 
-  @BindView(R.id.album_recycler)
-  lateinit var recyclerView: EmptyRecyclerView
-
-  @BindView(R.id.toolbar)
-  lateinit var toolbar: MaterialToolbar
-
-  @BindView(R.id.empty_view)
-  lateinit var emptyView: ConstraintLayout
+  private lateinit var recyclerView: EmptyRecyclerView
+  private lateinit var toolbar: MaterialToolbar
+  private lateinit var emptyView: ConstraintLayout
 
   @Inject
   lateinit var actionHandler: PopupActionHandler
@@ -55,7 +48,9 @@ class ArtistAlbumsActivity : FontActivity(),
     super.onCreate(savedInstanceState)
     Toothpick.inject(this, scope)
     setContentView(R.layout.activity_artist_albums)
-    ButterKnife.bind(this)
+    recyclerView = findViewById(R.id.album_recycler)
+    toolbar = findViewById(R.id.toolbar)
+    emptyView = findViewById(R.id.empty_view)
 
     val extras = intent.extras
     if (extras != null) {

@@ -12,9 +12,6 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isGone
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindString
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.data.library.Track
 import com.kelsos.mbrc.data.library.key
@@ -71,7 +68,7 @@ constructor(context: Activity) : RecyclerView.Adapter<TrackEntryAdapter.ViewHold
     holder.indicator.setOnClickListener { createPopup(it, holder) }
 
     holder.itemView.setOnClickListener {
-      val position = holder.adapterPosition.toLong()
+      val position = holder.bindingAdapterPosition.toLong()
       val track = data?.getItem(position) ?: return@setOnClickListener
       listener?.onItemClicked(track)
 
@@ -83,7 +80,7 @@ constructor(context: Activity) : RecyclerView.Adapter<TrackEntryAdapter.ViewHold
     val popupMenu = PopupMenu(it.context, it)
     popupMenu.inflate(R.menu.popup_track)
     popupMenu.setOnMenuItemClickListener { menuItem ->
-      val position = holder.adapterPosition.toLong()
+      val position = holder.bindingAdapterPosition.toLong()
       val track = data?.getItem(position) ?: return@setOnMenuItemClickListener false
       listener?.onMenuItemSelected(menuItem, track)
       true
@@ -150,19 +147,11 @@ constructor(context: Activity) : RecyclerView.Adapter<TrackEntryAdapter.ViewHold
   }
 
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    @BindView(R.id.line_two)
-    lateinit var artist: TextView
-    @BindView(R.id.line_one)
-    lateinit var title: TextView
-    @BindView(R.id.ui_item_context_indicator)
-    lateinit var indicator: LinearLayout
-    @BindString(R.string.unknown_artist)
-    lateinit var unknownArtist: String
+    val artist: TextView = itemView.findViewById(R.id.line_two)
+    val title: TextView = itemView.findViewById(R.id.line_one)
+    val indicator: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
+    val unknownArtist: String = itemView.context.getString(R.string.unknown_artist)
     val image: ImageView = itemView.findViewById(R.id.cover)
-
-    init {
-      ButterKnife.bind(this, itemView)
-    }
   }
 
   fun update(cursor: FlowCursorList<Track>) {

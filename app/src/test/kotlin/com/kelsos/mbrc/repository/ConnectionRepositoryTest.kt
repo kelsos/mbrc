@@ -10,8 +10,8 @@ import com.kelsos.mbrc.TestApplication
 import com.kelsos.mbrc.data.ConnectionSettings
 import com.kelsos.mbrc.di.modules.AppDispatchers
 import com.kelsos.mbrc.rules.DBFlowTestRule
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -19,17 +19,12 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
 import org.junit.runner.RunWith
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.anyInt
-import org.mockito.Mockito.anyLong
-import org.mockito.Mockito.anyString
+import org.mockito.Mockito.*
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import toothpick.Toothpick
 import toothpick.config.Module
 import toothpick.testing.ToothPickRule
-import java.util.ArrayList
 
 @RunWith(RobolectricTestRunner::class)
 @Config(
@@ -38,7 +33,7 @@ import java.util.ArrayList
 )
 class ConnectionRepositoryTest {
   private val toothPickRule = ToothPickRule(this)
-  private val testDispatcher = TestCoroutineDispatcher()
+  private val testDispatcher = StandardTestDispatcher()
 
   @Rule
   fun chain(): TestRule = RuleChain.outerRule(toothPickRule).around(DBFlowTestRule.create())
@@ -50,7 +45,7 @@ class ConnectionRepositoryTest {
   }
 
   @Test
-  fun addNewSettings() = runBlockingTest {
+  fun addNewSettings() = runTest(testDispatcher) {
     val repository = repository
     val settings = createSettings("192.167.90.10")
     repository.save(settings)
@@ -60,7 +55,7 @@ class ConnectionRepositoryTest {
   }
 
   @Test
-  fun addMultipleNewSettings() = runBlockingTest {
+  fun addMultipleNewSettings() = runTest(testDispatcher) {
     val repository = repository
     val settings = createSettings("192.167.90.10")
     val settings1 = createSettings("192.167.90.11")
@@ -94,7 +89,7 @@ class ConnectionRepositoryTest {
     }
 
   @Test
-  fun addMultipleNewSettingsRemoveOne() = runBlockingTest {
+  fun addMultipleNewSettingsRemoveOne() = runTest(testDispatcher) {
     val repository = repository
     val settings = createSettings("192.167.90.10")
     val settings1 = createSettings("192.167.90.11")
@@ -122,7 +117,7 @@ class ConnectionRepositoryTest {
   }
 
   @Test
-  fun changeDefault() = runBlockingTest {
+  fun changeDefault() = runTest(testDispatcher) {
     val repository = repository
 
     val settings = createSettings("192.167.90.10")
@@ -139,7 +134,7 @@ class ConnectionRepositoryTest {
   }
 
   @Test
-  fun deleteSingleDefault() = runBlockingTest {
+  fun deleteSingleDefault() = runTest(testDispatcher) {
     val repository = repository
 
     val settings = createSettings("192.167.90.10")
@@ -156,7 +151,7 @@ class ConnectionRepositoryTest {
   }
 
   @Test
-  fun deleteFromMultipleDefaultFirst() = runBlockingTest {
+  fun deleteFromMultipleDefaultFirst() = runTest(testDispatcher) {
     val repository = repository
 
     val settings = createSettings("192.167.90.10")
@@ -182,7 +177,7 @@ class ConnectionRepositoryTest {
   }
 
   @Test
-  fun deleteFromMultipleDefaultSecond() = runBlockingTest {
+  fun deleteFromMultipleDefaultSecond() = runTest(testDispatcher) {
     val repository = repository
 
     val settings = createSettings("192.167.90.10")
@@ -211,7 +206,7 @@ class ConnectionRepositoryTest {
   }
 
   @Test
-  fun deleteFromMultipleDefaultLast() = runBlockingTest {
+  fun deleteFromMultipleDefaultLast() = runTest(testDispatcher) {
     val repository = repository
 
     val settings = createSettings("192.167.90.10")
@@ -240,7 +235,7 @@ class ConnectionRepositoryTest {
   }
 
   @Test
-  fun deleteFromMultipleNonDefault() = runBlockingTest {
+  fun deleteFromMultipleNonDefault() = runTest(testDispatcher) {
     val repository = repository
 
     val settings = createSettings("192.167.90.10")
@@ -269,7 +264,7 @@ class ConnectionRepositoryTest {
   }
 
   @Test
-  fun updateSettings() = runBlockingTest {
+  fun updateSettings() = runTest(testDispatcher) {
     val newPort = 6060
     val address = "192.167.90.10"
     val newAddress = "192.167.90.11"
@@ -310,8 +305,8 @@ class ConnectionRepositoryTest {
     init {
       bind(SharedPreferences::class.java).toProviderInstance {
         val defaultId = longArrayOf(-1)
-        val preferences = Mockito.mock(SharedPreferences::class.java)
-        val editor = Mockito.mock(SharedPreferences.Editor::class.java)
+        val preferences = mock(SharedPreferences::class.java)
+        val editor = mock(SharedPreferences.Editor::class.java)
         `when`(preferences.edit()).thenReturn(editor)
         `when`(preferences.getLong(anyString(), anyLong())).thenAnswer { defaultId[0] }
         `when`(editor.putLong(anyString(), anyLong())).then {
@@ -323,7 +318,7 @@ class ConnectionRepositoryTest {
       }
       bind(ConnectionRepository::class.java).to(ConnectionRepositoryImpl::class.java)
       bind(Resources::class.java).toProviderInstance {
-        val resources = Mockito.mock(Resources::class.java)
+        val resources = mock(Resources::class.java)
         `when`(resources.getString(anyInt())).thenReturn("preferences_key")
         resources
       }

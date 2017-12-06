@@ -8,19 +8,15 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.data.ConnectionSettings
-import java.util.*
 
 class ConnectionAdapter : RecyclerView.Adapter<ConnectionAdapter.ConnectionViewHolder>() {
-  private val data: MutableList<ConnectionSettings>
+  private val data: MutableList<ConnectionSettings> = ArrayList()
   private var selectionId: Long = 0
   private var changeListener: ConnectionChangeListener? = null
 
   init {
-    data = ArrayList<ConnectionSettings>()
     setHasStableIds(true)
   }
 
@@ -43,13 +39,13 @@ class ConnectionAdapter : RecyclerView.Adapter<ConnectionAdapter.ConnectionViewH
     val holder = ConnectionViewHolder(view)
 
     holder.overflow.setOnClickListener {
-      val adapterPosition = holder.adapterPosition
+      val adapterPosition = holder.bindingAdapterPosition
       val settings = data[adapterPosition]
       showPopup(settings, it)
     }
 
     holder.itemView.setOnClickListener {
-      val adapterPosition = holder.adapterPosition
+      val adapterPosition = holder.bindingAdapterPosition
       val settings = data[adapterPosition]
       changeListener?.onDefault(settings)
     }
@@ -84,8 +80,7 @@ class ConnectionAdapter : RecyclerView.Adapter<ConnectionAdapter.ConnectionViewH
         R.id.connection_default -> changeListener?.onDefault(settings)
         R.id.connection_edit -> changeListener?.onEdit(settings)
         R.id.connection_delete -> changeListener?.onDelete(settings)
-        else -> {
-        }
+        else -> {}
       }
       true
     }
@@ -104,20 +99,11 @@ class ConnectionAdapter : RecyclerView.Adapter<ConnectionAdapter.ConnectionViewH
   }
 
   inner class ConnectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    @BindView(R.id.cs_list_host)
-    lateinit var hostname: TextView
-    @BindView(R.id.cs_list_port)
-    lateinit var portNum: TextView
-    @BindView(R.id.cs_list_name)
-    lateinit var computerName: TextView
-    @BindView(R.id.cs_list_default)
-    lateinit var defaultSettings: ImageView
-    @BindView(R.id.cs_list_overflow)
-    lateinit var overflow: View
-
-    init {
-      ButterKnife.bind(this, itemView)
-    }
+    val hostname: TextView = itemView.findViewById(R.id.cs_list_host)
+    val portNum: TextView = itemView.findViewById(R.id.cs_list_port)
+    val computerName: TextView = itemView.findViewById(R.id.cs_list_name)
+    val defaultSettings: ImageView = itemView.findViewById(R.id.cs_list_default)
+    val overflow: View = itemView.findViewById(R.id.cs_list_overflow)
   }
 
   interface ConnectionChangeListener {

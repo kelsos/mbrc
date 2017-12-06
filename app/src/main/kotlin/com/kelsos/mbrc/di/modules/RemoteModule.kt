@@ -2,7 +2,7 @@ package com.kelsos.mbrc.di.modules
 
 import androidx.core.app.NotificationManagerCompat
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.kelsos.mbrc.di.providers.NotificationManagerCompatProvider
 import com.kelsos.mbrc.events.bus.RxBus
 import com.kelsos.mbrc.events.bus.RxBusImpl
@@ -12,24 +12,7 @@ import com.kelsos.mbrc.helper.QueueHandler
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.RequestManager
 import com.kelsos.mbrc.networking.RequestManagerImpl
-import com.kelsos.mbrc.repository.AlbumRepository
-import com.kelsos.mbrc.repository.AlbumRepositoryImpl
-import com.kelsos.mbrc.repository.ArtistRepository
-import com.kelsos.mbrc.repository.ArtistRepositoryImpl
-import com.kelsos.mbrc.repository.ConnectionRepository
-import com.kelsos.mbrc.repository.ConnectionRepositoryImpl
-import com.kelsos.mbrc.repository.GenreRepository
-import com.kelsos.mbrc.repository.GenreRepositoryImpl
-import com.kelsos.mbrc.repository.ModelCache
-import com.kelsos.mbrc.repository.ModelCacheImpl
-import com.kelsos.mbrc.repository.NowPlayingRepository
-import com.kelsos.mbrc.repository.NowPlayingRepositoryImpl
-import com.kelsos.mbrc.repository.PlaylistRepository
-import com.kelsos.mbrc.repository.PlaylistRepositoryImpl
-import com.kelsos.mbrc.repository.RadioRepository
-import com.kelsos.mbrc.repository.RadioRepositoryImpl
-import com.kelsos.mbrc.repository.TrackRepository
-import com.kelsos.mbrc.repository.TrackRepositoryImpl
+import com.kelsos.mbrc.repository.*
 import com.kelsos.mbrc.repository.data.LocalArtistDataSource
 import com.kelsos.mbrc.repository.data.LocalArtistDataSourceImpl
 import com.kelsos.mbrc.repository.data.LocalRadioDataSource
@@ -50,8 +33,7 @@ import java.util.concurrent.Executors
 
 class RemoteModule : Module() {
   init {
-    val mapper = ObjectMapper()
-    mapper.registerModule(KotlinModule())
+    val mapper = ObjectMapper().registerKotlinModule()
 
     bind(RxBus::class.java).to(RxBusImpl::class.java).singletonInScope()
     bind(ObjectMapper::class.java).toInstance(mapper)

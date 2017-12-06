@@ -18,7 +18,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.ShareActionProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuItemCompat
-import butterknife.ButterKnife
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import com.kelsos.mbrc.R
@@ -117,7 +116,6 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
     findViewById<ImageButton>(R.id.main_button_next).setOnClickListener { presenter.next() }
     findViewById<View>(R.id.track_info_area).setOnClickListener { navigate(R.id.nav_now_playing) }
 
-    ButterKnife.bind(this)
     super.setup()
     presenter.attach(this)
   }

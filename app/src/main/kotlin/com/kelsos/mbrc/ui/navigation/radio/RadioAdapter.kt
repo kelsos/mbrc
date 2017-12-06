@@ -8,8 +8,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.data.RadioStation
 import com.raizlabs.android.dbflow.list.FlowCursorList
@@ -27,7 +25,7 @@ class RadioAdapter
     val viewHolder = ViewHolder(view)
 
     viewHolder.itemView.setOnClickListener {
-      val path = data?.getItem(viewHolder.adapterPosition.toLong())?.url
+      val path = data?.getItem(viewHolder.bindingAdapterPosition.toLong())?.url
       path?.let {
         radioPressedListener?.onRadioPressed(it)
       }
@@ -37,7 +35,7 @@ class RadioAdapter
   }
 
   override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-    val radio = data?.getItem(holder.adapterPosition.toLong())
+    val radio = data?.getItem(holder.bindingAdapterPosition.toLong())
     radio?.let {
       holder.name.text = radio.name
     }
@@ -63,11 +61,7 @@ class RadioAdapter
   }
 
   class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    @BindView(R.id.line_one) lateinit var name: TextView
-    @BindView(R.id.ui_item_context_indicator) lateinit var context: LinearLayout
-
-    init {
-      ButterKnife.bind(this, itemView)
-    }
+    val name: TextView = itemView.findViewById(R.id.line_one)
+    val context: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
   }
 }

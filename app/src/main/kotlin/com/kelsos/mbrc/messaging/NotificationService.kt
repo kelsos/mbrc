@@ -72,14 +72,13 @@ constructor(
   private fun coverChanged(path: String) {
     val coverFile = File(path)
     if (coverFile.exists()) {
-      RemoteUtils.bitmapFromFile(coverFile.absolutePath).doOnTerminate {
+      try {
+        model.cover = RemoteUtils.coverBitmapSync(coverFile.absolutePath)
         update()
-      }.subscribe({
-        model.cover = it
-      }, {
-        Timber.v(it, "failed to decode")
+      } catch (e: Exception) {
+        Timber.v(e, "failed to decode")
         model.cover = null
-      })
+      }
     } else {
       model.cover = null
       update()

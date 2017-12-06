@@ -44,13 +44,9 @@ constructor(
   private val cache: ModelCache,
   appDispatchers: AppDispatchers
 ) : ICommand {
-  private val coverDir: File
+  private val coverDir: File = File(context.filesDir, COVER_DIR)
   private val job = SupervisorJob()
   private val scope = CoroutineScope(job + appDispatchers.io)
-
-  init {
-    coverDir = File(context.filesDir, COVER_DIR)
-  }
 
   override fun execute(e: IEvent) {
     val payload = mapper.treeToValue((e.data as JsonNode), CoverPayload::class.java)
@@ -153,7 +149,7 @@ constructor(
       .centerCrop()
       .fetch(object : Callback {
         override fun onSuccess() {
-          cont.resume(newFile, onCancellation = {})
+          cont.resume(newFile) { cause, _, _ -> }
         }
 
         override fun onError(e: Exception) {

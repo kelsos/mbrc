@@ -12,19 +12,15 @@ import com.kelsos.mbrc.networking.RequestManagerImpl
 import com.kelsos.mbrc.repository.ConnectionRepository
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import toothpick.config.Module
 import toothpick.testing.ToothPickRule
-import java.io.BufferedReader
-import java.io.BufferedWriter
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
-import java.io.PrintWriter
+import java.io.*
 import java.net.ServerSocket
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -33,7 +29,7 @@ import java.util.concurrent.Executors
 class ConnectionVerifierImplTest {
   private var server: ServerSocket? = null
   private val connectionRepository: ConnectionRepository = mockk()
-  private val testDispatcher = TestCoroutineDispatcher()
+  private val testDispatcher = StandardTestDispatcher()
 
   @Rule
   @JvmField
@@ -109,7 +105,7 @@ class ConnectionVerifierImplTest {
   }
 
   @Test
-  fun testSuccessfulVerification() = testDispatcher.runBlockingTest {
+  fun testSuccessfulVerification() = runTest(testDispatcher) {
     startMockServer()
 
     coEvery { connectionRepository.getDefault() } answers {
@@ -125,7 +121,7 @@ class ConnectionVerifierImplTest {
 
 
   @Test
-  fun testPrematureDisconnectDuringVerification() = testDispatcher.runBlockingTest {
+  fun testPrematureDisconnectDuringVerification() = runTest(testDispatcher) {
     startMockServer(true)
     coEvery { connectionRepository.getDefault() } answers {
       val settings = ConnectionSettings()
@@ -144,7 +140,7 @@ class ConnectionVerifierImplTest {
   }
 
   @Test
-  fun testInvalidPluginResponseVerification() = testDispatcher.runBlockingTest {
+  fun testInvalidPluginResponseVerification() = runTest(testDispatcher) {
     startMockServer(false, Protocol.ClientNotAllowed)
     coEvery { connectionRepository.getDefault() } answers {
       val settings = ConnectionSettings()
@@ -163,7 +159,7 @@ class ConnectionVerifierImplTest {
   }
 
   @Test
-  fun testVerificationNoConnection() = testDispatcher.runBlockingTest {
+  fun testVerificationNoConnection() = runTest(testDispatcher) {
     startMockServer(true)
 
     coEvery { connectionRepository.getDefault() } answers {
@@ -180,7 +176,7 @@ class ConnectionVerifierImplTest {
   }
 
   @Test
-  fun testVerificationNoJsonPayload() = testDispatcher.runBlockingTest {
+  fun testVerificationNoJsonPayload() = runTest(testDispatcher) {
     startMockServer(false, "payload", false)
 
     coEvery { connectionRepository.getDefault() } answers {

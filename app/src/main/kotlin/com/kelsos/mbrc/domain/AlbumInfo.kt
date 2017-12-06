@@ -12,10 +12,10 @@ data class AlbumInfo(val album: String, val artist: String, val cover: String?) 
 
   override fun describeContents() = 0
 
-  override fun writeToParcel(dest: Parcel?, flags: Int) {
-    dest?.writeString(album)
-    dest?.writeString(artist)
-    dest?.writeString(cover)
+  override fun writeToParcel(dest: Parcel, flags: Int) {
+    dest.writeString(album)
+    dest.writeString(artist)
+    dest.writeString(cover)
   }
 
   companion object {

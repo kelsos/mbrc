@@ -26,12 +26,12 @@ class SimpleItemTouchHelper(private val adapter: ItemTouchHelperAdapter) :
     }
 
     // Notify the adapter of the move
-    adapter.onItemMove(viewHolder.adapterPosition, target.adapterPosition)
+    adapter.onItemMove(viewHolder.bindingAdapterPosition, target.bindingAdapterPosition)
     return true
   }
 
   override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-    adapter.onItemDismiss(viewHolder.adapterPosition)
+    adapter.onItemDismiss(viewHolder.bindingAdapterPosition)
   }
 
   override fun isLongPressDragEnabled(): Boolean {

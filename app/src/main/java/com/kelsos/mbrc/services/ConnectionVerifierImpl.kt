@@ -9,35 +9,35 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ConnectionVerifierImpl
-@Inject constructor(
-  private val mapper: ObjectMapper,
-  private val requestManager: RequestManager,
-  private val dispatchers: AppDispatchers
-) : ConnectionVerifier {
+  @Inject
+  constructor(
+    private val mapper: ObjectMapper,
+    private val requestManager: RequestManager,
+    private val dispatchers: AppDispatchers,
+  ) : ConnectionVerifier {
+    private fun getMessage(response: String) = mapper.readValue(response, SocketMessage::class.java)
 
-  private fun getMessage(response: String) =
-    mapper.readValue(response, SocketMessage::class.java)
+    override suspend fun verify(): Boolean =
+      withContext(dispatchers.io) {
+        try {
+          val connection = requestManager.openConnection(false)
+          val response =
+            requestManager.request(
+              connection,
+              SocketMessage.create(Protocol.VerifyConnection),
+            )
+          connection.close()
+          val message = getMessage(response)
 
-  override suspend fun verify(): Boolean = withContext(dispatchers.io) {
-    try {
-      val connection = requestManager.openConnection(false)
-      val response = requestManager.request(
-        connection,
-        SocketMessage.create(Protocol.VerifyConnection)
-      )
-      connection.close()
-      val message = getMessage(response)
+          if (Protocol.VerifyConnection == message.context) {
+            return@withContext true
+          }
+        } catch (e: Exception) {
+          return@withContext false
+        }
 
-      if (Protocol.VerifyConnection == message.context) {
-        return@withContext true
+        throw NoValidPluginConnection()
       }
-    } catch (e: Exception) {
-      return@withContext false
-    }
 
-    throw NoValidPluginConnection()
+    class NoValidPluginConnection : Exception()
   }
-
-
-  class NoValidPluginConnection : Exception()
-}

@@ -13,7 +13,9 @@ import toothpick.Toothpick
 import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
-class LyricsActivity : BaseActivity(), LyricsView {
+class LyricsActivity :
+  BaseActivity(),
+  LyricsView {
   private val PRESENTER_SCOPE: Class<*> = Presenter::class.java
 
   private lateinit var lyricsRecycler: EmptyRecyclerView
@@ -46,7 +48,6 @@ class LyricsActivity : BaseActivity(), LyricsView {
     lyricsRecycler.adapter = adapter
   }
 
-
   override fun onDestroy() {
     Toothpick.closeScope(this)
     if (isFinishing) {
@@ -75,13 +76,10 @@ class LyricsActivity : BaseActivity(), LyricsView {
     adapter.clear()
   }
 
-  override fun active(): Int {
-    return R.id.nav_lyrics
-  }
+  override fun active(): Int = R.id.nav_lyrics
 
   @javax.inject.Scope
   @Target(AnnotationTarget.TYPE)
   @Retention(AnnotationRetention.RUNTIME)
   annotation class Presenter
 }
-

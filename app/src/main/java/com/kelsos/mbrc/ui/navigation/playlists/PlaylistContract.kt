@@ -7,11 +7,14 @@ import com.raizlabs.android.dbflow.list.FlowCursorList
 
 interface PlaylistView : BaseView {
   fun update(cursor: FlowCursorList<Playlist>)
+
   fun failure(throwable: Throwable)
 }
 
 interface PlaylistPresenter : Presenter<PlaylistView> {
   fun load()
+
   fun reload()
+
   fun play(path: String)
 }

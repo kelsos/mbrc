@@ -6,9 +6,11 @@ import com.kelsos.mbrc.messaging.NotificationService
 import javax.inject.Inject
 
 class CancelNotificationCommand
-@Inject constructor(private val notificationService: NotificationService) : ICommand {
-
-  override fun execute(e: IEvent) {
-    notificationService.cancelNotification(NotificationService.NOW_PLAYING_PLACEHOLDER)
+  @Inject
+  constructor(
+    private val notificationService: NotificationService,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      notificationService.cancelNotification(NotificationService.NOW_PLAYING_PLACEHOLDER)
+    }
   }
-}

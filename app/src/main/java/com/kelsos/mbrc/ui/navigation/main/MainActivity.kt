@@ -49,8 +49,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MainActivity : BaseActivity(), MainView, ProgressUpdate {
-
+class MainActivity :
+  BaseActivity(),
+  MainView,
+  ProgressUpdate {
   private val PRESENTER_SCOPE: Class<*> = Presenter::class.java
 
   // Injects
@@ -133,11 +135,12 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
   }
 
   override fun notifyPluginOutOfDate() {
-    val snackBar = Snackbar.make(
-      navigationView,
-      R.string.main__dialog_plugin_outdated_message,
-      Snackbar.LENGTH_INDEFINITE
-    )
+    val snackBar =
+      Snackbar.make(
+        navigationView,
+        R.string.main__dialog_plugin_outdated_message,
+        Snackbar.LENGTH_INDEFINITE,
+      )
     snackBar.setAction(android.R.string.ok) { snackBar.dismiss() }
     snackBar.show()
   }
@@ -174,8 +177,8 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
     presenter.requestNowPlayingPosition()
   }
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return when (item.itemId) {
+  override fun onOptionsItemSelected(item: MenuItem): Boolean =
+    when (item.itemId) {
       R.id.menu_lastfm_scrobble -> {
         presenter.toggleScrobbling()
         true
@@ -190,7 +193,6 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
       }
       else -> false
     }
-  }
 
   override fun onStop() {
     super.onStop()
@@ -233,7 +235,8 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
     }
 
     val dimens = getDimens()
-    Picasso.get()
+    Picasso
+      .get()
       .load(file)
       .noFade()
       .error(R.drawable.ic_image_no_cover)
@@ -241,10 +244,11 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
       .resize(dimens, dimens)
       .centerCrop()
       .into(albumCover)
-
   }
 
-  override fun updateShuffleState(@ShuffleState shuffleState: String) {
+  override fun updateShuffleState(
+    @ShuffleState shuffleState: String,
+  ) {
     val shuffle = ShuffleChange.OFF != shuffleState
     val autoDj = ShuffleChange.AUTODJ == shuffleState
 
@@ -254,8 +258,11 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
     shuffleButton.setImageResource(if (autoDj) R.drawable.ic_headset_black_24dp else R.drawable.ic_shuffle_black_24dp)
   }
 
-  override fun updateRepeat(@Mode mode: String) {
+  override fun updateRepeat(
+    @Mode mode: String,
+  ) {
     @ColorRes var colorId = R.color.accent
+
     @DrawableRes var resId = R.drawable.ic_repeat_black_24dp
 
     //noinspection StatementWithEmptyBody
@@ -276,42 +283,48 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
     repeatButton.setColorFilter(color)
   }
 
-  override fun updateVolume(volume: Int, mute: Boolean) {
+  override fun updateVolume(
+    volume: Int,
+    mute: Boolean,
+  ) {
     volumeBar.progress = volume
     val color = ContextCompat.getColor(this, R.color.button_dark)
     muteButton.setColorFilter(color)
     muteButton.setImageResource(if (mute) R.drawable.ic_volume_off_black_24dp else R.drawable.ic_volume_up_black_24dp)
   }
 
-  override fun updatePlayState(@State state: String) {
+  override fun updatePlayState(
+    @State state: String,
+  ) {
     val accentColor = ContextCompat.getColor(this, R.color.accent)
     val tag = tag(state)
 
     if (playPauseButton.tag == tag) {
       return
     }
-    @DrawableRes val resId: Int = when (state) {
-      PlayerState.PLAYING -> {
-        /* Start the animation if the track is playing*/
-        presenter.requestNowPlayingPosition()
-        trackProgressAnimation(progressBar.progress, progressBar.max)
-        R.drawable.ic_pause_circle_filled_black_24dp
+    @DrawableRes val resId: Int =
+      when (state) {
+        PlayerState.PLAYING -> {
+          // Start the animation if the track is playing
+          presenter.requestNowPlayingPosition()
+          trackProgressAnimation(progressBar.progress, progressBar.max)
+          R.drawable.ic_pause_circle_filled_black_24dp
+        }
+        PlayerState.PAUSED -> {
+          // Stop the animation if the track is paused
+          progressHelper.stop()
+          R.drawable.ic_play_circle_filled_black_24dp
+        }
+        PlayerState.STOPPED -> {
+          // Stop the animation if the track is paused
+          progressHelper.stop()
+          activateStoppedState()
+          R.drawable.ic_play_circle_filled_black_24dp
+        }
+        else -> {
+          R.drawable.ic_play_circle_filled_black_24dp
+        }
       }
-      PlayerState.PAUSED -> {
-        /* Stop the animation if the track is paused*/
-        progressHelper.stop()
-        R.drawable.ic_play_circle_filled_black_24dp
-      }
-      PlayerState.STOPPED -> {
-        /* Stop the animation if the track is paused*/
-        progressHelper.stop()
-        activateStoppedState()
-        R.drawable.ic_play_circle_filled_black_24dp
-      }
-      else -> {
-        R.drawable.ic_play_circle_filled_black_24dp
-      }
-    }
 
     playPauseButton.setColorFilter(accentColor)
     playPauseButton.setImageResource(resId)
@@ -321,14 +334,16 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
   /**
    * Starts the progress animation when called. If It was previously running then it restarts it.
    */
-  private fun trackProgressAnimation(current: Int, total: Int) {
+  private fun trackProgressAnimation(
+    current: Int,
+    total: Int,
+  ) {
     progressHelper.stop()
 
     val tag = playPauseButton.tag
     if (STOPPED == tag || PAUSED == tag) {
       return
     }
-
 
     progressHelper.update(current, total)
   }
@@ -341,8 +356,12 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
   override fun updateTrackInfo(info: TrackInfo) {
     artistLabel.text = info.artist
     titleLabel.text = info.title
-    albumLabel.text = if (TextUtils.isEmpty(info.year)) info.album
-    else String.format("%s [%s]", info.album, info.year)
+    albumLabel.text =
+      if (TextUtils.isEmpty(info.year)) {
+        info.album
+      } else {
+        String.format("%s [%s]", info.album, info.year)
+      }
 
     if (mShareActionProvider != null) {
       mShareActionProvider!!.setShareIntent(shareIntent)
@@ -382,11 +401,12 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
     val finalCurrentSeconds = currentSeconds
 
     trackDuration.text = getString(R.string.playback_progress, totalMinutes, finalTotalSeconds)
-    trackProgressCurrent.text = getString(
-      R.string.playback_progress,
-      currentMinutes,
-      finalCurrentSeconds
-    )
+    trackProgressCurrent.text =
+      getString(
+        R.string.playback_progress,
+        currentMinutes,
+        finalCurrentSeconds,
+      )
 
     progressBar.max = total
     progressBar.progress = current
@@ -394,7 +414,10 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
     trackProgressAnimation(current, total)
   }
 
-  override fun updateDuration(position: Int, duration: Int) {
+  override fun updateDuration(
+    position: Int,
+    duration: Int,
+  ) {
     updateProgress(position, duration)
   }
 
@@ -419,21 +442,23 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
     }
   }
 
-  override fun active(): Int {
-    return R.id.nav_home
-  }
+  override fun active(): Int = R.id.nav_home
 
-  override fun progress(position: Int, duration: Int) {
+  override fun progress(
+    position: Int,
+    duration: Int,
+  ) {
     val currentProgress = progressBar.progress / 1000
     val currentMinutes = currentProgress / 60
     val currentSeconds = currentProgress % 60
 
     progressBar.progress = progressBar.progress + 1000
-    trackProgressCurrent.text = getString(
-      R.string.playback_progress,
-      currentMinutes,
-      currentSeconds
-    )
+    trackProgressCurrent.text =
+      getString(
+        R.string.playback_progress,
+        currentMinutes,
+        currentSeconds,
+      )
   }
 
   override fun onBackPressed() {
@@ -444,8 +469,8 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
   override fun onDestroy() {
     Toothpick.closeScope(this)
     if (isFinishing) {
-      //when we leave the presenter flow,
-      //we close its scope
+      // when we leave the presenter flow,
+      // we close its scope
       Toothpick.closeScope(PRESENTER_SCOPE)
     }
     outOfDateDialog?.dismiss()
@@ -458,11 +483,14 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
     private const val STOPPED = "Stopped"
     private const val PLAYING = "Playing"
 
-    fun tag(@PlayerState.State state: String): String = when (state) {
-      PlayerState.PLAYING -> PLAYING
-      PlayerState.PAUSED -> PAUSED
-      else -> STOPPED
-    }
+    fun tag(
+      @PlayerState.State state: String,
+    ): String =
+      when (state) {
+        PlayerState.PLAYING -> PLAYING
+        PlayerState.PAUSED -> PAUSED
+        else -> STOPPED
+      }
   }
 
   @javax.inject.Scope
@@ -470,4 +498,3 @@ class MainActivity : BaseActivity(), MainView, ProgressUpdate {
   @Retention(AnnotationRetention.RUNTIME)
   annotation class Presenter
 }
-

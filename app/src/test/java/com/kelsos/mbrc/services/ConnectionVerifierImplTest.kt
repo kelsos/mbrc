@@ -33,11 +33,11 @@ class ConnectionVerifierImplTest {
 
   @Rule
   @JvmField
-  val toothpickRule: ToothPickRule = ToothPickRule(this, "verifier")
-    .setRootRegistryPackage("com.kelsos.mbrc")
+  val toothpickRule: ToothPickRule =
+    ToothPickRule(this, "verifier")
+      .setRootRegistryPackage("com.kelsos.mbrc")
   private val mapper = ObjectMapper()
   private val port: Int = 36000
-
 
   private lateinit var executor: ExecutorService
 
@@ -50,51 +50,51 @@ class ConnectionVerifierImplTest {
   private fun startMockServer(
     prematureDisconnect: Boolean = false,
     responseContext: String = Protocol.VerifyConnection,
-    json: Boolean = true
+    json: Boolean = true,
   ) {
     val random = Random()
-    val mockSocket = Runnable {
+    val mockSocket =
+      Runnable {
+        server = ServerSocket(port + random.nextInt(1000))
 
-      server = ServerSocket(port + random.nextInt(1000))
+        while (true) {
+          val connection = server?.accept()
+          val input = InputStreamReader(connection!!.inputStream)
+          val inputReader = BufferedReader(input)
+          val line = inputReader.readLine()
+          val value = mapper.readValue(line, SocketMessage::class.java)
 
-      while (true) {
-        val connection = server?.accept()
-        val input = InputStreamReader(connection!!.inputStream)
-        val inputReader = BufferedReader(input)
-        val line = inputReader.readLine()
-        val value = mapper.readValue(line, SocketMessage::class.java)
+          if (value.context != Protocol.VerifyConnection) {
+            connection.close()
+            server?.close()
+            return@Runnable
+          }
 
-        if (value.context != Protocol.VerifyConnection) {
+          if (prematureDisconnect) {
+            connection.close()
+            server?.close()
+            return@Runnable
+          }
+
+          val out = OutputStreamWriter(connection.outputStream, Const.UTF_8)
+          val output = PrintWriter(BufferedWriter(out), true)
+          if (json) {
+            val response = SocketMessage()
+            response.context = responseContext
+            output.write(mapper.writeValueAsString(response) + "\n\r")
+          } else {
+            output.write(responseContext + "\n\r")
+          }
+          output.flush()
+          input.close()
+          inputReader.close()
+          out.close()
+          output.close()
           connection.close()
           server?.close()
           return@Runnable
         }
-
-        if (prematureDisconnect) {
-          connection.close()
-          server?.close()
-          return@Runnable
-        }
-
-        val out = OutputStreamWriter(connection.outputStream, Const.UTF_8)
-        val output = PrintWriter(BufferedWriter(out), true)
-        if (json) {
-          val response = SocketMessage()
-          response.context = responseContext
-          output.write(mapper.writeValueAsString(response) + "\n\r")
-        } else {
-          output.write(responseContext + "\n\r")
-        }
-        output.flush()
-        input.close()
-        inputReader.close()
-        out.close()
-        output.close()
-        connection.close()
-        server?.close()
-        return@Runnable
       }
-    }
 
     executor.execute(mockSocket)
   }
@@ -105,92 +105,96 @@ class ConnectionVerifierImplTest {
   }
 
   @Test
-  fun testSuccessfulVerification() = runTest(testDispatcher) {
-    startMockServer()
+  fun testSuccessfulVerification() =
+    runTest(testDispatcher) {
+      startMockServer()
 
-    coEvery { connectionRepository.getDefault() } answers {
-      val settings = ConnectionSettings()
-      settings.address = server!!.inetAddress.hostAddress
-      settings.port = server!!.localPort
-      settings
+      coEvery { connectionRepository.getDefault() } answers {
+        val settings = ConnectionSettings()
+        settings.address = server!!.inetAddress.hostAddress
+        settings.port = server!!.localPort
+        settings
+      }
+
+      val verifier = toothpickRule.getInstance(ConnectionVerifier::class.java)
+      assertThat(verifier.verify()).isTrue()
     }
-
-    val verifier = toothpickRule.getInstance(ConnectionVerifier::class.java)
-    assertThat(verifier.verify()).isTrue()
-  }
-
 
   @Test
-  fun testPrematureDisconnectDuringVerification() = runTest(testDispatcher) {
-    startMockServer(true)
-    coEvery { connectionRepository.getDefault() } answers {
-      val settings = ConnectionSettings()
-      settings.address = server!!.inetAddress.hostAddress
-      settings.port = server!!.localPort
-      settings
-    }
+  fun testPrematureDisconnectDuringVerification() =
+    runTest(testDispatcher) {
+      startMockServer(true)
+      coEvery { connectionRepository.getDefault() } answers {
+        val settings = ConnectionSettings()
+        settings.address = server!!.inetAddress.hostAddress
+        settings.port = server!!.localPort
+        settings
+      }
 
-    val verifier = toothpickRule.getInstance(ConnectionVerifier::class.java)
-    try {
-      verifier.verify()
-      error("Test should throw")
-    } catch (e: Exception) {
-      assertThat(e).isInstanceOf(RuntimeException::class.java)
+      val verifier = toothpickRule.getInstance(ConnectionVerifier::class.java)
+      try {
+        verifier.verify()
+        error("Test should throw")
+      } catch (e: Exception) {
+        assertThat(e).isInstanceOf(RuntimeException::class.java)
+      }
     }
-  }
 
   @Test
-  fun testInvalidPluginResponseVerification() = runTest(testDispatcher) {
-    startMockServer(false, Protocol.ClientNotAllowed)
-    coEvery { connectionRepository.getDefault() } answers {
-      val settings = ConnectionSettings()
-      settings.address = server!!.inetAddress.hostAddress
-      settings.port = server!!.localPort
-      settings
-    }
+  fun testInvalidPluginResponseVerification() =
+    runTest(testDispatcher) {
+      startMockServer(false, Protocol.ClientNotAllowed)
+      coEvery { connectionRepository.getDefault() } answers {
+        val settings = ConnectionSettings()
+        settings.address = server!!.inetAddress.hostAddress
+        settings.port = server!!.localPort
+        settings
+      }
 
-    val verifier = toothpickRule.getInstance(ConnectionVerifier::class.java)
-    try {
-      println(verifier.verify())
-      error("Test should throw")
-    } catch (e: Exception) {
-      assertThat(e).isInstanceOf(ConnectionVerifierImpl.NoValidPluginConnection::class.java)
+      val verifier = toothpickRule.getInstance(ConnectionVerifier::class.java)
+      try {
+        println(verifier.verify())
+        error("Test should throw")
+      } catch (e: Exception) {
+        assertThat(e).isInstanceOf(ConnectionVerifierImpl.NoValidPluginConnection::class.java)
+      }
     }
-  }
 
   @Test
-  fun testVerificationNoConnection() = runTest(testDispatcher) {
-    startMockServer(true)
+  fun testVerificationNoConnection() =
+    runTest(testDispatcher) {
+      startMockServer(true)
 
-    coEvery { connectionRepository.getDefault() } answers {
-      null
-    }
+      coEvery { connectionRepository.getDefault() } answers {
+        null
+      }
 
-    val verifier = toothpickRule.getInstance(ConnectionVerifier::class.java)
-    try {
-      verifier.verify()
-      error("Test should throw")
-    } catch (e: Exception) {
-      assertThat(e).isInstanceOf(RuntimeException::class.java)
+      val verifier = toothpickRule.getInstance(ConnectionVerifier::class.java)
+      try {
+        verifier.verify()
+        error("Test should throw")
+      } catch (e: Exception) {
+        assertThat(e).isInstanceOf(RuntimeException::class.java)
+      }
     }
-  }
 
   @Test
-  fun testVerificationNoJsonPayload() = runTest(testDispatcher) {
-    startMockServer(false, "payload", false)
+  fun testVerificationNoJsonPayload() =
+    runTest(testDispatcher) {
+      startMockServer(false, "payload", false)
 
-    coEvery { connectionRepository.getDefault() } answers {
-      null
-    }
+      coEvery { connectionRepository.getDefault() } answers {
+        null
+      }
 
-    val verifier = toothpickRule.getInstance(ConnectionVerifier::class.java)
-    try {
-      verifier.verify()
-      error("Test should throw")
-    } catch (e: Exception) {
-      assertThat(e).isInstanceOf(RuntimeException::class.java)
+      val verifier = toothpickRule.getInstance(ConnectionVerifier::class.java)
+      try {
+        verifier.verify()
+        error("Test should throw")
+      } catch (e: Exception) {
+        assertThat(e).isInstanceOf(RuntimeException::class.java)
+      }
     }
-  }
 
   inner class TestModule : Module() {
     init {
@@ -202,8 +206,8 @@ class ConnectionVerifierImplTest {
         AppDispatchers(
           testDispatcher,
           testDispatcher,
-          testDispatcher
-        )
+          testDispatcher,
+        ),
       )
     }
   }

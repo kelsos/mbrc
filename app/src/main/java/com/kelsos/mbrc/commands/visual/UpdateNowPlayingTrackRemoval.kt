@@ -8,10 +8,12 @@ import com.kelsos.mbrc.interfaces.IEvent
 import javax.inject.Inject
 
 class UpdateNowPlayingTrackRemoval
-@Inject constructor(private val bus: RxBus) : ICommand {
-
-  override fun execute(e: IEvent) {
-    e.data
-    bus.post(TrackRemoval(e.data as ObjectNode))
+  @Inject
+  constructor(
+    private val bus: RxBus,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      e.data
+      bus.post(TrackRemoval(e.data as ObjectNode))
+    }
   }
-}

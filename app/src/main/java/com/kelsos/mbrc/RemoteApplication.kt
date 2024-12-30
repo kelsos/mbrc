@@ -14,7 +14,6 @@ import toothpick.registries.MemberInjectorRegistryLocator
 import toothpick.smoothie.module.SmoothieApplicationModule
 
 open class RemoteApplication : Application() {
-
   @CallSuper
   override fun onCreate() {
     super.onCreate()
@@ -30,14 +29,14 @@ open class RemoteApplication : Application() {
     initializeTimber()
   }
 
-
   private fun initializeTimber() {
     if (BuildConfig.DEBUG) {
-      Timber.plant(object : Timber.DebugTree() {
-        override fun createStackElementTag(element: StackTraceElement): String {
-          return "${super.createStackElementTag(element)}:${element.lineNumber} [${Thread.currentThread().name}]"
-        }
-      })
+      Timber.plant(
+        object : Timber.DebugTree() {
+          override fun createStackElementTag(element: StackTraceElement): String =
+            "${super.createStackElementTag(element)}:${element.lineNumber} [${Thread.currentThread().name}]"
+        },
+      )
     }
   }
 
@@ -46,11 +45,12 @@ open class RemoteApplication : Application() {
   }
 
   private fun initializeToothpick() {
-    val configuration: Configuration = if (BuildConfig.DEBUG) {
-      Configuration.forDevelopment().disableReflection()
-    } else {
-      Configuration.forProduction().disableReflection()
-    }
+    val configuration: Configuration =
+      if (BuildConfig.DEBUG) {
+        Configuration.forDevelopment().disableReflection()
+      } else {
+        Configuration.forProduction().disableReflection()
+      }
 
     Toothpick.setConfiguration(configuration)
 
@@ -61,7 +61,6 @@ open class RemoteApplication : Application() {
       applicationScope.installModules(SmoothieApplicationModule(this), RemoteModule())
     }
   }
-
 
   internal open fun testMode(): Boolean = false
 }

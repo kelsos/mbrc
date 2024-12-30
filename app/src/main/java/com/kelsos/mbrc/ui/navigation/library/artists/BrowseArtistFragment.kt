@@ -24,18 +24,20 @@ import toothpick.Scope
 import toothpick.Toothpick
 import javax.inject.Inject
 
-class BrowseArtistFragment : Fragment(),
+class BrowseArtistFragment :
+  Fragment(),
   BrowseArtistView,
   MenuItemSelectedListener {
-
   private lateinit var recycler: EmptyRecyclerView
   private lateinit var emptyView: View
   private lateinit var emptyTitle: TextView
 
   @Inject
   lateinit var adapter: ArtistEntryAdapter
+
   @Inject
   lateinit var actionHandler: PopupActionHandler
+
   @Inject
   lateinit var presenter: BrowseArtistPresenter
 
@@ -46,13 +48,18 @@ class BrowseArtistFragment : Fragment(),
     syncButton.isGone = term.isNotEmpty()
   }
 
-  override fun queue(success: Boolean, tracks: Int) {
-    val message = if (success) {
-      getString(R.string.queue_result__success, tracks)
-    } else {
-      getString(R.string.queue_result__failure)
-    }
-    Snackbar.make(recycler, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
+  override fun queue(
+    success: Boolean,
+    tracks: Int,
+  ) {
+    val message =
+      if (success) {
+        getString(R.string.queue_result__success, tracks)
+      } else {
+        getString(R.string.queue_result__failure)
+      }
+    Snackbar
+      .make(recycler, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
       .setText(message)
       .show()
   }
@@ -78,7 +85,7 @@ class BrowseArtistFragment : Fragment(),
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View? {
     val view = inflater.inflate(R.layout.fragment_library_search, container, false)
     recycler = view.findViewById(R.id.library_data_list)
@@ -93,7 +100,10 @@ class BrowseArtistFragment : Fragment(),
     return view
   }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?,
+  ) {
     super.onViewCreated(view, savedInstanceState)
     recycler.setHasFixedSize(true)
     recycler.adapter = adapter
@@ -104,7 +114,10 @@ class BrowseArtistFragment : Fragment(),
     presenter.load()
   }
 
-  override fun onMenuItemSelected(menuItem: MenuItem, artist: Artist) {
+  override fun onMenuItemSelected(
+    menuItem: MenuItem,
+    artist: Artist,
+  ) {
     val action = actionHandler.artistSelected(menuItem, artist, requireActivity())
     if (action != Queue.PROFILE) {
       presenter.queue(action, artist)

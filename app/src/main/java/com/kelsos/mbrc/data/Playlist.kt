@@ -18,10 +18,10 @@ data class Playlist(
   @Column(name = "url")
   @JsonProperty var url: String = "",
   @JsonIgnore
-  @Column(name="date_added")
+  @Column(name = "date_added")
   var dateAdded: Long = 0,
   @Column(name = "id")
   @PrimaryKey(autoincrement = true)
   @JsonIgnore
-  var id: Long = 0
+  var id: Long = 0,
 ) : Data

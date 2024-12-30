@@ -17,35 +17,34 @@ import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 class UpdatePlayState
-@Inject
-constructor(
-  private val model: MainDataModel,
-  private val context: Application,
-  private val bus: RxBus,
-  dispatchers: AppDispatchers
-) : ICommand {
+  @Inject
+  constructor(
+    private val model: MainDataModel,
+    private val context: Application,
+    private val bus: RxBus,
+    dispatchers: AppDispatchers,
+  ) : ICommand {
+    private val job = SupervisorJob()
+    private val scope = CoroutineScope(job + dispatchers.io)
+    private var action: Deferred<Unit>? = null
 
-  private val job = SupervisorJob()
-  private val scope = CoroutineScope(job + dispatchers.io)
-  private var action: Deferred<Unit>? = null
+    override fun execute(e: IEvent) {
+      model.playState = e.dataString
+      if (model.playState != PlayerState.STOPPED) {
+        bus.post(PlayStateChange(model.playState, model.position))
+      } else {
+        stop()
+      }
 
-  override fun execute(e: IEvent) {
-
-    model.playState = e.dataString
-    if (model.playState != PlayerState.STOPPED) {
-      bus.post(PlayStateChange(model.playState, model.position))
-    } else {
-      stop()
+      UpdateWidgets.updatePlaystate(context, e.dataString)
     }
 
-    UpdateWidgets.updatePlaystate(context, e.dataString)
-  }
-
-  private fun stop() {
-    action?.cancel()
-    action = scope.async {
-      delay(800)
-      bus.post(PlayStateChange(model.playState, model.position))
+    private fun stop() {
+      action?.cancel()
+      action =
+        scope.async {
+          delay(800)
+          bus.post(PlayStateChange(model.playState, model.position))
+        }
     }
   }
-}

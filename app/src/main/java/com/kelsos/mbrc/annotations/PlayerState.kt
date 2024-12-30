@@ -11,4 +11,4 @@ object PlayerState {
   @Retention(AnnotationRetention.SOURCE)
   @StringDef(PAUSED, PLAYING, STOPPED, UNDEFINED)
   annotation class State
-}//no instance
+} // no instance

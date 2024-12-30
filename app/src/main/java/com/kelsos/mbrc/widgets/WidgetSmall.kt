@@ -20,8 +20,10 @@ import com.squareup.picasso.Picasso
 import java.io.File
 
 class WidgetSmall : AppWidgetProvider() {
-
-  override fun onReceive(context: Context?, intent: Intent?) {
+  override fun onReceive(
+    context: Context?,
+    intent: Intent?,
+  ) {
     super.onReceive(context, intent)
     if (intent == null || intent.action != AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
       return
@@ -52,8 +54,10 @@ class WidgetSmall : AppWidgetProvider() {
       }
       extras.getBoolean(UpdateWidgets.STATE, false) -> {
         updatePlayState(
-          context, widgetManager, widgetsIds,
-          extras.getString(UpdateWidgets.PLAYER_STATE, PlayerState.UNDEFINED)
+          context,
+          widgetManager,
+          widgetsIds,
+          extras.getString(UpdateWidgets.PLAYER_STATE, PlayerState.UNDEFINED),
         )
       }
     }
@@ -62,7 +66,7 @@ class WidgetSmall : AppWidgetProvider() {
   override fun onUpdate(
     context: Context,
     appWidgetManager: AppWidgetManager,
-    appWidgetIds: IntArray
+    appWidgetIds: IntArray,
   ) {
     super.onUpdate(context, appWidgetManager, appWidgetIds)
 
@@ -89,9 +93,8 @@ class WidgetSmall : AppWidgetProvider() {
     context: Context?,
     widgetManager: AppWidgetManager,
     widgetsIds: IntArray,
-    info: TrackInfo
+    info: TrackInfo,
   ) {
-
     if (context == null) {
       return
     }
@@ -105,7 +108,8 @@ class WidgetSmall : AppWidgetProvider() {
   private fun updateCover(
     context: Context?,
     widgetManager: AppWidgetManager,
-    widgetsIds: IntArray, path: String
+    widgetsIds: IntArray,
+    path: String,
   ) {
     if (context == null) {
       return
@@ -115,7 +119,9 @@ class WidgetSmall : AppWidgetProvider() {
     val coverFile = File(path)
     if (coverFile.exists()) {
       Picasso.get().invalidate(coverFile)
-      Picasso.get().load(coverFile)
+      Picasso
+        .get()
+        .load(coverFile)
         .centerCrop()
         .resizeDimen(R.dimen.widget_small_height, R.dimen.widget_small_height)
         .into(smallWidget, R.id.widget_small_image, widgetsIds)
@@ -129,7 +135,7 @@ class WidgetSmall : AppWidgetProvider() {
     context: Context?,
     manager: AppWidgetManager,
     widgetsIds: IntArray,
-    @State state: String
+    @State state: String,
   ) {
     if (context == null) {
       return
@@ -143,7 +149,7 @@ class WidgetSmall : AppWidgetProvider() {
         R.drawable.ic_action_pause
       } else {
         R.drawable.ic_action_play
-      }
+      },
     )
     manager.updateAppWidget(widgetsIds, smallWidget)
   }

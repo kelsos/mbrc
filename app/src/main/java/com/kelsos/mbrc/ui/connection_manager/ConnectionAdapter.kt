@@ -29,11 +29,12 @@ class ConnectionAdapter : RecyclerView.Adapter<ConnectionAdapter.ConnectionViewH
     this.changeListener = changeListener
   }
 
-  override fun getItemId(position: Int): Long {
-    return data[0].id
-  }
+  override fun getItemId(position: Int): Long = data[0].id
 
-  override fun onCreateViewHolder(viewGroup: ViewGroup, position: Int): ConnectionViewHolder {
+  override fun onCreateViewHolder(
+    viewGroup: ViewGroup,
+    position: Int,
+  ): ConnectionViewHolder {
     val inflater = LayoutInflater.from(viewGroup.context)
     val view = inflater.inflate(R.layout.ui_list_connection_settings, viewGroup, false)
     val holder = ConnectionViewHolder(view)
@@ -52,7 +53,10 @@ class ConnectionAdapter : RecyclerView.Adapter<ConnectionAdapter.ConnectionViewH
     return holder
   }
 
-  override fun onBindViewHolder(holder: ConnectionViewHolder, position: Int) {
+  override fun onBindViewHolder(
+    holder: ConnectionViewHolder,
+    position: Int,
+  ) {
     val settings = data[position]
     holder.computerName.text = settings.name
     holder.hostname.text = settings.address
@@ -68,7 +72,10 @@ class ConnectionAdapter : RecyclerView.Adapter<ConnectionAdapter.ConnectionViewH
     }
   }
 
-  private fun showPopup(settings: ConnectionSettings, v: View) {
+  private fun showPopup(
+    settings: ConnectionSettings,
+    v: View,
+  ) {
     val popupMenu = PopupMenu(v.context, v)
     popupMenu.menuInflater.inflate(R.menu.connection_popup, popupMenu.menu)
     popupMenu.setOnMenuItemClickListener {
@@ -87,9 +94,7 @@ class ConnectionAdapter : RecyclerView.Adapter<ConnectionAdapter.ConnectionViewH
     popupMenu.show()
   }
 
-  override fun getItemCount(): Int {
-    return data.size
-  }
+  override fun getItemCount(): Int = data.size
 
   fun update(connectionModel: ConnectionModel) {
     this.data.clear()
@@ -98,7 +103,9 @@ class ConnectionAdapter : RecyclerView.Adapter<ConnectionAdapter.ConnectionViewH
     notifyDataSetChanged()
   }
 
-  inner class ConnectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+  inner class ConnectionViewHolder(
+    itemView: View,
+  ) : RecyclerView.ViewHolder(itemView) {
     val hostname: TextView = itemView.findViewById(R.id.cs_list_host)
     val portNum: TextView = itemView.findViewById(R.id.cs_list_port)
     val computerName: TextView = itemView.findViewById(R.id.cs_list_name)

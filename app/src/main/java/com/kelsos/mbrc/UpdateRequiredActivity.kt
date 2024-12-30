@@ -11,18 +11,19 @@ import com.google.android.material.transition.platform.MaterialContainerTransfor
 
 class UpdateRequiredActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
-
     window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
     findViewById<View>(android.R.id.content).transitionName = "shared_element_container"
     setEnterSharedElementCallback(MaterialContainerTransformSharedElementCallback())
-    window.sharedElementEnterTransition = MaterialContainerTransform().apply {
-      addTarget(android.R.id.content)
-      duration = 300L
-    }
-    window.sharedElementReturnTransition = MaterialContainerTransform().apply {
-      addTarget(android.R.id.content)
-      duration = 250L
-    }
+    window.sharedElementEnterTransition =
+      MaterialContainerTransform().apply {
+        addTarget(android.R.id.content)
+        duration = 300L
+      }
+    window.sharedElementReturnTransition =
+      MaterialContainerTransform().apply {
+        addTarget(android.R.id.content)
+        duration = 250L
+      }
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_update_required)
     val version = intent.getStringExtra(VERSION)

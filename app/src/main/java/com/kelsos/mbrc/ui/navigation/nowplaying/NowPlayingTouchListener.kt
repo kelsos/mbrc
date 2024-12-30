@@ -7,22 +7,32 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
 import timber.log.Timber
 
-class NowPlayingTouchListener(context: Context, private val onLongClick: (Boolean) -> Unit) :
-  OnItemTouchListener {
-  private val gestureDetector: GestureDetector = GestureDetector(context,
-    object : GestureDetector.SimpleOnGestureListener() {
-      override fun onLongPress(e: MotionEvent) {
-        Timber.v("Marking start of long press event")
-        onLongClick.invoke(true)
-        super.onLongPress(e)
-      }
-    })
+class NowPlayingTouchListener(
+  context: Context,
+  private val onLongClick: (Boolean) -> Unit,
+) : OnItemTouchListener {
+  private val gestureDetector: GestureDetector =
+    GestureDetector(
+      context,
+      object : GestureDetector.SimpleOnGestureListener() {
+        override fun onLongPress(e: MotionEvent) {
+          Timber.v("Marking start of long press event")
+          onLongClick.invoke(true)
+          super.onLongPress(e)
+        }
+      },
+    )
 
-  override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {
-
+  override fun onTouchEvent(
+    rv: RecyclerView,
+    e: MotionEvent,
+  ) {
   }
 
-  override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+  override fun onInterceptTouchEvent(
+    rv: RecyclerView,
+    e: MotionEvent,
+  ): Boolean {
     gestureDetector.onTouchEvent(e)
     val action = e.actionMasked
     if (action == MotionEvent.ACTION_UP) {
@@ -34,7 +44,5 @@ class NowPlayingTouchListener(context: Context, private val onLongClick: (Boolea
   }
 
   override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
-
   }
-
 }

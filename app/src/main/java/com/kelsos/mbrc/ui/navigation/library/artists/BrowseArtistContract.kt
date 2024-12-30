@@ -7,13 +7,22 @@ import com.raizlabs.android.dbflow.list.FlowCursorList
 
 interface BrowseArtistView : BaseView {
   fun update(data: FlowCursorList<Artist>)
+
   fun search(term: String)
-  fun queue(success: Boolean, tracks: Int)
+
+  fun queue(
+    success: Boolean,
+    tracks: Int,
+  )
 }
 
 interface BrowseArtistPresenter : Presenter<BrowseArtistView> {
   fun load()
-  fun sync()
-  fun queue(action: String, entry: Artist)
-}
 
+  fun sync()
+
+  fun queue(
+    action: String,
+    entry: Artist,
+  )
+}

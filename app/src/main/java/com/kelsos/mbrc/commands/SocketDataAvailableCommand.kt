@@ -6,12 +6,11 @@ import com.kelsos.mbrc.services.ProtocolHandler
 import javax.inject.Inject
 
 class SocketDataAvailableCommand
-@Inject
-constructor(
-  private val handler: ProtocolHandler
-) : ICommand {
-
-  override fun execute(e: IEvent) {
-    handler.preProcessIncoming(e.dataString)
+  @Inject
+  constructor(
+    private val handler: ProtocolHandler,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      handler.preProcessIncoming(e.dataString)
+    }
   }
-}

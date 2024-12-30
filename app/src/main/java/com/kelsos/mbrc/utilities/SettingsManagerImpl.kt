@@ -14,88 +14,94 @@ import javax.inject.Singleton
 
 @Singleton
 class SettingsManagerImpl
-@Inject
-constructor(
-  private val context: Application,
-  private val preferences: SharedPreferences
-) : SettingsManager {
-
-  init {
-    setupManager()
-  }
-
-  private fun setupManager() {
-    val loggingEnabled = loggingEnabled()
-    if (loggingEnabled) {
-      Timber.plant(FileLoggingTree(this.context.applicationContext))
-    } else {
-      val fileLoggingTree = Timber.forest().find { it is FileLoggingTree }
-      fileLoggingTree?.let { Timber.uproot(it) }
+  @Inject
+  constructor(
+    private val context: Application,
+    private val preferences: SharedPreferences,
+  ) : SettingsManager {
+    init {
+      setupManager()
     }
-  }
 
-  private fun loggingEnabled(): Boolean {
-    return preferences.getBoolean(getKey(R.string.settings_key_debug_logging), false)
-  }
+    private fun setupManager() {
+      val loggingEnabled = loggingEnabled()
+      if (loggingEnabled) {
+        Timber.plant(FileLoggingTree(this.context.applicationContext))
+      } else {
+        val fileLoggingTree = Timber.forest().find { it is FileLoggingTree }
+        fileLoggingTree?.let { Timber.uproot(it) }
+      }
+    }
 
-  @SettingsManager.CallAction
-  override fun getCallAction(): String = preferences.getString(
-    getKey(R.string.settings_key_incoming_call_action), NONE) ?: NONE
+    private fun loggingEnabled(): Boolean = preferences.getBoolean(getKey(R.string.settings_key_debug_logging), false)
 
-  override fun isPluginUpdateCheckEnabled(): Boolean {
-    return preferences.getBoolean(getKey(R.string.settings_key_plugin_check), false)
-  }
+    @SettingsManager.CallAction
+    override fun getCallAction(): String =
+      preferences.getString(
+        getKey(R.string.settings_key_incoming_call_action),
+        NONE,
+      ) ?: NONE
 
-  override fun getLastUpdated(required: Boolean):Instant {
-    val key = if(required) REQUIRED_CHECK else getKey(R.string.settings_key_last_update_check)
-    return Instant.ofEpochMilli(preferences.getLong(key, 0))
-  }
+    override fun isPluginUpdateCheckEnabled(): Boolean = preferences.getBoolean(getKey(R.string.settings_key_plugin_check), false)
 
-  override fun setLastUpdated(lastChecked: Instant, required: Boolean) {
-    val key = if (required) REQUIRED_CHECK else getKey(R.string.settings_key_last_update_check)
-    preferences.edit()
-      .putLong(key, lastChecked.toEpochMilli())
-      .apply()
-  }
+    override fun getLastUpdated(required: Boolean): Instant {
+      val key = if (required) REQUIRED_CHECK else getKey(R.string.settings_key_last_update_check)
+      return Instant.ofEpochMilli(preferences.getLong(key, 0))
+    }
 
-  override suspend fun shouldDisplayOnlyAlbumArtists(): Boolean {
-    return preferences.getBoolean(getKey(R.string.settings_key_album_artists_only), false)
-  }
-
-  override fun setShouldDisplayOnlyAlbumArtist(onlyAlbumArtist: Boolean) {
-    preferences.edit().putBoolean(getKey(R.string.settings_key_album_artists_only), onlyAlbumArtist)
-      .apply()
-  }
-
-  override fun shouldShowChangeLog(): Boolean {
-    val lastVersionCode = preferences.getLong(getKey(R.string.settings_key_last_version_run), 0)
-    val currentVersion = context.getVersionCode()
-
-    if (lastVersionCode < currentVersion) {
-      preferences.edit()
-        .putLong(getKey(R.string.settings_key_last_version_run), currentVersion)
+    override fun setLastUpdated(
+      lastChecked: Instant,
+      required: Boolean,
+    ) {
+      val key = if (required) REQUIRED_CHECK else getKey(R.string.settings_key_last_update_check)
+      preferences
+        .edit()
+        .putLong(key, lastChecked.toEpochMilli())
         .apply()
-      Timber.d("Update or fresh install")
-
-      return true
     }
-    return false
-  }
 
-  private fun getKey(settingsKey: Int) = context.getString(settingsKey)
+    override suspend fun shouldDisplayOnlyAlbumArtists(): Boolean =
+      preferences.getBoolean(getKey(R.string.settings_key_album_artists_only), false)
 
-  companion object {
-    const val REQUIRED_CHECK = "update_required_check"
+    override fun setShouldDisplayOnlyAlbumArtist(onlyAlbumArtist: Boolean) {
+      preferences
+        .edit()
+        .putBoolean(getKey(R.string.settings_key_album_artists_only), onlyAlbumArtist)
+        .apply()
+    }
+
+    override fun shouldShowChangeLog(): Boolean {
+      val lastVersionCode = preferences.getLong(getKey(R.string.settings_key_last_version_run), 0)
+      val currentVersion = context.getVersionCode()
+
+      if (lastVersionCode < currentVersion) {
+        preferences
+          .edit()
+          .putLong(getKey(R.string.settings_key_last_version_run), currentVersion)
+          .apply()
+        Timber.d("Update or fresh install")
+
+        return true
+      }
+      return false
+    }
+
+    private fun getKey(settingsKey: Int) = context.getString(settingsKey)
+
+    companion object {
+      const val REQUIRED_CHECK = "update_required_check"
+    }
   }
-}
 
 interface SettingsManager {
   @CallAction fun getCallAction(): String
 
-  @StringDef(NONE,
+  @StringDef(
+    NONE,
     PAUSE,
     STOP,
-    REDUCE)
+    REDUCE,
+  )
   @Retention(AnnotationRetention.SOURCE)
   annotation class CallAction
 
@@ -105,10 +111,19 @@ interface SettingsManager {
     const val STOP = "stop"
     const val REDUCE = "reduce"
   }
+
   suspend fun shouldDisplayOnlyAlbumArtists(): Boolean
+
   fun setShouldDisplayOnlyAlbumArtist(onlyAlbumArtist: Boolean)
+
   fun shouldShowChangeLog(): Boolean
+
   fun isPluginUpdateCheckEnabled(): Boolean
+
   fun getLastUpdated(required: Boolean = false): Instant
-  fun setLastUpdated(lastChecked: Instant, required: Boolean = false)
+
+  fun setLastUpdated(
+    lastChecked: Instant,
+    required: Boolean = false,
+  )
 }

@@ -21,10 +21,10 @@ data class Genre(
   @Column
   var count: Int = 0,
   @JsonIgnore
-  @Column(name="date_added")
+  @Column(name = "date_added")
   var dateAdded: Long = 0,
   @JsonIgnore
   @Column
   @PrimaryKey(autoincrement = true)
-  var id: Long = 0
+  var id: Long = 0,
 ) : Data

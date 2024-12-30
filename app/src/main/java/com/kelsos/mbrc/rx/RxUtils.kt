@@ -18,11 +18,10 @@ object RxUtils {
     uiCompletableScheduler = createUiCompletableScheduler()
   }
 
-  private fun createUiCompletableScheduler(): Completable.Transformer {
-    return Completable.Transformer { it ->
+  private fun createUiCompletableScheduler(): Completable.Transformer =
+    Completable.Transformer { it ->
       it.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
     }
-  }
 
   /**
    * Get [rx.Observable.Transformer] that transforms the source observable to subscribe in
@@ -33,18 +32,13 @@ object RxUtils {
    * @return [rx.Observable.Transformer]
    */
   @SuppressWarnings("unchecked")
-  private fun <T> createIoToMain(): Observable.Transformer<T, T> {
-    return Observable.Transformer { tObservable ->
+  private fun <T> createIoToMain(): Observable.Transformer<T, T> =
+    Observable.Transformer { tObservable ->
       tObservable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
     }
-  }
 
   @Suppress("UNCHECKED_CAST")
-  fun <T> ioToMain(): Observable.Transformer<T, T> {
-    return ioMainTransformer as Observable.Transformer<T, T>
-  }
+  fun <T> ioToMain(): Observable.Transformer<T, T> = ioMainTransformer as Observable.Transformer<T, T>
 
-  fun uiTask(): Completable.Transformer {
-    return uiCompletableScheduler
-  }
+  fun uiTask(): Completable.Transformer = uiCompletableScheduler
 }

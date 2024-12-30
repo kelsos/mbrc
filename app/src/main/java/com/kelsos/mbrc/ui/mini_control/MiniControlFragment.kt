@@ -22,8 +22,9 @@ import toothpick.Toothpick
 import java.io.File
 import javax.inject.Inject
 
-class MiniControlFragment : Fragment(), MiniControlView {
-
+class MiniControlFragment :
+  Fragment(),
+  MiniControlView {
   private lateinit var trackCover: ImageView
   private lateinit var trackArtist: TextView
   private lateinit var trackTitle: TextView
@@ -42,7 +43,7 @@ class MiniControlFragment : Fragment(), MiniControlView {
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View? {
     val view = inflater.inflate(R.layout.ui_fragment_mini_control, container, false)
     trackArtist = view.findViewById(R.id.mc_track_artist)
@@ -82,14 +83,14 @@ class MiniControlFragment : Fragment(), MiniControlView {
 
     if (file.exists()) {
       val dimens = requireContext().getDimens()
-      Picasso.get()
+      Picasso
+        .get()
         .load(file)
         .noFade()
         .config(Bitmap.Config.RGB_565)
         .resize(dimens, dimens)
         .centerCrop()
         .into(trackCover)
-
     } else {
       trackCover.setImageResource(R.drawable.ic_image_no_cover)
     }
@@ -100,7 +101,9 @@ class MiniControlFragment : Fragment(), MiniControlView {
     trackTitle.text = trackInfo.title
   }
 
-  override fun updateState(@State state: String) {
+  override fun updateState(
+    @State state: String,
+  ) {
     when (state) {
       PlayerState.PLAYING -> playPause.setImageResource(R.drawable.ic_action_pause)
       else -> playPause.setImageResource(R.drawable.ic_action_play)

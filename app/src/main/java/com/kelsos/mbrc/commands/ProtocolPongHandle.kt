@@ -6,8 +6,9 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ProtocolPongHandle
-@Inject constructor() : ICommand {
-  override fun execute(e: IEvent) {
-    Timber.d(e.data.toString())
+  @Inject
+  constructor() : ICommand {
+    override fun execute(e: IEvent) {
+      Timber.d(e.data.toString())
+    }
   }
-}

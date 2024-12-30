@@ -6,12 +6,12 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.kelsos.mbrc.di.providers.NotificationManagerCompatProvider
 import com.kelsos.mbrc.events.bus.RxBus
 import com.kelsos.mbrc.events.bus.RxBusImpl
-import com.kelsos.mbrc.output.OutputApi
-import com.kelsos.mbrc.output.OutputApiImpl
 import com.kelsos.mbrc.helper.QueueHandler
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.RequestManager
 import com.kelsos.mbrc.networking.RequestManagerImpl
+import com.kelsos.mbrc.output.OutputApi
+import com.kelsos.mbrc.output.OutputApiImpl
 import com.kelsos.mbrc.repository.*
 import com.kelsos.mbrc.repository.data.LocalArtistDataSource
 import com.kelsos.mbrc.repository.data.LocalArtistDataSourceImpl
@@ -40,7 +40,8 @@ class RemoteModule : Module() {
 
     bind(NotificationManagerCompat::class.java).toProvider(NotificationManagerCompatProvider::class.java)
     bind(ConnectionRepository::class.java).to(ConnectionRepositoryImpl::class.java)
-    bind(Scheduler::class.java).withName("main")
+    bind(Scheduler::class.java)
+      .withName("main")
       .toProviderInstance { AndroidSchedulers.mainThread() }
     bind(Scheduler::class.java).withName("io").toProviderInstance { Schedulers.io() }
 
@@ -58,7 +59,8 @@ class RemoteModule : Module() {
     bind(ModelCache::class.java).to(ModelCacheImpl::class.java).singletonInScope()
     bind(ServiceChecker::class.java).to(ServiceCheckerImpl::class.java).singletonInScope()
 
-    bind(LibrarySyncInteractor::class.java).to(LibrarySyncInteractorImpl::class.java)
+    bind(LibrarySyncInteractor::class.java)
+      .to(LibrarySyncInteractorImpl::class.java)
       .singletonInScope()
     bind(ApiBase::class.java).singletonInScope()
     bind(RequestManager::class.java).to(RequestManagerImpl::class.java).singletonInScope()
@@ -67,8 +69,8 @@ class RemoteModule : Module() {
       AppDispatchers(
         Dispatchers.Main,
         Dispatchers.IO,
-        Executors.newSingleThreadExecutor { Thread(it, "db") }.asCoroutineDispatcher()
-      )
+        Executors.newSingleThreadExecutor { Thread(it, "db") }.asCoroutineDispatcher(),
+      ),
     )
     bind(QueueHandler::class.java).singletonInScope()
 

@@ -7,9 +7,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.kelsos.mbrc.R
 
-class LyricsAdapter(private var data: List<String> = emptyList()) :
-  RecyclerView.Adapter<LyricsAdapter.ViewHolder>() {
-
+class LyricsAdapter(
+  private var data: List<String> = emptyList(),
+) : RecyclerView.Adapter<LyricsAdapter.ViewHolder>() {
   /**
    * Called when RecyclerView needs a new [ViewHolder] of the given type to represent
    * an item.
@@ -35,7 +35,10 @@ class LyricsAdapter(private var data: List<String> = emptyList()) :
    * @see .getItemViewType
    * @see .onBindViewHolder
    */
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+  override fun onCreateViewHolder(
+    parent: ViewGroup,
+    viewType: Int,
+  ): ViewHolder {
     val view =
       LayoutInflater.from(parent.context).inflate(R.layout.ui_list_lyrics_item, parent, false)
     return ViewHolder(view)
@@ -60,7 +63,10 @@ class LyricsAdapter(private var data: List<String> = emptyList()) :
    * *
    * @param position The position of the item within the adapter's data set.
    */
-  override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+  override fun onBindViewHolder(
+    holder: ViewHolder,
+    position: Int,
+  ) {
     val str = data[position]
     holder.title.text = str
   }
@@ -75,11 +81,11 @@ class LyricsAdapter(private var data: List<String> = emptyList()) :
 
    * @return The total number of items in this adapter.
    */
-  override fun getItemCount(): Int {
-    return data.size
-  }
+  override fun getItemCount(): Int = data.size
 
-  class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+  class ViewHolder(
+    itemView: View,
+  ) : RecyclerView.ViewHolder(itemView) {
     val title: TextView = itemView.findViewById(android.R.id.text1)
   }
 

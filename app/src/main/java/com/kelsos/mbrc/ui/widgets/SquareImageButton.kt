@@ -6,7 +6,6 @@ import android.widget.ImageButton
 import com.kelsos.mbrc.R
 
 class SquareImageButton : ImageButton {
-
   private var useHeight: Boolean = false
 
   constructor(context: Context) : super(context)
@@ -17,7 +16,10 @@ class SquareImageButton : ImageButton {
     attributes.recycle()
   }
 
-  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+  override fun onMeasure(
+    widthMeasureSpec: Int,
+    heightMeasureSpec: Int,
+  ) {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     if (useHeight) {
       setMeasuredDimension(measuredHeight, measuredHeight)

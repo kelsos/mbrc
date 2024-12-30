@@ -37,12 +37,12 @@ class HelpFeedbackActivity : FontActivity() {
       adapter = pagerAdapter
     }
     TabLayoutMediator(tabLayout, viewPager) { currentTab, currentPosition ->
-      currentTab.text = when (currentPosition) {
-        HelpFeedbackPagerAdapter.HELP -> getString(R.string.tab_help)
-        HelpFeedbackPagerAdapter.FEEDBACK -> getString(R.string.tab_feedback)
-        else -> throw IllegalArgumentException("invalid position")
-      }
+      currentTab.text =
+        when (currentPosition) {
+          HelpFeedbackPagerAdapter.HELP -> getString(R.string.tab_help)
+          HelpFeedbackPagerAdapter.FEEDBACK -> getString(R.string.tab_feedback)
+          else -> throw IllegalArgumentException("invalid position")
+        }
     }.attach()
-
   }
 }

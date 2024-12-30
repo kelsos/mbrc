@@ -22,12 +22,16 @@ interface LibrarySyncInteractor {
   fun isRunning(): Boolean
 
   fun setOnCompleteListener(onCompleteListener: OnCompleteListener?)
+
   fun setOnStartListener(onStartListener: OnStartListener?)
+
   suspend fun syncStats(): LibraryStats
 
   interface OnCompleteListener {
     fun onTermination()
+
     fun onFailure(throwable: Throwable)
+
     fun onSuccess(stats: LibraryStats)
   }
 

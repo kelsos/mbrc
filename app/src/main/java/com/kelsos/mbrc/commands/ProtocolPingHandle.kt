@@ -9,12 +9,15 @@ import com.kelsos.mbrc.utilities.SocketActivityChecker
 import javax.inject.Inject
 
 class ProtocolPingHandle
-@Inject constructor(private val service: SocketService) : ICommand {
   @Inject
-  lateinit var activityChecker: SocketActivityChecker
+  constructor(
+    private val service: SocketService,
+  ) : ICommand {
+    @Inject
+    lateinit var activityChecker: SocketActivityChecker
 
-  override fun execute(e: IEvent) {
-    activityChecker.ping()
-    service.sendData(SocketMessage.create(Protocol.PONG, ""))
+    override fun execute(e: IEvent) {
+      activityChecker.ping()
+      service.sendData(SocketMessage.create(Protocol.PONG, ""))
+    }
   }
-}

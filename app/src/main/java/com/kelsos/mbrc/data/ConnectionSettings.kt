@@ -8,11 +8,10 @@ import com.raizlabs.android.dbflow.annotation.Table
 import com.raizlabs.android.dbflow.annotation.Unique
 import com.raizlabs.android.dbflow.annotation.UniqueGroup
 
-
 @Table(
   name = "settings",
   database = RemoteDatabase::class,
-  uniqueColumnGroups = [UniqueGroup(groupNumber = 1, uniqueConflict = ConflictAction.IGNORE)]
+  uniqueColumnGroups = [UniqueGroup(groupNumber = 1, uniqueConflict = ConflictAction.IGNORE)],
 )
 data class ConnectionSettings(
   @Column(name = "address")
@@ -25,5 +24,5 @@ data class ConnectionSettings(
   var name: String? = null,
   @PrimaryKey(autoincrement = true)
   @Column(name = "id")
-  var id: Long = 0
+  var id: Long = 0,
 )

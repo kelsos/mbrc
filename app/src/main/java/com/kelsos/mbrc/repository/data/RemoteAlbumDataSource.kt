@@ -7,8 +7,9 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class RemoteAlbumDataSource
-@Inject constructor(private val service: ApiBase) : RemoteDataSource<Album> {
-  override suspend fun fetch(): Flow<List<Album>> {
-    return service.getAllPages(Protocol.LibraryBrowseAlbums, Album::class)
+  @Inject
+  constructor(
+    private val service: ApiBase,
+  ) : RemoteDataSource<Album> {
+    override suspend fun fetch(): Flow<List<Album>> = service.getAllPages(Protocol.LibraryBrowseAlbums, Album::class)
   }
-}

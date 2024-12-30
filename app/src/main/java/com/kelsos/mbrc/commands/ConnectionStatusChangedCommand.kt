@@ -10,19 +10,19 @@ import com.kelsos.mbrc.services.SocketService
 import javax.inject.Inject
 
 class ConnectionStatusChangedCommand
-@Inject
-constructor(
-  private val model: ConnectionModel, private val service: SocketService,
-  private val notificationService: NotificationService
-) : ICommand {
+  @Inject
+  constructor(
+    private val model: ConnectionModel,
+    private val service: SocketService,
+    private val notificationService: NotificationService,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      model.setConnectionState(e.dataString)
 
-  override fun execute(e: IEvent) {
-    model.setConnectionState(e.dataString)
-
-    if (model.isConnectionActive) {
-      service.sendData(SocketMessage.create(Protocol.Player, "Android"))
-    } else {
-      notificationService.cancelNotification(NotificationService.NOW_PLAYING_PLACEHOLDER)
+      if (model.isConnectionActive) {
+        service.sendData(SocketMessage.create(Protocol.Player, "Android"))
+      } else {
+        notificationService.cancelNotification(NotificationService.NOW_PLAYING_PLACEHOLDER)
+      }
     }
   }
-}

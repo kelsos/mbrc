@@ -19,10 +19,10 @@ import toothpick.Toothpick
 import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
-class ArtistAlbumsActivity : FontActivity(),
+class ArtistAlbumsActivity :
+  FontActivity(),
   ArtistAlbumsView,
   AlbumEntryAdapter.MenuItemSelectedListener {
-
   private lateinit var recyclerView: EmptyRecyclerView
   private lateinit var toolbar: MaterialToolbar
   private lateinit var emptyView: ConstraintLayout
@@ -43,7 +43,7 @@ class ArtistAlbumsActivity : FontActivity(),
     scope = Toothpick.openScopes(application, this)
     scope!!.installModules(
       SmoothieActivityModule(this),
-      ArtistAlbumsModule()
+      ArtistAlbumsModule(),
     )
     super.onCreate(savedInstanceState)
     Toothpick.inject(this, scope)
@@ -91,7 +91,10 @@ class ArtistAlbumsActivity : FontActivity(),
     return super.onOptionsItemSelected(item)
   }
 
-  override fun onMenuItemSelected(menuItem: MenuItem, album: Album) {
+  override fun onMenuItemSelected(
+    menuItem: MenuItem,
+    album: Album,
+  ) {
     val action = actionHandler.albumSelected(menuItem, album, this)
     if (action != Queue.PROFILE) {
       presenter.queue(action, album)
@@ -106,13 +109,18 @@ class ArtistAlbumsActivity : FontActivity(),
     adapter.update(albums)
   }
 
-  override fun queue(success: Boolean, tracks: Int) {
-    val message = if (success) {
-      getString(R.string.queue_result__success, tracks)
-    } else {
-      getString(R.string.queue_result__failure)
-    }
-    Snackbar.make(recyclerView, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
+  override fun queue(
+    success: Boolean,
+    tracks: Int,
+  ) {
+    val message =
+      if (success) {
+        getString(R.string.queue_result__success, tracks)
+      } else {
+        getString(R.string.queue_result__failure)
+      }
+    Snackbar
+      .make(recyclerView, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
       .setText(message)
       .show()
   }
@@ -140,5 +148,3 @@ class ArtistAlbumsActivity : FontActivity(),
     val ARTIST_NAME = "artist_name"
   }
 }
-
-

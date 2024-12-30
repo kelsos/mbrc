@@ -11,25 +11,24 @@ import com.kelsos.mbrc.model.MainDataModel
 import javax.inject.Inject
 
 class UpdatePlaybackPositionCommand
-@Inject
-constructor(
-  private val bus: RxBus,
-  private val model: MainDataModel,
-) : ICommand {
+  @Inject
+  constructor(
+    private val bus: RxBus,
+    private val model: MainDataModel,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      val data = e.data as ObjectNode
+      val duration = data.path("total").asLong()
+      val position = data.path("current").asLong()
+      bus.post(UpdateDuration(position.toInt(), duration.toInt()))
 
-  override fun execute(e: IEvent) {
-    val data = e.data as ObjectNode
-    val duration = data.path("total").asLong()
-    val position = data.path("current").asLong()
-    bus.post(UpdateDuration(position.toInt(), duration.toInt()))
-    
-    bus.post(RemoteClientMetaData(model.trackInfo, model.coverPath, duration))
+      bus.post(RemoteClientMetaData(model.trackInfo, model.coverPath, duration))
 
-    if (position != model.position) {
-      bus.post(PlayStateChange(model.playState, position))
+      if (position != model.position) {
+        bus.post(PlayStateChange(model.playState, position))
+      }
+
+      model.duration = duration
+      model.position = position
     }
-
-    model.duration = duration
-    model.position = position
   }
-}

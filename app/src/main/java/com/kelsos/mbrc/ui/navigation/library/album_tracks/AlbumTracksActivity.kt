@@ -25,10 +25,10 @@ import toothpick.smoothie.module.SmoothieActivityModule
 import java.io.File
 import javax.inject.Inject
 
-class AlbumTracksActivity : FontActivity(),
+class AlbumTracksActivity :
+  FontActivity(),
   AlbumTracksView,
   TrackEntryAdapter.MenuItemSelectedListener {
-
   @Inject
   lateinit var adapter: TrackEntryAdapter
 
@@ -46,7 +46,7 @@ class AlbumTracksActivity : FontActivity(),
     scope = Toothpick.openScopes(application, this)
     scope!!.installModules(
       SmoothieActivityModule(this),
-      AlbumTracksModule()
+      AlbumTracksModule(),
     )
     super.onCreate(savedInstanceState)
     Toothpick.inject(this, scope)
@@ -92,11 +92,15 @@ class AlbumTracksActivity : FontActivity(),
     }
   }
 
-  private fun loadCover(artist: String, album: String) {
+  private fun loadCover(
+    artist: String,
+    album: String,
+  ) {
     val image = findViewById<ImageView>(R.id.album_tracks__cover)
     val cache = File(cacheDir, "covers")
-    Picasso.get()
-      .load(File(cache, sha1("${artist}_${album}")))
+    Picasso
+      .get()
+      .load(File(cache, sha1("${artist}_$album")))
       .noFade()
       .config(Bitmap.Config.RGB_565)
       .error(R.drawable.ic_image_no_cover)
@@ -117,7 +121,10 @@ class AlbumTracksActivity : FontActivity(),
     return super.onOptionsItemSelected(item)
   }
 
-  override fun onMenuItemSelected(menuItem: MenuItem, track: Track) {
+  override fun onMenuItemSelected(
+    menuItem: MenuItem,
+    track: Track,
+  ) {
     presenter.queue(track, actionHandler.trackSelected(menuItem))
   }
 
@@ -129,13 +136,18 @@ class AlbumTracksActivity : FontActivity(),
     adapter.update(cursor)
   }
 
-  override fun queue(success: Boolean, tracks: Int) {
-    val message = if (success) {
-      getString(R.string.queue_result__success, tracks)
-    } else {
-      getString(R.string.queue_result__failure)
-    }
-    Snackbar.make(recyclerView, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
+  override fun queue(
+    success: Boolean,
+    tracks: Int,
+  ) {
+    val message =
+      if (success) {
+        getString(R.string.queue_result__success, tracks)
+      } else {
+        getString(R.string.queue_result__failure)
+      }
+    Snackbar
+      .make(recyclerView, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
       .setText(message)
       .show()
   }

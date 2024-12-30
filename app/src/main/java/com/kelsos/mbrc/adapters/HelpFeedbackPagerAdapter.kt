@@ -6,19 +6,17 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.kelsos.mbrc.ui.help_feedback.FeedbackFragment
 import com.kelsos.mbrc.ui.help_feedback.HelpFragment
 
-class HelpFeedbackPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
-
-  override fun createFragment(position: Int): Fragment {
-    return when (position) {
+class HelpFeedbackPagerAdapter(
+  activity: FragmentActivity,
+) : FragmentStateAdapter(activity) {
+  override fun createFragment(position: Int): Fragment =
+    when (position) {
       HELP -> HelpFragment.newInstance()
       FEEDBACK -> FeedbackFragment.newInstance()
       else -> throw IllegalArgumentException("invalid position")
     }
-  }
 
-  override fun getItemCount(): Int {
-    return PAGES
-  }
+  override fun getItemCount(): Int = PAGES
 
   companion object {
     const val HELP = 0

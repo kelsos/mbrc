@@ -17,7 +17,5 @@ class DiscoveryMessage {
   @JsonProperty("context")
   var context: String? = null
 
-  override fun toString(): String {
-    return "{name='$name', address='$address', port=$port, context='$context'}"
-  }
+  override fun toString(): String = "{name='$name', address='$address', port=$port, context='$context'}"
 }

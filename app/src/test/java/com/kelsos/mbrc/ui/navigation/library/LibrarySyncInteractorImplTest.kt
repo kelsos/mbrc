@@ -52,26 +52,29 @@ class LibrarySyncInteractorImplTest {
     playlistRepository = mockk()
     bus = mockk()
     scope = Toothpick.openScope(TEST_CASE_SCOPE)
-    scope.installModules(ToothPickTestModule(this), object : Module() {
-      init {
-        bind(AppDispatchers::class.java).toInstance(
-          AppDispatchers(
-            testDispatcher,
-            testDispatcher,
-            testDispatcher
+    scope.installModules(
+      ToothPickTestModule(this),
+      object : Module() {
+        init {
+          bind(AppDispatchers::class.java).toInstance(
+            AppDispatchers(
+              testDispatcher,
+              testDispatcher,
+              testDispatcher,
+            ),
           )
-        )
-        bind(GenreRepository::class.java).toInstance(genreRepository)
-        bind(ArtistRepository::class.java).toInstance(artistRepository)
-        bind(AlbumRepository::class.java).toInstance(albumRepository)
-        bind(TrackRepository::class.java).toInstance(trackRepository)
-        bind(PlaylistRepository::class.java).toInstance(playlistRepository)
-        bind(RxBus::class.java).toInstance(bus)
-        bind(LibrarySyncInteractor::class.java).to(LibrarySyncInteractorImpl::class.java).singletonInScope()
-        bind(ObjectMapper::class.java).toInstance(ObjectMapper().registerKotlinModule())
-        bind(CoverCache::class.java).toInstance(mockk(relaxed = true))
-      }
-    })
+          bind(GenreRepository::class.java).toInstance(genreRepository)
+          bind(ArtistRepository::class.java).toInstance(artistRepository)
+          bind(AlbumRepository::class.java).toInstance(albumRepository)
+          bind(TrackRepository::class.java).toInstance(trackRepository)
+          bind(PlaylistRepository::class.java).toInstance(playlistRepository)
+          bind(RxBus::class.java).toInstance(bus)
+          bind(LibrarySyncInteractor::class.java).to(LibrarySyncInteractorImpl::class.java).singletonInScope()
+          bind(ObjectMapper::class.java).toInstance(ObjectMapper().registerKotlinModule())
+          bind(CoverCache::class.java).toInstance(mockk(relaxed = true))
+        }
+      },
+    )
 
     every { bus.post(any()) } just Runs
   }
@@ -83,145 +86,150 @@ class LibrarySyncInteractorImplTest {
   }
 
   @Test
-  fun emptyLibraryAutoSync() = runTest(testDispatcher) {
-    val onCompleteListener = setupOnCompleteListener()
-    val sync = scope.getInstance(LibrarySyncInteractor::class.java)
+  fun emptyLibraryAutoSync() =
+    runTest(testDispatcher) {
+      val onCompleteListener = setupOnCompleteListener()
+      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
-    mockCacheState(true)
-    mockSuccessfulRepositoryResponse()
+      mockCacheState(true)
+      mockSuccessfulRepositoryResponse()
 
-    sync.setOnCompleteListener(onCompleteListener)
-    sync.sync(true)
-    advanceTimeBy(TASK_DELAY)
-    assertThat(sync.isRunning()).isTrue()
-    advanceTimeBy(TASK_DELAY)
-    assertThat(sync.isRunning()).isTrue()
-    advanceTimeBy(5 * TASK_DELAY)
+      sync.setOnCompleteListener(onCompleteListener)
+      sync.sync(true)
+      advanceTimeBy(TASK_DELAY)
+      assertThat(sync.isRunning()).isTrue()
+      advanceTimeBy(TASK_DELAY)
+      assertThat(sync.isRunning()).isTrue()
+      advanceTimeBy(5 * TASK_DELAY)
 
-    verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
-    verify(exactly = 1) { onCompleteListener.onTermination() }
-    verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-    verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
+      verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
+      verify(exactly = 1) { onCompleteListener.onTermination() }
+      verify(exactly = 0) { onCompleteListener.onFailure(any()) }
+      verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
 
-    assertThat(sync.isRunning()).isFalse()
-  }
-
-  @Test
-  fun nonEmptyLibraryAutoSync() = runTest(testDispatcher) {
-    val onCompleteListener = setupOnCompleteListener()
-    val sync = scope.getInstance(LibrarySyncInteractor::class.java)
-
-    mockCacheState(false)
-    mockSuccessfulRepositoryResponse()
-
-    sync.setOnCompleteListener(onCompleteListener)
-    sync.sync(true)
-
-    advanceTimeBy(TASK_DELAY)
-
-    verify(exactly = 0) { onCompleteListener.onSuccess(any()) }
-    verify(exactly = 1) { onCompleteListener.onTermination() }
-    verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-    verify(exactly = 0) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
-
-    assertThat(sync.isRunning()).isFalse()
-  }
+      assertThat(sync.isRunning()).isFalse()
+    }
 
   @Test
-  fun nonEmptyLibraryManualSyncTwiceConsecutiveCalled() = runTest(testDispatcher) {
-    val onCompleteListener = setupOnCompleteListener()
-    val sync = scope.getInstance(LibrarySyncInteractor::class.java)
+  fun nonEmptyLibraryAutoSync() =
+    runTest(testDispatcher) {
+      val onCompleteListener = setupOnCompleteListener()
+      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
-    mockCacheState(false)
-    mockSuccessfulRepositoryResponse()
+      mockCacheState(false)
+      mockSuccessfulRepositoryResponse()
 
-    sync.setOnCompleteListener(onCompleteListener)
-    sync.sync()
-    sync.sync()
+      sync.setOnCompleteListener(onCompleteListener)
+      sync.sync(true)
 
-    advanceTimeBy(TASK_DELAY)
-    assertThat(sync.isRunning()).isTrue()
-    advanceTimeBy(TASK_DELAY)
-    assertThat(sync.isRunning()).isTrue()
-    advanceTimeBy(5 * TASK_DELAY)
+      advanceTimeBy(TASK_DELAY)
 
-    verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
-    verify(exactly = 1) { onCompleteListener.onTermination() }
-    verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-    verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
+      verify(exactly = 0) { onCompleteListener.onSuccess(any()) }
+      verify(exactly = 1) { onCompleteListener.onTermination() }
+      verify(exactly = 0) { onCompleteListener.onFailure(any()) }
+      verify(exactly = 0) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
 
-    assertThat(sync.isRunning()).isFalse()
-  }
+      assertThat(sync.isRunning()).isFalse()
+    }
 
   @Test
-  fun nonEmptyLibraryManualSyncAndSecondAfterCompletion() = runTest(testDispatcher) {
-    var onCompleteListener = setupOnCompleteListener()
-    val sync = scope.getInstance(LibrarySyncInteractor::class.java)
+  fun nonEmptyLibraryManualSyncTwiceConsecutiveCalled() =
+    runTest(testDispatcher) {
+      val onCompleteListener = setupOnCompleteListener()
+      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
-    mockCacheState(false)
-    mockSuccessfulRepositoryResponse()
+      mockCacheState(false)
+      mockSuccessfulRepositoryResponse()
 
-    sync.setOnCompleteListener(onCompleteListener)
-    sync.sync()
+      sync.setOnCompleteListener(onCompleteListener)
+      sync.sync()
+      sync.sync()
 
-    advanceTimeBy(TASK_DELAY)
-    assertThat(sync.isRunning())
-    advanceTimeBy(TASK_DELAY)
-    assertThat(sync.isRunning()).isTrue()
-    advanceTimeBy(5 * TASK_DELAY)
+      advanceTimeBy(TASK_DELAY)
+      assertThat(sync.isRunning()).isTrue()
+      advanceTimeBy(TASK_DELAY)
+      assertThat(sync.isRunning()).isTrue()
+      advanceTimeBy(5 * TASK_DELAY)
 
-    verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
-    verify(exactly = 1) { onCompleteListener.onTermination() }
-    verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-    verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
+      verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
+      verify(exactly = 1) { onCompleteListener.onTermination() }
+      verify(exactly = 0) { onCompleteListener.onFailure(any()) }
+      verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
 
-    assertThat(sync.isRunning()).isFalse()
-
-    clearMocks(onCompleteListener, bus)
-    every { bus.post(any()) } just Runs
-
-    onCompleteListener = setupOnCompleteListener()
-    sync.setOnCompleteListener(onCompleteListener)
-
-    sync.sync()
-
-    advanceTimeBy(TASK_DELAY)
-    assertThat(sync.isRunning()).isTrue()
-    advanceTimeBy(TASK_DELAY)
-    assertThat(sync.isRunning()).isTrue()
-    advanceTimeBy(5 * TASK_DELAY)
-
-    verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
-    verify(exactly = 1) { onCompleteListener.onTermination() }
-    verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-    verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
-
-    assertThat(sync.isRunning()).isFalse()
-  }
+      assertThat(sync.isRunning()).isFalse()
+    }
 
   @Test
-  fun nonEmptyLibraryManualSyncFailure() = runTest(testDispatcher) {
-    val onCompleteListener = setupOnCompleteListener()
-    val sync = scope.getInstance(LibrarySyncInteractor::class.java)
+  fun nonEmptyLibraryManualSyncAndSecondAfterCompletion() =
+    runTest(testDispatcher) {
+      var onCompleteListener = setupOnCompleteListener()
+      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
-    mockCacheState(false)
-    mockFailedRepositoryResponse()
+      mockCacheState(false)
+      mockSuccessfulRepositoryResponse()
 
-    sync.setOnCompleteListener(onCompleteListener)
-    sync.sync()
-    sync.sync()
+      sync.setOnCompleteListener(onCompleteListener)
+      sync.sync()
 
-    advanceTimeBy(TASK_DELAY / 2)
-    assertThat(sync.isRunning()).isTrue()
-    advanceTimeBy(5 * TASK_DELAY)
+      advanceTimeBy(TASK_DELAY)
+      assertThat(sync.isRunning())
+      advanceTimeBy(TASK_DELAY)
+      assertThat(sync.isRunning()).isTrue()
+      advanceTimeBy(5 * TASK_DELAY)
 
-    verify(exactly = 0) { onCompleteListener.onSuccess(any()) }
-    verify(exactly = 1) { onCompleteListener.onTermination() }
-    verify(exactly = 1) { onCompleteListener.onFailure(ofType(Exception::class)) }
-    verify(exactly = 0) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
+      verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
+      verify(exactly = 1) { onCompleteListener.onTermination() }
+      verify(exactly = 0) { onCompleteListener.onFailure(any()) }
+      verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
 
-    assertThat(sync.isRunning()).isFalse()
-  }
+      assertThat(sync.isRunning()).isFalse()
+
+      clearMocks(onCompleteListener, bus)
+      every { bus.post(any()) } just Runs
+
+      onCompleteListener = setupOnCompleteListener()
+      sync.setOnCompleteListener(onCompleteListener)
+
+      sync.sync()
+
+      advanceTimeBy(TASK_DELAY)
+      assertThat(sync.isRunning()).isTrue()
+      advanceTimeBy(TASK_DELAY)
+      assertThat(sync.isRunning()).isTrue()
+      advanceTimeBy(5 * TASK_DELAY)
+
+      verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
+      verify(exactly = 1) { onCompleteListener.onTermination() }
+      verify(exactly = 0) { onCompleteListener.onFailure(any()) }
+      verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
+
+      assertThat(sync.isRunning()).isFalse()
+    }
+
+  @Test
+  fun nonEmptyLibraryManualSyncFailure() =
+    runTest(testDispatcher) {
+      val onCompleteListener = setupOnCompleteListener()
+      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
+
+      mockCacheState(false)
+      mockFailedRepositoryResponse()
+
+      sync.setOnCompleteListener(onCompleteListener)
+      sync.sync()
+      sync.sync()
+
+      advanceTimeBy(TASK_DELAY / 2)
+      assertThat(sync.isRunning()).isTrue()
+      advanceTimeBy(5 * TASK_DELAY)
+
+      verify(exactly = 0) { onCompleteListener.onSuccess(any()) }
+      verify(exactly = 1) { onCompleteListener.onTermination() }
+      verify(exactly = 1) { onCompleteListener.onFailure(ofType(Exception::class)) }
+      verify(exactly = 0) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
+
+      assertThat(sync.isRunning()).isFalse()
+    }
 
   private fun setupOnCompleteListener(): LibrarySyncInteractor.OnCompleteListener {
     val onCompleteListener = mockk<LibrarySyncInteractor.OnCompleteListener>()
@@ -232,23 +240,24 @@ class LibrarySyncInteractorImplTest {
   }
 
   @Test
-  fun syncWithoutCompletionListener() = runTest(testDispatcher) {
-    val sync = scope.getInstance(LibrarySyncInteractor::class.java)
+  fun syncWithoutCompletionListener() =
+    runTest(testDispatcher) {
+      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
-    mockCacheState(false)
-    mockSuccessfulRepositoryResponse()
+      mockCacheState(false)
+      mockSuccessfulRepositoryResponse()
 
-    sync.sync()
+      sync.sync()
 
-    advanceTimeBy(TASK_DELAY)
-    assertThat(sync.isRunning()).isTrue()
-    advanceTimeBy(TASK_DELAY)
-    assertThat(sync.isRunning()).isTrue()
-    advanceTimeBy(5 * TASK_DELAY)
+      advanceTimeBy(TASK_DELAY)
+      assertThat(sync.isRunning()).isTrue()
+      advanceTimeBy(TASK_DELAY)
+      assertThat(sync.isRunning()).isTrue()
+      advanceTimeBy(5 * TASK_DELAY)
 
-    assertThat(sync.isRunning()).isFalse()
-    verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
-  }
+      assertThat(sync.isRunning()).isFalse()
+      verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
+    }
 
   private fun mockCacheState(isEmpty: Boolean) {
     coEvery { genreRepository.cacheIsEmpty() } returns isEmpty

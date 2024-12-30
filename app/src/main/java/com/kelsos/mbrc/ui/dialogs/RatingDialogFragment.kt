@@ -17,9 +17,9 @@ import toothpick.Toothpick
 import javax.inject.Inject
 
 class RatingDialogFragment : DialogFragment() {
-
   @Inject
   lateinit var bus: RxBus
+
   @Inject
   lateinit var model: MainDataModel
   private var ratingBar: RatingBar? = null
@@ -45,10 +45,11 @@ class RatingDialogFragment : DialogFragment() {
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     rating = model.rating
-    val dialog = MaterialAlertDialogBuilder(requireContext())
-      .setTitle(R.string.rate_the_playing_track)
-      .setView(R.layout.ui_dialog_rating)
-      .show()
+    val dialog =
+      MaterialAlertDialogBuilder(requireContext())
+        .setTitle(R.string.rate_the_playing_track)
+        .setView(R.layout.ui_dialog_rating)
+        .show()
 
     ratingBar = dialog.findViewById(R.id.ratingBar)
     ratingBar!!.setOnRatingBarChangeListener { _, ratingValue, isUserInitiated ->

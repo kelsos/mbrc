@@ -7,15 +7,15 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 class NotificationManagerCompatProvider
-@Inject
-constructor(context: Application) : Provider<NotificationManagerCompat> {
-  private val context: Context
+  @Inject
+  constructor(
+    context: Application,
+  ) : Provider<NotificationManagerCompat> {
+    private val context: Context
 
-  init {
-    this.context = context
-  }
+    init {
+      this.context = context
+    }
 
-  override fun get(): NotificationManagerCompat {
-    return NotificationManagerCompat.from(context)
+    override fun get(): NotificationManagerCompat = NotificationManagerCompat.from(context)
   }
-}

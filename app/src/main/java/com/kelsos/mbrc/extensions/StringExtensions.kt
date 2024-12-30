@@ -1,5 +1,3 @@
 package com.kelsos.mbrc.extensions
 
-fun String.escapeLike(): String {
-  return this.replace("%", "_")
-}
+fun String.escapeLike(): String = this.replace("%", "_")

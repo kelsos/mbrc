@@ -5,15 +5,12 @@ import com.kelsos.mbrc.networking.ApiBase
 import javax.inject.Inject
 
 class OutputApiImpl
-@Inject
-constructor(
-  private val apiBase: ApiBase
-) : OutputApi {
-  override suspend fun getOutputs(): OutputResponse {
-    return apiBase.getItem(Protocol.PlayerOutput, OutputResponse::class)
-  }
+  @Inject
+  constructor(
+    private val apiBase: ApiBase,
+  ) : OutputApi {
+    override suspend fun getOutputs(): OutputResponse = apiBase.getItem(Protocol.PlayerOutput, OutputResponse::class)
 
-  override suspend fun setOutput(active: String): OutputResponse {
-    return apiBase.getItem(Protocol.PlayerOutputSwitch, OutputResponse::class, active)
+    override suspend fun setOutput(active: String): OutputResponse =
+      apiBase.getItem(Protocol.PlayerOutputSwitch, OutputResponse::class, active)
   }
-}

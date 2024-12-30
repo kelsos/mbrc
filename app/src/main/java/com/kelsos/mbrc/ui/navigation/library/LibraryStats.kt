@@ -5,5 +5,5 @@ data class LibraryStats(
   val artists: Long,
   val albums: Long,
   val tracks: Long,
-  val playlists: Long
+  val playlists: Long,
 )

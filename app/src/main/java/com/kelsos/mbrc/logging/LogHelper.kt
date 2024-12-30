@@ -7,9 +7,7 @@ import java.io.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-
 object LogHelper {
-
   fun logsExist(context: Context): Single<Boolean> {
     return Single.fromCallable {
       val filesDir = context.filesDir
@@ -28,9 +26,10 @@ object LogHelper {
         throw FileNotFoundException(logDir.canonicalPath)
       }
 
-      val logFiles = logDir.listFiles().filter {
-        it.extension != "lck"
-      }
+      val logFiles =
+        logDir.listFiles().filter {
+          it.extension != "lck"
+        }
 
       if (logFiles.isEmpty()) {
         throw RuntimeException("No log files found")
@@ -74,7 +73,6 @@ object LogHelper {
         fos.close()
 
         return@fromCallable zipFile
-
       } catch (e: IOException) {
         throw RuntimeException(e)
       }
@@ -82,5 +80,4 @@ object LogHelper {
   }
 
   const val LOG_ZIP = "mbrc_logs.zip"
-
 }

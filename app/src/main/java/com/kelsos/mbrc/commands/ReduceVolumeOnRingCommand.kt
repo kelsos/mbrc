@@ -9,13 +9,15 @@ import com.kelsos.mbrc.services.SocketService
 import javax.inject.Inject
 
 class ReduceVolumeOnRingCommand
-@Inject constructor(private val model: MainDataModel, private val service: SocketService) :
-  ICommand {
-
-  override fun execute(e: IEvent) {
-    if (model.isMute || model.volume == 0) {
-      return
+  @Inject
+  constructor(
+    private val model: MainDataModel,
+    private val service: SocketService,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      if (model.isMute || model.volume == 0) {
+        return
+      }
+      service.sendData(SocketMessage.create(Protocol.PlayerVolume, (model.volume * 0.2).toInt()))
     }
-    service.sendData(SocketMessage.create(Protocol.PlayerVolume, (model.volume * 0.2).toInt()))
   }
-}

@@ -5,5 +5,5 @@ import kotlinx.coroutines.CoroutineDispatcher
 data class AppDispatchers(
   val main: CoroutineDispatcher,
   val io: CoroutineDispatcher,
-  val db: CoroutineDispatcher
+  val db: CoroutineDispatcher,
 )

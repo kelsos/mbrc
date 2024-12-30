@@ -5,8 +5,10 @@ import com.kelsos.mbrc.constants.ProtocolEventType
 import com.kelsos.mbrc.data.UserAction
 import com.kelsos.mbrc.interfaces.IEvent
 
-data class MessageEvent(override var type: String = "", override var data: Any = "") : IEvent {
-
+data class MessageEvent(
+  override var type: String = "",
+  override var data: Any = "",
+) : IEvent {
   override val dataString: String
     get() {
       return when (data.javaClass) {
@@ -17,8 +19,6 @@ data class MessageEvent(override var type: String = "", override var data: Any =
     }
 
   companion object {
-    fun action(data: UserAction): MessageEvent {
-      return MessageEvent(ProtocolEventType.UserAction, data)
-    }
+    fun action(data: UserAction): MessageEvent = MessageEvent(ProtocolEventType.UserAction, data)
   }
 }

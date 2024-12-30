@@ -12,8 +12,9 @@ fun File.md5(): String? {
     var read: Int
     do {
       read = fin.read(buffer)
-      if (read > 0)
+      if (read > 0) {
         md5er.update(buffer, 0, read)
+      }
     } while (read != -1)
     fin.close()
     val digest = md5er.digest() ?: return null
@@ -25,5 +26,4 @@ fun File.md5(): String? {
   } catch (e: Exception) {
     return null
   }
-
 }

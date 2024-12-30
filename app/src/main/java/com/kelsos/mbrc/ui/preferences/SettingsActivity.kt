@@ -12,7 +12,6 @@ import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
 class SettingsActivity : FontActivity() {
-
   @Inject
   lateinit var bus: RxBus
   private lateinit var scope: Scope

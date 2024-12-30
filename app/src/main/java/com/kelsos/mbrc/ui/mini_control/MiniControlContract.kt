@@ -10,12 +10,17 @@ interface MiniControlView : BaseView {
 
   fun updateTrackInfo(trackInfo: TrackInfo)
 
-  fun updateState(@State state: String)
+  fun updateState(
+    @State state: String,
+  )
 }
 
 interface MiniControlPresenter : Presenter<MiniControlView> {
   fun load()
+
   fun next()
+
   fun previous()
+
   fun playPause()
 }

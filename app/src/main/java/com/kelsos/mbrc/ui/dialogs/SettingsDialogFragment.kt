@@ -11,7 +11,6 @@ import com.kelsos.mbrc.R
 import com.kelsos.mbrc.data.ConnectionSettings
 
 class SettingsDialogFragment : DialogFragment() {
-
   lateinit var hostEdit: EditText
   lateinit var nameEdit: EditText
   lateinit var portEdit: EditText
@@ -31,39 +30,38 @@ class SettingsDialogFragment : DialogFragment() {
     } catch (e: ClassCastException) {
       throw ClassCastException("$context must implement SettingsDialogListener")
     }
-
   }
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-     val dialog = MaterialAlertDialogBuilder(requireActivity())
-      .setView(R.layout.ui_dialog_settings)
-      .setTitle(if (edit) R.string.settings_dialog_edit else R.string.settings_dialog_add)
-      .setPositiveButton(if (edit) R.string.settings_dialog_save else R.string.settings_dialog_add) { dialog, _ ->
-        var shouldIClose = true
-        val hostname = hostEdit.text.toString()
-        val computerName = nameEdit.text.toString()
+    val dialog =
+      MaterialAlertDialogBuilder(requireActivity())
+        .setView(R.layout.ui_dialog_settings)
+        .setTitle(if (edit) R.string.settings_dialog_edit else R.string.settings_dialog_add)
+        .setPositiveButton(if (edit) R.string.settings_dialog_save else R.string.settings_dialog_add) { dialog, _ ->
+          var shouldIClose = true
+          val hostname = hostEdit.text.toString()
+          val computerName = nameEdit.text.toString()
 
-        if (hostname.isEmpty() || computerName.isEmpty()) {
-          shouldIClose = false
-        }
+          if (hostname.isEmpty() || computerName.isEmpty()) {
+            shouldIClose = false
+          }
 
-        val portText = portEdit.text.toString()
+          val portText = portEdit.text.toString()
 
-        val portNum = if (TextUtils.isEmpty(portText)) 0 else Integer.parseInt(portText)
-        if (isValid(portNum) && shouldIClose) {
-          settings.name = computerName
-          settings.address = hostname
-          settings.port = portNum
-          mListener?.onSave(settings)
-          dialog.dismiss()
-        }
-      }.setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-       .show()
-
+          val portNum = if (TextUtils.isEmpty(portText)) 0 else Integer.parseInt(portText)
+          if (isValid(portNum) && shouldIClose) {
+            settings.name = computerName
+            settings.address = hostname
+            settings.port = portNum
+            mListener?.onSave(settings)
+            dialog.dismiss()
+          }
+        }.setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
+        .show()
 
     hostEdit = dialog.findViewById(R.id.settings_dialog_host) ?: error("not found")
     nameEdit = dialog.findViewById(R.id.settings_dialog_name) ?: error("not found")
-    portEdit = dialog.findViewById(R.id.settings_dialog_port)  ?: error("not found")
+    portEdit = dialog.findViewById(R.id.settings_dialog_port) ?: error("not found")
     return dialog
   }
 
@@ -77,12 +75,13 @@ class SettingsDialogFragment : DialogFragment() {
     }
   }
 
-  private fun isValid(port: Int): Boolean = if (port < MIN_PORT || port > MAX_PORT) {
-    portEdit.error = getString(R.string.alert_invalid_port_number)
-    false
-  } else {
-    true
-  }
+  private fun isValid(port: Int): Boolean =
+    if (port < MIN_PORT || port > MAX_PORT) {
+      portEdit.error = getString(R.string.alert_invalid_port_number)
+      false
+    } else {
+      true
+    }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -96,7 +95,6 @@ class SettingsDialogFragment : DialogFragment() {
   }
 
   companion object {
-
     private const val MAX_PORT = 65535
     private const val MIN_PORT = 1
 

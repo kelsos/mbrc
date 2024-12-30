@@ -4,7 +4,8 @@ import toothpick.config.Module
 
 class AlbumTracksModule : Module() {
   init {
-    bind(AlbumTracksPresenter::class.java).to(AlbumTracksPresenterImpl::class.java)
+    bind(AlbumTracksPresenter::class.java)
+      .to(AlbumTracksPresenterImpl::class.java)
       .singletonInScope()
   }
 }

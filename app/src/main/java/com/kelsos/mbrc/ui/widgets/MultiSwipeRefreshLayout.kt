@@ -26,9 +26,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
  * child views triggering a refresh gesture. You set the views which can trigger the gesture via
  * [.setSwipeableChildren], providing it the child ids.
  */
-class MultiSwipeRefreshLayout :
-  SwipeRefreshLayout {
-
+class MultiSwipeRefreshLayout : SwipeRefreshLayout {
   private lateinit var swipeableChildren: Array<View?>
 
   constructor(context: Context) : super(context)
@@ -64,7 +62,7 @@ class MultiSwipeRefreshLayout :
     if (swipeableChildren.isNotEmpty()) {
       // Iterate through the scrollable children and check if any of them can not scroll up
       for (view in swipeableChildren) {
-        if (view != null && view.isShown && !view.canScrollVertically( -1)) {
+        if (view != null && view.isShown && !view.canScrollVertically(-1)) {
           // If the view is shown, and can not scroll upwards, return false and start the
           // gesture.
           return false

@@ -11,7 +11,7 @@ data class CoverInfo(
   @JsonProperty("album")
   val album: String,
   @JsonProperty("hash")
-  val hash: String
+  val hash: String,
 )
 
-fun CoverInfo.key(): String = RemoteUtils.sha1("${artist}_${album}")
+fun CoverInfo.key(): String = RemoteUtils.sha1("${artist}_$album")

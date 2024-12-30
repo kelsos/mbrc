@@ -21,8 +21,10 @@ import timber.log.Timber
 import java.io.File
 
 class WidgetNormal : AppWidgetProvider() {
-
-  override fun onReceive(context: Context?, intent: Intent?) {
+  override fun onReceive(
+    context: Context?,
+    intent: Intent?,
+  ) {
     super.onReceive(context, intent)
     if (intent == null || intent.action != AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
       return
@@ -48,11 +50,12 @@ class WidgetNormal : AppWidgetProvider() {
       info?.run {
         updateInfo(context, widgetManager, widgetsIds, this)
       }
-
     } else if (extras.getBoolean(UpdateWidgets.STATE, false)) {
       updatePlayState(
-        context, widgetManager, widgetsIds,
-        extras.getString(UpdateWidgets.PLAYER_STATE, PlayerState.UNDEFINED)
+        context,
+        widgetManager,
+        widgetsIds,
+        extras.getString(UpdateWidgets.PLAYER_STATE, PlayerState.UNDEFINED),
       )
     }
   }
@@ -60,7 +63,7 @@ class WidgetNormal : AppWidgetProvider() {
   override fun onUpdate(
     context: Context,
     appWidgetManager: AppWidgetManager,
-    appWidgetIds: IntArray
+    appWidgetIds: IntArray,
   ) {
     super.onUpdate(context, appWidgetManager, appWidgetIds)
     Timber.v("Update widget received")
@@ -79,7 +82,7 @@ class WidgetNormal : AppWidgetProvider() {
       views.setOnClickPendingIntent(R.id.widget_normal_next, getPendingIntent(NEXT, context))
       views.setOnClickPendingIntent(
         R.id.widget_normal_previous,
-        getPendingIntent(PREVIOUS, context)
+        getPendingIntent(PREVIOUS, context),
       )
 
       // Tell the AppWidgetManager to perform an update on the current app widget
@@ -87,12 +90,11 @@ class WidgetNormal : AppWidgetProvider() {
     }
   }
 
-
   private fun updateInfo(
     context: Context?,
     widgetManager: AppWidgetManager,
     widgetsIds: IntArray,
-    info: TrackInfo
+    info: TrackInfo,
   ) {
     if (context == null) {
       return
@@ -108,7 +110,8 @@ class WidgetNormal : AppWidgetProvider() {
   private fun updateCover(
     context: Context?,
     widgetManager: AppWidgetManager,
-    widgetsIds: IntArray, path: String
+    widgetsIds: IntArray,
+    path: String,
   ) {
     if (context == null) {
       return
@@ -119,7 +122,9 @@ class WidgetNormal : AppWidgetProvider() {
     val coverFile = File(path)
     if (coverFile.exists()) {
       Picasso.get().invalidate(coverFile)
-      Picasso.get().load(coverFile)
+      Picasso
+        .get()
+        .load(coverFile)
         .centerCrop()
         .resizeDimen(R.dimen.widget_normal_height, R.dimen.widget_normal_height)
         .into(widget, R.id.widget_normal_image, widgetsIds)
@@ -129,12 +134,11 @@ class WidgetNormal : AppWidgetProvider() {
     widgetManager.updateAppWidget(widgetsIds, widget)
   }
 
-
   private fun updatePlayState(
     context: Context?,
     manager: AppWidgetManager,
     widgetsIds: IntArray,
-    @State state: String
+    @State state: String,
   ) {
     if (context == null) {
       return
@@ -148,7 +152,7 @@ class WidgetNormal : AppWidgetProvider() {
         R.drawable.ic_action_pause
       } else {
         R.drawable.ic_action_play
-      }
+      },
     )
     manager.updateAppWidget(widgetsIds, widget)
   }

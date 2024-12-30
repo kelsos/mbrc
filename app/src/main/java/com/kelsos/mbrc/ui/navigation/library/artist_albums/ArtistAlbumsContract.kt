@@ -8,11 +8,18 @@ import com.raizlabs.android.dbflow.list.FlowCursorList
 
 interface ArtistAlbumsView : BaseView {
   fun update(albums: FlowCursorList<Album>)
-  fun queue(success: Boolean, tracks: Int)
+
+  fun queue(
+    success: Boolean,
+    tracks: Int,
+  )
 }
 
 interface ArtistAlbumsPresenter : Presenter<ArtistAlbumsView> {
   fun load(artist: String)
-  fun queue(@Queue.Action action: String, album: Album)
-}
 
+  fun queue(
+    @Queue.Action action: String,
+    album: Album,
+  )
+}

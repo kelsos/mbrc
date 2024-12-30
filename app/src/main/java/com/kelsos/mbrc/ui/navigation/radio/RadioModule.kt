@@ -5,7 +5,7 @@ import toothpick.config.Module
 class RadioModule : Module() {
   init {
     bind(RadioPresenter::class.java)
-        .to(RadioPresenterImpl::class.java)
-        .singletonInScope()
+      .to(RadioPresenterImpl::class.java)
+      .singletonInScope()
   }
 }

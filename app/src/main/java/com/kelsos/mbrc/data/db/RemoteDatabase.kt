@@ -17,21 +17,27 @@ object RemoteDatabase {
   const val NAME = "cache"
 
   @Migration(version = 3, database = RemoteDatabase::class)
-  class Migration3Genre(table: Class<Genre>) : AlterTableMigration<Genre>(table) {
+  class Migration3Genre(
+    table: Class<Genre>,
+  ) : AlterTableMigration<Genre>(table) {
     override fun onPreMigrate() {
       addColumn(SQLiteType.INTEGER, "date_added")
     }
   }
 
   @Migration(version = 3, database = RemoteDatabase::class)
-  class Migration3Artist(table: Class<Artist>) : AlterTableMigration<Artist>(table) {
+  class Migration3Artist(
+    table: Class<Artist>,
+  ) : AlterTableMigration<Artist>(table) {
     override fun onPreMigrate() {
       addColumn(SQLiteType.INTEGER, "date_added")
     }
   }
 
   @Migration(version = 3, database = RemoteDatabase::class)
-  class Migration3Album(table: Class<Album>) : AlterTableMigration<Album>(table) {
+  class Migration3Album(
+    table: Class<Album>,
+  ) : AlterTableMigration<Album>(table) {
     override fun onPreMigrate() {
       addColumn(SQLiteType.TEXT, "cover")
       addColumn(SQLiteType.INTEGER, "date_added")
@@ -39,21 +45,27 @@ object RemoteDatabase {
   }
 
   @Migration(version = 3, database = RemoteDatabase::class)
-  class Migration3Track(table: Class<Track>) : AlterTableMigration<Track>(table) {
+  class Migration3Track(
+    table: Class<Track>,
+  ) : AlterTableMigration<Track>(table) {
     override fun onPreMigrate() {
       addColumn(SQLiteType.INTEGER, "date_added")
     }
   }
 
   @Migration(version = 3, database = RemoteDatabase::class)
-  class Migration3NowPlaying(table: Class<NowPlaying>) : AlterTableMigration<NowPlaying>(table) {
+  class Migration3NowPlaying(
+    table: Class<NowPlaying>,
+  ) : AlterTableMigration<NowPlaying>(table) {
     override fun onPreMigrate() {
       addColumn(SQLiteType.INTEGER, "date_added")
     }
   }
 
   @Migration(version = 3, database = RemoteDatabase::class)
-  class Migration3Playlist(table: Class<Playlist>) : AlterTableMigration<Playlist>(table) {
+  class Migration3Playlist(
+    table: Class<Playlist>,
+  ) : AlterTableMigration<Playlist>(table) {
     override fun onPreMigrate() {
       addColumn(SQLiteType.INTEGER, "date_added")
     }

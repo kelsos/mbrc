@@ -20,11 +20,11 @@ import toothpick.smoothie.module.SmoothieActivityModule
 import java.net.ConnectException
 import javax.inject.Inject
 
-class PlaylistActivity : BaseActivity(),
+class PlaylistActivity :
+  BaseActivity(),
   PlaylistView,
   OnPlaylistPressedListener,
   OnRefreshListener {
-
   private val PRESENTER_SCOPE: Class<*> = Presenter::class.java
 
   private lateinit var swipeLayout: MultiSwipeRefreshLayout
@@ -34,6 +34,7 @@ class PlaylistActivity : BaseActivity(),
 
   @Inject
   lateinit var adapter: PlaylistAdapter
+
   @Inject
   lateinit var presenter: PlaylistPresenter
   private lateinit var scope: Scope
@@ -76,9 +77,7 @@ class PlaylistActivity : BaseActivity(),
     presenter.play(path)
   }
 
-  override fun active(): Int {
-    return R.id.nav_playlists
-  }
+  override fun active(): Int = R.id.nav_playlists
 
   override fun onDestroy() {
     Toothpick.closeScope(this)

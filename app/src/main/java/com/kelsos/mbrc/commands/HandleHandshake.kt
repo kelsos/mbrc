@@ -7,13 +7,15 @@ import com.kelsos.mbrc.services.ProtocolHandler
 import javax.inject.Inject
 
 class HandleHandshake
-@Inject constructor(private val handler: ProtocolHandler, private val model: ConnectionModel) :
-  ICommand {
-
-  override fun execute(e: IEvent) {
-    if (!(e.data as Boolean)) {
-      handler.resetHandshake()
-      model.setHandShakeDone(false)
+  @Inject
+  constructor(
+    private val handler: ProtocolHandler,
+    private val model: ConnectionModel,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      if (!(e.data as Boolean)) {
+        handler.resetHandshake()
+        model.setHandShakeDone(false)
+      }
     }
   }
-}

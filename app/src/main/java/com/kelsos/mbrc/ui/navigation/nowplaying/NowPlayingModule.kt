@@ -8,9 +8,6 @@ class NowPlayingModule private constructor() : Module() {
   }
 
   companion object {
-
-    fun create(): NowPlayingModule {
-      return NowPlayingModule()
-    }
+    fun create(): NowPlayingModule = NowPlayingModule()
   }
 }

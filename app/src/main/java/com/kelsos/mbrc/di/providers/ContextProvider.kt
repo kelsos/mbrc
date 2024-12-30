@@ -6,10 +6,9 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 class ContextProvider
-@Inject
-constructor(private val application: Application) : Provider<Context> {
-
-  override fun get(): Context {
-    return application.applicationContext
+  @Inject
+  constructor(
+    private val application: Application,
+  ) : Provider<Context> {
+    override fun get(): Context = application.applicationContext
   }
-}

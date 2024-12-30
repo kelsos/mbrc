@@ -15,9 +15,11 @@ object StoreSerializer : Serializer<Store> {
     }
   }
 
-  override suspend fun writeTo(t: Store, output: OutputStream) = t.writeTo(output)
+  override suspend fun writeTo(
+    t: Store,
+    output: OutputStream,
+  ) = t.writeTo(output)
 
   override val defaultValue: Store
     get() = Store.getDefaultInstance()
-
 }

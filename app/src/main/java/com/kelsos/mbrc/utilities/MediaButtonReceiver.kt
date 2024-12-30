@@ -12,7 +12,10 @@ class MediaButtonReceiver : BroadcastReceiver() {
   lateinit var handler: MediaIntentHandler
   private var scope: Scope? = null
 
-  override fun onReceive(context: Context, intent: Intent) {
+  override fun onReceive(
+    context: Context,
+    intent: Intent,
+  ) {
     if (scope == null) {
       scope = Toothpick.openScope(context.applicationContext)
       Toothpick.inject(this, scope)

@@ -13,8 +13,10 @@ object SocketAction {
   @IntDef(RESET, START, RETRY, TERMINATE, STOP)
   annotation class Action
 
-  fun name(@Action action: Int): String {
-    return when(action) {
+  fun name(
+    @Action action: Int,
+  ): String =
+    when (action) {
       RESET -> "Reset"
       START -> "Start"
       RETRY -> "Retry"
@@ -22,5 +24,4 @@ object SocketAction {
       STOP -> "Stop"
       else -> throw IllegalArgumentException("action $action is not recognised")
     }
-  }
 }

@@ -8,16 +8,11 @@ import androidx.core.content.pm.PackageInfoCompat
 import java.security.MessageDigest
 
 object RemoteUtils {
+  @Throws(PackageManager.NameNotFoundException::class)
+  fun Context.getVersion(): String? = packageManager.getPackageInfo(packageName, 0).versionName
 
   @Throws(PackageManager.NameNotFoundException::class)
-  fun Context.getVersion(): String? {
-    return packageManager.getPackageInfo(packageName, 0).versionName
-  }
-
-  @Throws(PackageManager.NameNotFoundException::class)
-  fun Context.getVersionCode(): Long {
-    return PackageInfoCompat.getLongVersionCode(packageManager.getPackageInfo(packageName, 0))
-  }
+  fun Context.getVersionCode(): Long = PackageInfoCompat.getLongVersionCode(packageManager.getPackageInfo(packageName, 0))
 
   fun coverBitmapSync(coverPath: String): Bitmap? {
     return try {
@@ -31,11 +26,15 @@ object RemoteUtils {
 
   fun sha1(input: String) = hashString("SHA-1", input)
 
-  private fun hashString(type: String, input: String): String {
+  private fun hashString(
+    type: String,
+    input: String,
+  ): String {
     val HEX_CHARS = "0123456789ABCDEF"
-    val bytes = MessageDigest
-      .getInstance(type)
-      .digest(input.toByteArray())
+    val bytes =
+      MessageDigest
+        .getInstance(type)
+        .digest(input.toByteArray())
     val result = StringBuilder(bytes.size * 2)
 
     bytes.forEach {

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class CoverPayload(
   @JsonProperty("status") val status: Int = NOT_FOUND,
-  @JsonProperty("cover") val cover: String = ""
+  @JsonProperty("cover") val cover: String = "",
 ) {
   companion object {
     const val READY = 1

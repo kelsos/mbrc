@@ -1,7 +1,6 @@
 package com.kelsos.mbrc.constants
 
 object Protocol {
-
   const val Player = "player"
   const val ProtocolTag = "protocol"
   const val PluginVersion = "pluginversion"

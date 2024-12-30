@@ -8,12 +8,22 @@ import com.raizlabs.android.dbflow.list.FlowCursorList
 
 interface BrowseGenrePresenter : Presenter<BrowseGenreView> {
   fun load()
+
   fun sync()
-  fun queue(@Queue.Action action: String, genre: Genre)
+
+  fun queue(
+    @Queue.Action action: String,
+    genre: Genre,
+  )
 }
 
 interface BrowseGenreView : BaseView {
   fun update(cursor: FlowCursorList<Genre>)
+
   fun search(term: String)
-  fun queue(success: Boolean, tracks: Int)
+
+  fun queue(
+    success: Boolean,
+    tracks: Int,
+  )
 }

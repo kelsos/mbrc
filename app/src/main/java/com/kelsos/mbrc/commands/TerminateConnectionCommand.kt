@@ -8,12 +8,14 @@ import com.kelsos.mbrc.services.SocketService
 import javax.inject.Inject
 
 class TerminateConnectionCommand
-@Inject constructor(private val service: SocketService, private val model: ConnectionModel) :
-  ICommand {
-
-  override fun execute(e: IEvent) {
-    model.setHandShakeDone(false)
-    model.setConnectionState("false")
-    service.socketManager(TERMINATE)
+  @Inject
+  constructor(
+    private val service: SocketService,
+    private val model: ConnectionModel,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      model.setHandShakeDone(false)
+      model.setConnectionState("false")
+      service.socketManager(TERMINATE)
+    }
   }
-}

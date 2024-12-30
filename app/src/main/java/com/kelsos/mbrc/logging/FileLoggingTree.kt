@@ -9,8 +9,9 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.SimpleFormatter
 
-class FileLoggingTree(context: Context) : Timber.DebugTree() {
-
+class FileLoggingTree(
+  context: Context,
+) : Timber.DebugTree() {
   private val handler: FileHandler
   private val logger: Logger
 
@@ -33,7 +34,12 @@ class FileLoggingTree(context: Context) : Timber.DebugTree() {
     logger.addHandler(handler)
   }
 
-  override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+  override fun log(
+    priority: Int,
+    tag: String?,
+    message: String,
+    t: Throwable?,
+  ) {
     val logMessage = "[$tag]\t$message"
 
     when (priority) {
@@ -45,9 +51,8 @@ class FileLoggingTree(context: Context) : Timber.DebugTree() {
     }
   }
 
-  override fun createStackElementTag(element: StackTraceElement): String {
-    return "${super.createStackElementTag(element)}:${element.lineNumber} [${Thread.currentThread().name}]"
-  }
+  override fun createStackElementTag(element: StackTraceElement): String =
+    "${super.createStackElementTag(element)}:${element.lineNumber} [${Thread.currentThread().name}]"
 
   companion object {
     const val LOGGER_NAME = "mbrc-logger"

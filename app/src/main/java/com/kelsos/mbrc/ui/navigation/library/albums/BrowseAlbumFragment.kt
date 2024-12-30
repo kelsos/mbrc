@@ -23,10 +23,10 @@ import toothpick.Toothpick
 import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
-class BrowseAlbumFragment : Fragment(),
+class BrowseAlbumFragment :
+  Fragment(),
   BrowseAlbumView,
   AlbumEntryAdapter.MenuItemSelectedListener {
-
   private lateinit var recycler: EmptyRecyclerView
   private lateinit var emptyView: View
   private lateinit var emptyTitle: TextView
@@ -40,7 +40,7 @@ class BrowseAlbumFragment : Fragment(),
   @Inject
   lateinit var presenter: BrowseAlbumPresenter
 
-  private lateinit var syncButton: Button;
+  private lateinit var syncButton: Button
 
   override fun search(term: String) {
     syncButton.isGone = term.isNotEmpty()
@@ -49,7 +49,7 @@ class BrowseAlbumFragment : Fragment(),
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View? {
     val view = inflater.inflate(R.layout.fragment_library_search, container, false)
     recycler = view.findViewById(R.id.library_data_list)
@@ -57,7 +57,7 @@ class BrowseAlbumFragment : Fragment(),
     emptyTitle = view.findViewById(R.id.list_empty_title)
 
     emptyTitle.setText(R.string.albums_list_empty)
-    syncButton = view.findViewById<Button>(R.id.list_empty_sync);
+    syncButton = view.findViewById<Button>(R.id.list_empty_sync)
     syncButton.setOnClickListener {
       presenter.sync()
     }
@@ -79,7 +79,7 @@ class BrowseAlbumFragment : Fragment(),
     val scope = Toothpick.openScopes(requireActivity().application, LIBRARY_SCOPE, activity, this)
     scope.installModules(
       SmoothieActivityModule(requireActivity()),
-      BrowseAlbumModule()
+      BrowseAlbumModule(),
     )
     super.onCreate(savedInstanceState)
     Toothpick.inject(this, scope)
@@ -87,7 +87,10 @@ class BrowseAlbumFragment : Fragment(),
     presenter.load()
   }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?,
+  ) {
     super.onViewCreated(view, savedInstanceState)
     recycler.adapter = adapter
     recycler.emptyView = emptyView
@@ -96,7 +99,10 @@ class BrowseAlbumFragment : Fragment(),
     adapter.setMenuItemSelectedListener(this)
   }
 
-  override fun onMenuItemSelected(menuItem: MenuItem, album: Album) {
+  override fun onMenuItemSelected(
+    menuItem: MenuItem,
+    album: Album,
+  ) {
     val action = actionHandler.albumSelected(menuItem, album, requireActivity())
     if (action != Queue.PROFILE) {
       presenter.queue(action, album)
@@ -116,13 +122,18 @@ class BrowseAlbumFragment : Fragment(),
     adapter.update(cursor)
   }
 
-  override fun queue(success: Boolean, tracks: Int) {
-    val message = if (success) {
-      getString(R.string.queue_result__success, tracks)
-    } else {
-      getString(R.string.queue_result__failure)
-    }
-    Snackbar.make(recycler, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
+  override fun queue(
+    success: Boolean,
+    tracks: Int,
+  ) {
+    val message =
+      if (success) {
+        getString(R.string.queue_result__success, tracks)
+      } else {
+        getString(R.string.queue_result__failure)
+      }
+    Snackbar
+      .make(recycler, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
       .setText(message)
       .show()
   }

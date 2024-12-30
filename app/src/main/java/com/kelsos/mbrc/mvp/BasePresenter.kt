@@ -9,8 +9,9 @@ import rx.subscriptions.CompositeSubscription
 import kotlin.coroutines.CoroutineContext
 
 open class BasePresenter<T : BaseView>(
-  private val dispatcher: CoroutineDispatcher = Dispatchers.Main
-) : Presenter<T>, LifecycleOwner {
+  private val dispatcher: CoroutineDispatcher = Dispatchers.Main,
+) : Presenter<T>,
+  LifecycleOwner {
   var view: T? = null
     private set
 

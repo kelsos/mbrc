@@ -2,7 +2,9 @@ package com.kelsos.mbrc.events.ui
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 
-class TrackMoved(node: ObjectNode) {
+class TrackMoved(
+  node: ObjectNode,
+) {
   val isSuccess: Boolean
   val from: Int
   val to: Int

@@ -1,3 +1,5 @@
 package com.kelsos.mbrc.events.ui
 
-class RatingChanged(val rating: Float)
+class RatingChanged(
+  val rating: Float,
+)

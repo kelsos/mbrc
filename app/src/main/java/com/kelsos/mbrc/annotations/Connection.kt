@@ -10,4 +10,4 @@ object Connection {
   @Retention(AnnotationRetention.SOURCE)
   @IntDef(OFF, ON, ACTIVE)
   annotation class Status
-}//no instance
+} // no instance

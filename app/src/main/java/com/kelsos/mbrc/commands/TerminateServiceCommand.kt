@@ -8,16 +8,16 @@ import com.kelsos.mbrc.interfaces.IEvent
 import javax.inject.Inject
 
 class TerminateServiceCommand
-@Inject constructor(
-  private val application: Application
-) : ICommand {
-
-  override fun execute(e: IEvent) {
-    if (RemoteService.SERVICE_STOPPING) {
-      return
-    }
-    application.run {
-      stopService(Intent(this, RemoteService::class.java))
+  @Inject
+  constructor(
+    private val application: Application,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      if (RemoteService.SERVICE_STOPPING) {
+        return
+      }
+      application.run {
+        stopService(Intent(this, RemoteService::class.java))
+      }
     }
   }
-}

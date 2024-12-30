@@ -12,20 +12,19 @@ import com.raizlabs.android.dbflow.annotation.Table
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 @JsonPropertyOrder("name", "url")
 @Table(name = "radio_station", database = RemoteDatabase::class)
 data class RadioStation(
-    @JsonProperty("name")
-    @Column(name = "name")
-    var name: String = "",
-    @JsonProperty("url")
-    @Column(name = "url")
-    var url: String = "",
-    @JsonIgnore
-    @Column(name="date_added")
-    var dateAdded: Long = 0,
-    @JsonIgnore
-    @PrimaryKey(autoincrement = true)
-    var id: Long = 0
+  @JsonProperty("name")
+  @Column(name = "name")
+  var name: String = "",
+  @JsonProperty("url")
+  @Column(name = "url")
+  var url: String = "",
+  @JsonIgnore
+  @Column(name = "date_added")
+  var dateAdded: Long = 0,
+  @JsonIgnore
+  @PrimaryKey(autoincrement = true)
+  var id: Long = 0,
 ) : Data

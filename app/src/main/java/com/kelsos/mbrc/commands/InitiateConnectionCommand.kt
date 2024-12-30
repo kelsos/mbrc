@@ -7,9 +7,11 @@ import com.kelsos.mbrc.services.SocketService
 import javax.inject.Inject
 
 class InitiateConnectionCommand
-@Inject constructor(private val socketService: SocketService) : ICommand {
-
-  override fun execute(e: IEvent) {
-    socketService.socketManager(START)
+  @Inject
+  constructor(
+    private val socketService: SocketService,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      socketService.socketManager(START)
+    }
   }
-}

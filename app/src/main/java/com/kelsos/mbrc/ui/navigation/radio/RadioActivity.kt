@@ -1,4 +1,4 @@
-package com.kelsos.mbrc.ui.navigation.radio;
+package com.kelsos.mbrc.ui.navigation.radio
 
 import android.os.Bundle
 import android.view.View
@@ -20,11 +20,11 @@ import toothpick.Toothpick
 import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
-class RadioActivity : BaseActivity(),
+class RadioActivity :
+  BaseActivity(),
   RadioView,
   SwipeRefreshLayout.OnRefreshListener,
   OnRadioPressedListener {
-
   private val PRESENTER_SCOPE: Class<*> = Presenter::class.java
 
   private lateinit var swipeLayout: MultiSwipeRefreshLayout
@@ -36,11 +36,10 @@ class RadioActivity : BaseActivity(),
   private lateinit var emptyViewProgress: ProgressBar
 
   @Inject lateinit var presenter: RadioPresenter
+
   @Inject lateinit var adapter: RadioAdapter
 
-  override fun active(): Int {
-    return R.id.nav_radio
-  }
+  override fun active(): Int = R.id.nav_radio
 
   private lateinit var scope: Scope
 

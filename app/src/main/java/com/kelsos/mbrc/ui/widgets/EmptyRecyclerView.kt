@@ -19,7 +19,7 @@ class EmptyRecyclerView : RecyclerView {
   constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(
     context,
     attrs,
-    defStyle
+    defStyle,
   )
 
   internal fun checkIfEmpty() {
@@ -43,4 +43,3 @@ class EmptyRecyclerView : RecyclerView {
     adapter?.registerAdapterDataObserver(observer)
   }
 }
-

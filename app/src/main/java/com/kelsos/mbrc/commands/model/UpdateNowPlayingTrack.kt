@@ -19,40 +19,39 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class UpdateNowPlayingTrack
-@Inject
-constructor(
-  private val model: MainDataModel,
-  private val context: Application,
-  private val bus: RxBus,
-  private val cache: ModelCache,
-  dispatchers: AppDispatchers
-) : ICommand {
+  @Inject
+  constructor(
+    private val model: MainDataModel,
+    private val context: Application,
+    private val bus: RxBus,
+    private val cache: ModelCache,
+    dispatchers: AppDispatchers,
+  ) : ICommand {
+    private val job = SupervisorJob()
+    private val scope = CoroutineScope(job + dispatchers.io)
 
-  private val job = SupervisorJob()
-  private val scope = CoroutineScope(job + dispatchers.io)
+    override fun execute(e: IEvent) {
+      val node = e.data as ObjectNode
+      val artist = node.path("artist").textValue()
+      val album = node.path("album").textValue()
+      val title = node.path("title").textValue()
+      val year = node.path("year").textValue()
+      val path = node.path("path").textValue()
+      model.trackInfo = TrackInfo(artist, title, album, year, path)
+      save(model.trackInfo)
+      bus.post(RemoteClientMetaData(model.trackInfo, model.coverPath, model.duration))
+      bus.post(TrackInfoChangeEvent(model.trackInfo))
+      UpdateWidgets.updateTrackInfo(context, model.trackInfo)
+    }
 
-  override fun execute(e: IEvent) {
-    val node = e.data as ObjectNode
-    val artist = node.path("artist").textValue()
-    val album = node.path("album").textValue()
-    val title = node.path("title").textValue()
-    val year = node.path("year").textValue()
-    val path = node.path("path").textValue()
-    model.trackInfo = TrackInfo(artist, title, album, year, path)
-    save(model.trackInfo)
-    bus.post(RemoteClientMetaData(model.trackInfo, model.coverPath, model.duration))
-    bus.post(TrackInfoChangeEvent(model.trackInfo))
-    UpdateWidgets.updateTrackInfo(context, model.trackInfo)
-  }
-
-  private fun save(info: TrackInfo) {
-    scope.launch {
-      try {
-        cache.persistInfo(info)
-        Timber.v("Playing track info successfully persisted")
-      } catch (e: Exception) {
-        Timber.v(e, "Failed to persist the playing track info")
+    private fun save(info: TrackInfo) {
+      scope.launch {
+        try {
+          cache.persistInfo(info)
+          Timber.v("Playing track info successfully persisted")
+        } catch (e: Exception) {
+          Timber.v(e, "Failed to persist the playing track info")
+        }
       }
     }
   }
-}

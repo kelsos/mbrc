@@ -3,18 +3,19 @@ package com.kelsos.mbrc.changelog
 import android.content.Context
 import android.util.Xml
 import androidx.annotation.RawRes
-
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.io.InputStream
 
-class ChangelogParser(private val context: Context) {
+class ChangelogParser(
+  private val context: Context,
+) {
   private val ns: String? = null
 
-  fun changelog(@RawRes resId: Int): List<ChangeLogEntry> {
-    return parse(context.resources.openRawResource(resId))
-  }
+  fun changelog(
+    @RawRes resId: Int,
+  ): List<ChangeLogEntry> = parse(context.resources.openRawResource(resId))
 
   @Throws(XmlPullParserException::class, IOException::class)
   private fun parse(inputStream: InputStream): List<ChangeLogEntry> {
@@ -62,7 +63,8 @@ class ChangelogParser(private val context: Context) {
       when (val name = parser.name) {
         TAG_BUG,
         TAG_FEATURE,
-        TAG_REMOVED -> {
+        TAG_REMOVED,
+        -> {
           val text = readEntry(parser, name)
           val element = ChangeLogEntry.Entry(text, getType(name))
           entries.add(element)
@@ -75,17 +77,20 @@ class ChangelogParser(private val context: Context) {
 
   // Processes summary tags in the feed.
   @Throws(IOException::class, XmlPullParserException::class)
-  private fun readEntry(parser: XmlPullParser, name: String): String {
+  private fun readEntry(
+    parser: XmlPullParser,
+    name: String,
+  ): String {
     parser.require(XmlPullParser.START_TAG, ns, name)
-    val text = readText(parser)
-      .replace("\n", " ")
-      .replace("\\s+".toRegex(), " ")
-      .replace("\\[".toRegex(), "<")
-      .replace("]".toRegex(), ">")
+    val text =
+      readText(parser)
+        .replace("\n", " ")
+        .replace("\\s+".toRegex(), " ")
+        .replace("\\[".toRegex(), "<")
+        .replace("]".toRegex(), ">")
     parser.require(XmlPullParser.END_TAG, ns, name)
     return text
   }
-
 
   // For the tags title and summary, extracts their text values.
   @Throws(IOException::class, XmlPullParserException::class)
@@ -97,7 +102,6 @@ class ChangelogParser(private val context: Context) {
     }
     return result
   }
-
 
   @Throws(XmlPullParserException::class, IOException::class)
   private fun skip(parser: XmlPullParser) {
@@ -113,7 +117,6 @@ class ChangelogParser(private val context: Context) {
     }
   }
 
-
   companion object {
     private const val TAG_CHANGELOG = "changelog"
     private const val TAG_VERSION = "version"
@@ -123,13 +126,12 @@ class ChangelogParser(private val context: Context) {
     private const val ATTRIBUTE_VERSION = "version"
     private const val ATTRIBUTE_RELEASE = "release"
 
-    fun getType(type: String): EntryType {
-      return when(type) {
+    fun getType(type: String): EntryType =
+      when (type) {
         TAG_REMOVED -> EntryType.REMOVED
         TAG_FEATURE -> EntryType.FEATURE
         TAG_BUG -> EntryType.BUG
         else -> throw IllegalArgumentException("$type is not supported")
       }
-    }
   }
 }

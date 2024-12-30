@@ -21,10 +21,10 @@ import toothpick.Toothpick
 import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
-class GenreArtistsActivity : FontActivity(),
+class GenreArtistsActivity :
+  FontActivity(),
   GenreArtistsView,
   MenuItemSelectedListener {
-
   private lateinit var recyclerView: EmptyRecyclerView
   private lateinit var toolbar: MaterialToolbar
   private lateinit var emptyView: ConstraintLayout
@@ -47,7 +47,7 @@ class GenreArtistsActivity : FontActivity(),
     scope = Toothpick.openScopes(application, this)
     scope!!.installModules(
       SmoothieActivityModule(this),
-      GenreArtistsModule()
+      GenreArtistsModule(),
     )
     Toothpick.inject(this, scope)
 
@@ -86,7 +86,10 @@ class GenreArtistsActivity : FontActivity(),
     return super.onOptionsItemSelected(item)
   }
 
-  override fun onMenuItemSelected(menuItem: MenuItem, artist: Artist) {
+  override fun onMenuItemSelected(
+    menuItem: MenuItem,
+    artist: Artist,
+  ) {
     val action = actionHandler.artistSelected(menuItem, artist, this)
     if (action != Queue.PROFILE) {
       presenter.queue(action, artist)
@@ -101,13 +104,18 @@ class GenreArtistsActivity : FontActivity(),
     adapter.update(data)
   }
 
-  override fun queue(success: Boolean, tracks: Int) {
-    val message = if (success) {
-      getString(R.string.queue_result__success, tracks)
-    } else {
-      getString(R.string.queue_result__failure)
-    }
-    Snackbar.make(recyclerView, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
+  override fun queue(
+    success: Boolean,
+    tracks: Int,
+  ) {
+    val message =
+      if (success) {
+        getString(R.string.queue_result__success, tracks)
+      } else {
+        getString(R.string.queue_result__failure)
+      }
+    Snackbar
+      .make(recyclerView, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
       .setText(message)
       .show()
   }
@@ -135,4 +143,3 @@ class GenreArtistsActivity : FontActivity(),
     const val GENRE_NAME = "genre_name"
   }
 }
-

@@ -8,14 +8,13 @@ import com.kelsos.mbrc.model.MainDataModel
 import javax.inject.Inject
 
 class UpdateRepeat
-@Inject
-constructor(
-  private val model: MainDataModel,
-  private val bus: RxBus
-) : ICommand {
-
-  override fun execute(e: IEvent) {
-    model.setRepeatState(e.dataString)
-    bus.post(RepeatChange(model.repeat))
+  @Inject
+  constructor(
+    private val model: MainDataModel,
+    private val bus: RxBus,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      model.setRepeatState(e.dataString)
+      bus.post(RepeatChange(model.repeat))
+    }
   }
-}

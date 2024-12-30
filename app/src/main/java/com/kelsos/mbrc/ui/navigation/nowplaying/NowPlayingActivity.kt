@@ -25,12 +25,12 @@ import toothpick.Toothpick
 import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
-class NowPlayingActivity : BaseActivity(),
+class NowPlayingActivity :
+  BaseActivity(),
   NowPlayingView,
   OnQueryTextListener,
   OnStartDragListener,
   NowPlayingListener {
-
   private lateinit var nowPlayingList: EmptyRecyclerView
   private lateinit var swipeRefreshLayout: MultiSwipeRefreshLayout
   private lateinit var emptyView: View
@@ -45,7 +45,6 @@ class NowPlayingActivity : BaseActivity(),
   private lateinit var scope: Scope
   private lateinit var touchListener: NowPlayingTouchListener
   private var itemTouchHelper: ItemTouchHelper? = null
-
 
   override fun onQueryTextSubmit(query: String): Boolean {
     closeSearch()
@@ -67,9 +66,7 @@ class NowPlayingActivity : BaseActivity(),
     return false
   }
 
-  override fun onQueryTextChange(newText: String): Boolean {
-    return true
-  }
+  override fun onQueryTextChange(newText: String): Boolean = true
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
     menuInflater.inflate(R.menu.nowplaying_search, menu)
@@ -98,17 +95,18 @@ class NowPlayingActivity : BaseActivity(),
     nowPlayingList.layoutManager = manager
     nowPlayingList.adapter = adapter
     nowPlayingList.itemAnimator?.changeDuration = 0
-    touchListener = NowPlayingTouchListener(this) {
-      if (it) {
-        swipeRefreshLayout.clearSwipeableChildren()
-        swipeRefreshLayout.isRefreshing = false
-        swipeRefreshLayout.isEnabled = false
-        swipeRefreshLayout.cancelPendingInputEvents()
-      } else {
-        swipeRefreshLayout.setSwipeableChildren(R.id.now_playing_list, R.id.empty_view)
-        swipeRefreshLayout.isEnabled = true
+    touchListener =
+      NowPlayingTouchListener(this) {
+        if (it) {
+          swipeRefreshLayout.clearSwipeableChildren()
+          swipeRefreshLayout.isRefreshing = false
+          swipeRefreshLayout.isEnabled = false
+          swipeRefreshLayout.cancelPendingInputEvents()
+        } else {
+          swipeRefreshLayout.setSwipeableChildren(R.id.now_playing_list, R.id.empty_view)
+          swipeRefreshLayout.isEnabled = true
+        }
       }
-    }
     nowPlayingList.addOnItemTouchListener(touchListener)
     val callback = SimpleItemTouchHelper(adapter)
     itemTouchHelper = ItemTouchHelper(callback)
@@ -144,7 +142,10 @@ class NowPlayingActivity : BaseActivity(),
     presenter.play(position + 1)
   }
 
-  override fun onMove(from: Int, to: Int) {
+  override fun onMove(
+    from: Int,
+    to: Int,
+  ) {
     presenter.moveTrack(from, to)
   }
 
@@ -152,9 +153,7 @@ class NowPlayingActivity : BaseActivity(),
     presenter.removeTrack(position)
   }
 
-  override fun active(): Int {
-    return R.id.nav_now_playing
-  }
+  override fun active(): Int = R.id.nav_now_playing
 
   override fun onDestroy() {
     Toothpick.closeScope(this)
@@ -170,7 +169,10 @@ class NowPlayingActivity : BaseActivity(),
     adapter.refresh()
   }
 
-  override fun trackChanged(trackInfo: TrackInfo, scrollToTrack: Boolean) {
+  override fun trackChanged(
+    trackInfo: TrackInfo,
+    scrollToTrack: Boolean,
+  ) {
     adapter.setPlayingTrack(trackInfo.path)
     if (scrollToTrack) {
       nowPlayingList.scrollToPosition(adapter.getPlayingTrackIndex())

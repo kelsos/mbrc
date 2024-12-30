@@ -27,8 +27,10 @@ import timber.log.Timber
 class SettingsFragment : PreferenceFragmentCompat() {
   private var bus: RxBus? = null
 
-
-  override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+  override fun onCreatePreferences(
+    savedInstanceState: Bundle?,
+    rootKey: String?,
+  ) {
     addPreferencesFromResource(R.xml.application_settings)
 
     val reduceOnIncoming =
@@ -87,17 +89,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
     mRevision?.summary = BuildConfig.GIT_SHA
   }
 
-
   private fun requestPhoneStatePermission() {
     requestPermissions(arrayOf(Manifest.permission.READ_PHONE_STATE), REQUEST_CODE)
   }
 
-  private fun hasPhonePermission(): Boolean {
-    return ActivityCompat.checkSelfPermission(
+  private fun hasPhonePermission(): Boolean =
+    ActivityCompat.checkSelfPermission(
       requireActivity(),
-      Manifest.permission.READ_PHONE_STATE
+      Manifest.permission.READ_PHONE_STATE,
     ) == PackageManager.PERMISSION_GRANTED
-  }
 
   private fun showLicenseDialog() {
     val args = Bundle()
@@ -117,15 +117,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
     dialog.show(requireActivity().supportFragmentManager, "licenses_dialogs")
   }
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return when (item.itemId) {
+  override fun onOptionsItemSelected(item: MenuItem): Boolean =
+    when (item.itemId) {
       android.R.id.home -> {
         requireActivity().finish()
         true
       }
       else -> super.onOptionsItemSelected(item)
     }
-  }
 
   fun setBus(bus: RxBus) {
     this.bus = bus
@@ -134,7 +133,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
   override fun onRequestPermissionsResult(
     requestCode: Int,
     permissions: Array<out String>,
-    grantResults: IntArray
+    grantResults: IntArray,
   ) {
     if (
       requestCode == REQUEST_CODE &&
@@ -156,11 +155,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
     } else {
       super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
-
   }
 
   companion object {
-
     private const val REQUEST_CODE = 15
 
     fun newInstance(bus: RxBus): SettingsFragment {

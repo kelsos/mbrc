@@ -8,14 +8,16 @@ data class TrackInfo(
   var title: String = "",
   var album: String = "",
   var year: String = "",
-  var path: String = ""
+  var path: String = "",
 ) : Parcelable {
   companion object {
     @JvmField
-    val CREATOR: Parcelable.Creator<TrackInfo> = object : Parcelable.Creator<TrackInfo> {
-      override fun createFromParcel(source: Parcel): TrackInfo = TrackInfo(source)
-      override fun newArray(size: Int): Array<TrackInfo?> = arrayOfNulls(size)
-    }
+    val CREATOR: Parcelable.Creator<TrackInfo> =
+      object : Parcelable.Creator<TrackInfo> {
+        override fun createFromParcel(source: Parcel): TrackInfo = TrackInfo(source)
+
+        override fun newArray(size: Int): Array<TrackInfo?> = arrayOfNulls(size)
+      }
   }
 
   constructor(source: Parcel) : this(
@@ -23,12 +25,15 @@ data class TrackInfo(
     source.readString() ?: "",
     source.readString() ?: "",
     source.readString() ?: "",
-    source.readString() ?: ""
+    source.readString() ?: "",
   )
 
   override fun describeContents() = 0
 
-  override fun writeToParcel(dest: Parcel, flags: Int) {
+  override fun writeToParcel(
+    dest: Parcel,
+    flags: Int,
+  ) {
     dest.writeString(artist)
     dest.writeString(title)
     dest.writeString(album)
@@ -37,6 +42,4 @@ data class TrackInfo(
   }
 }
 
-fun TrackInfo.isEmpty(): Boolean {
-  return artist.isEmpty() && title.isEmpty() && album.isEmpty() && year.isEmpty() && path.isEmpty()
-}
+fun TrackInfo.isEmpty(): Boolean = artist.isEmpty() && title.isEmpty() && album.isEmpty() && year.isEmpty() && path.isEmpty()

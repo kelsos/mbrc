@@ -7,8 +7,9 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class RemoteRadioDataSource
-@Inject constructor(private val service: ApiBase) : RemoteDataSource<RadioStation> {
-  override suspend fun fetch(): Flow<List<RadioStation>> {
-    return service.getAllPages(Protocol.RadioStations, RadioStation::class)
+  @Inject
+  constructor(
+    private val service: ApiBase,
+  ) : RemoteDataSource<RadioStation> {
+    override suspend fun fetch(): Flow<List<RadioStation>> = service.getAllPages(Protocol.RadioStations, RadioStation::class)
   }
-}

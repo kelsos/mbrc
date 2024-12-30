@@ -8,27 +8,30 @@ import javax.inject.Singleton
 
 @Singleton
 class LyricsModel
-@Inject
-constructor(private val bus: RxBus) {
-  var lyrics: String = ""
-    set(value) {
-      if (field == value) {
-        return
+  @Inject
+  constructor(
+    private val bus: RxBus,
+  ) {
+    var lyrics: String = ""
+      set(value) {
+        if (field == value) {
+          return
+        }
+        field =
+          value
+            .replace("<p>", "\r\n")
+            .replace("<br>", "\n")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", "\"")
+            .replace("&apos;", "'")
+            .replace("&amp;", "&")
+            .replace("<p>", "\r\n")
+            .replace("<br>", "\n")
+            .trim { it <= ' ' }
+
+        bus.post(LyricsUpdatedEvent(field))
       }
-      field = value.replace("<p>", "\r\n")
-        .replace("<br>", "\n")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&apos;", "'")
-        .replace("&amp;", "&")
-        .replace("<p>", "\r\n")
-        .replace("<br>", "\n")
-        .trim { it <= ' ' }
 
-      bus.post(LyricsUpdatedEvent(field))
-    }
-
-  var status: Int = LyricsPayload.NOT_FOUND
-
-}
+    var status: Int = LyricsPayload.NOT_FOUND
+  }

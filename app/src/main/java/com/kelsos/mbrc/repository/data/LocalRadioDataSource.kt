@@ -19,52 +19,67 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class LocalRadioDataSource
-@Inject
-constructor(val dispatchers: AppDispatchers) : LocalDataSource<RadioStation> {
-  override suspend fun deleteAll() = withContext(dispatchers.db) {
-    delete(RadioStation::class).execute()
-  }
+  @Inject
+  constructor(
+    val dispatchers: AppDispatchers,
+  ) : LocalDataSource<RadioStation> {
+    override suspend fun deleteAll() =
+      withContext(dispatchers.db) {
+        delete(RadioStation::class).execute()
+      }
 
-  override suspend fun saveAll(list: List<RadioStation>) = withContext(dispatchers.db) {
-    val adapter = modelAdapter<RadioStation>()
+    override suspend fun saveAll(list: List<RadioStation>) =
+      withContext(dispatchers.db) {
+        val adapter = modelAdapter<RadioStation>()
 
-    val transaction = FastStoreModelTransaction.insertBuilder(adapter)
-      .addAll(list)
-      .build()
+        val transaction =
+          FastStoreModelTransaction
+            .insertBuilder(adapter)
+            .addAll(list)
+            .build()
 
-    database<RemoteDatabase>().executeTransaction(transaction)
-  }
+        database<RemoteDatabase>().executeTransaction(transaction)
+      }
 
-  override suspend fun loadAllCursor(): FlowCursorList<RadioStation> = withContext(dispatchers.db) {
-    val modelQueriable = (select from RadioStation::class)
-    return@withContext FlowCursorList.Builder(RadioStation::class.java)
-      .modelQueriable(modelQueriable).build()
-  }
+    override suspend fun loadAllCursor(): FlowCursorList<RadioStation> =
+      withContext(dispatchers.db) {
+        val modelQueriable = (select from RadioStation::class)
+        return@withContext FlowCursorList
+          .Builder(RadioStation::class.java)
+          .modelQueriable(modelQueriable)
+          .build()
+      }
 
-  override suspend fun search(term: String): FlowCursorList<RadioStation> =
-    withContext(dispatchers.db) {
-      val modelQueriable =
-        (select from RadioStation::class where RadioStation_Table.name.like("%${term.escapeLike()}%"))
-      return@withContext FlowCursorList.Builder(RadioStation::class.java)
-        .modelQueriable(modelQueriable).build()
+    override suspend fun search(term: String): FlowCursorList<RadioStation> =
+      withContext(dispatchers.db) {
+        val modelQueriable =
+          (select from RadioStation::class where RadioStation_Table.name.like("%${term.escapeLike()}%"))
+        return@withContext FlowCursorList
+          .Builder(RadioStation::class.java)
+          .modelQueriable(modelQueriable)
+          .build()
+      }
+
+    override suspend fun isEmpty(): Boolean =
+      withContext(dispatchers.db) {
+        return@withContext SQLite.selectCountOf().from(RadioStation::class.java).longValue() == 0L
+      }
+
+    override suspend fun count(): Long =
+      withContext(dispatchers.db) {
+        return@withContext SQLite.selectCountOf().from(RadioStation::class.java).longValue()
+      }
+
+    override suspend fun removePreviousEntries(epoch: Long) {
+      withContext(dispatchers.db) {
+        SQLite
+          .delete()
+          .from(RadioStation::class.java)
+          .where(
+            clause(RadioStation_Table.date_added.lessThan(epoch)).or(
+              RadioStation_Table.date_added.isNull,
+            ),
+          ).execute()
+      }
     }
-
-  override suspend fun isEmpty(): Boolean = withContext(dispatchers.db){
-    return@withContext SQLite.selectCountOf().from(RadioStation::class.java).longValue() == 0L
   }
-
-  override suspend fun count(): Long = withContext(dispatchers.db){
-    return@withContext SQLite.selectCountOf().from(RadioStation::class.java).longValue()
-  }
-
-  override suspend fun removePreviousEntries(epoch: Long) {
-    withContext(dispatchers.db) {
-      SQLite.delete()
-        .from(RadioStation::class.java)
-        .where(
-          clause(RadioStation_Table.date_added.lessThan(epoch)).or(
-            RadioStation_Table.date_added.isNull))
-        .execute()
-    }
-  }
-}

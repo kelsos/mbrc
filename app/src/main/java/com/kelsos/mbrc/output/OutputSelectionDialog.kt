@@ -22,8 +22,9 @@ import com.kelsos.mbrc.di.modules.obtainViewModel
 import toothpick.Scope
 import toothpick.Toothpick
 
-class OutputSelectionDialog() : DialogFragment(), View.OnTouchListener {
-
+class OutputSelectionDialog :
+  DialogFragment(),
+  View.OnTouchListener {
   private var touchInitiated: Boolean = false
   private lateinit var fm: FragmentManager
   private lateinit var dialog: AlertDialog
@@ -34,20 +35,26 @@ class OutputSelectionDialog() : DialogFragment(), View.OnTouchListener {
 
   private var scope: Scope? = null
 
-  private val onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-    override fun onNothingSelected(parent: AdapterView<*>?) {
-    }
-
-    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-      if (!touchInitiated) {
-        return
+  private val onItemSelectedListener =
+    object : AdapterView.OnItemSelectedListener {
+      override fun onNothingSelected(parent: AdapterView<*>?) {
       }
 
-      val selectedOutput = availableOutputs.adapter.getItem(position) as String
-      viewModel.setOutput(selectedOutput)
-      touchInitiated = false
+      override fun onItemSelected(
+        parent: AdapterView<*>?,
+        view: View?,
+        position: Int,
+        id: Long,
+      ) {
+        if (!touchInitiated) {
+          return
+        }
+
+        val selectedOutput = availableOutputs.adapter.getItem(position) as String
+        viewModel.setOutput(selectedOutput)
+        touchInitiated = false
+      }
     }
-  }
 
   private lateinit var viewModel: OutputSelectionViewModel
 
@@ -99,13 +106,13 @@ class OutputSelectionDialog() : DialogFragment(), View.OnTouchListener {
 
     viewModel = obtainViewModel(OutputSelectionViewModel::class.java)
 
-    dialog = MaterialAlertDialogBuilder(context)
-      .setTitle(R.string.output_selection__select_output)
-      .setView(view)
-      .setNeutralButton(R.string.output_selection__close_dialog) { dialogInterface, _ ->
-        dialogInterface.dismiss()
-      }
-      .create()
+    dialog =
+      MaterialAlertDialogBuilder(context)
+        .setTitle(R.string.output_selection__select_output)
+        .setView(view)
+        .setNeutralButton(R.string.output_selection__close_dialog) { dialogInterface, _ ->
+          dialogInterface.dismiss()
+        }.create()
 
     return dialog
   }
@@ -115,7 +122,10 @@ class OutputSelectionDialog() : DialogFragment(), View.OnTouchListener {
     super.onDestroy()
   }
 
-  override fun onTouch(view: View?, event: MotionEvent?): Boolean {
+  override fun onTouch(
+    view: View?,
+    event: MotionEvent?,
+  ): Boolean {
     touchInitiated = true
     return view?.performClick() == true
   }
@@ -123,12 +133,13 @@ class OutputSelectionDialog() : DialogFragment(), View.OnTouchListener {
   private fun update(data: List<String>) {
     availableOutputs.onItemSelectedListener = null
     availableOutputs.setOnTouchListener(null)
-    val outputAdapter = ArrayAdapter(
-      requireContext(),
-      R.layout.item__output_device,
-      R.id.output_selection__output_device,
-      data
-    )
+    val outputAdapter =
+      ArrayAdapter(
+        requireContext(),
+        R.layout.item__output_device,
+        R.id.output_selection__output_device,
+        data,
+      )
     availableOutputs.adapter = outputAdapter
     availableOutputs.onItemSelectedListener = onItemSelectedListener
     availableOutputs.setOnTouchListener(this)
@@ -137,10 +148,11 @@ class OutputSelectionDialog() : DialogFragment(), View.OnTouchListener {
   }
 
   fun error(result: OutputSelectionResult) {
-    val resId = when (result) {
-      OutputSelectionResult.ConnectionError -> R.string.output_selection__connection_error
-      else -> R.string.output_selection__generic_error
-    }
+    val resId =
+      when (result) {
+        OutputSelectionResult.ConnectionError -> R.string.output_selection__connection_error
+        else -> R.string.output_selection__generic_error
+      }
     errorMessage.setText(resId)
     loadingProgress.isVisible = false
     availableOutputs.isInvisible = true

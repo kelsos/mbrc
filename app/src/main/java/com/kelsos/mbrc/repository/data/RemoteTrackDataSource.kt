@@ -7,8 +7,9 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class RemoteTrackDataSource
-@Inject constructor(private val service: ApiBase) : RemoteDataSource<Track> {
-  override suspend fun fetch(): Flow<List<Track>> {
-    return service.getAllPages(Protocol.LibraryBrowseTracks, Track::class)
+  @Inject
+  constructor(
+    private val service: ApiBase,
+  ) : RemoteDataSource<Track> {
+    override suspend fun fetch(): Flow<List<Track>> = service.getAllPages(Protocol.LibraryBrowseTracks, Track::class)
   }
-}

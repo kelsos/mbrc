@@ -14,5 +14,4 @@ object Queue {
   const val ADD_ALL = "add-all"
   const val PLAY_ALBUM = "play-album"
   const val PLAY_ARTIST = "play-artist"
-
 }

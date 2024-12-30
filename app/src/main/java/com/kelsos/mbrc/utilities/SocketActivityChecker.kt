@@ -17,10 +17,11 @@ class SocketActivityChecker {
   }
 
   private val subscribe: Subscription
-    get() = Completable.timer(DELAY.toLong(), TimeUnit.SECONDS).subscribe({
-      Timber.v("Ping was more than %d seconds ago", DELAY)
-      pingTimeoutListener?.onTimeout()
-    }) { Timber.v("Subscription failed") }
+    get() =
+      Completable.timer(DELAY.toLong(), TimeUnit.SECONDS).subscribe({
+        Timber.v("Ping was more than %d seconds ago", DELAY)
+        pingTimeoutListener?.onTimeout()
+      }) { Timber.v("Subscription failed") }
 
   fun stop() {
     Timber.v("Stopping activity checker")

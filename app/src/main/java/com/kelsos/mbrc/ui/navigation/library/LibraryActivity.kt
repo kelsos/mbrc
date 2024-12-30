@@ -22,10 +22,10 @@ import toothpick.Toothpick
 import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
-class LibraryActivity : BaseActivity(),
+class LibraryActivity :
+  BaseActivity(),
   LibraryView,
   OnQueryTextListener {
-
   private lateinit var pager: ViewPager2
   private lateinit var tabs: TabLayout
 
@@ -48,7 +48,6 @@ class LibraryActivity : BaseActivity(),
       supportActionBar?.setSubtitle(R.string.library_search_subtitle)
       searchMenuItem?.isVisible = false
       searchClear?.isVisible = true
-
     } else {
       presenter.search("")
     }
@@ -89,13 +88,14 @@ class LibraryActivity : BaseActivity(),
     }
 
     TabLayoutMediator(tabs, pager) { currentTab, currentPosition ->
-      currentTab.text = when (currentPosition) {
-        Search.SECTION_ALBUM -> getString(R.string.label_albums)
-        Search.SECTION_ARTIST -> getString(R.string.label_artists)
-        Search.SECTION_GENRE -> getString(R.string.label_genres)
-        Search.SECTION_TRACK -> getString(R.string.label_tracks)
-        else -> throw IllegalArgumentException("invalid position")
-      }
+      currentTab.text =
+        when (currentPosition) {
+          Search.SECTION_ALBUM -> getString(R.string.label_albums)
+          Search.SECTION_ARTIST -> getString(R.string.label_artists)
+          Search.SECTION_GENRE -> getString(R.string.label_genres)
+          Search.SECTION_TRACK -> getString(R.string.label_tracks)
+          else -> throw IllegalArgumentException("invalid position")
+        }
     }.attach()
   }
 
@@ -143,11 +143,12 @@ class LibraryActivity : BaseActivity(),
   }
 
   override fun showStats(stats: LibraryStats) {
-    val dialog = MaterialAlertDialogBuilder(this)
-      .setTitle(R.string.library_stats__title)
-      .setView(R.layout.library_stats__layout)
-      .setPositiveButton(android.R.string.ok) { md, _ -> md.dismiss() }
-      .show()
+    val dialog =
+      MaterialAlertDialogBuilder(this)
+        .setTitle(R.string.library_stats__title)
+        .setView(R.layout.library_stats__layout)
+        .setPositiveButton(android.R.string.ok) { md, _ -> md.dismiss() }
+        .show()
 
     dialog.findViewById<TextView>(R.id.library_stats__genre_value)?.text = "${stats.genres}"
     dialog.findViewById<TextView>(R.id.library_stats__artist_value)?.text = "${stats.artists}"
@@ -157,15 +158,17 @@ class LibraryActivity : BaseActivity(),
   }
 
   override fun syncComplete(stats: LibraryStats) {
-    val message = getString(
-      R.string.library__sync_complete,
-      stats.genres,
-      stats.artists,
-      stats.albums,
-      stats.tracks,
-      stats.playlists
-    )
-    Snackbar.make(pager, R.string.library__sync_complete, Snackbar.LENGTH_LONG)
+    val message =
+      getString(
+        R.string.library__sync_complete,
+        stats.genres,
+        stats.artists,
+        stats.albums,
+        stats.tracks,
+        stats.playlists,
+      )
+    Snackbar
+      .make(pager, R.string.library__sync_complete, Snackbar.LENGTH_LONG)
       .setText(message)
       .show()
   }
@@ -201,9 +204,7 @@ class LibraryActivity : BaseActivity(),
     this.albumArtistOnly?.isChecked = albumArtistOnly ?: false
   }
 
-  override fun active(): Int {
-    return R.id.nav_library
-  }
+  override fun active(): Int = R.id.nav_library
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)

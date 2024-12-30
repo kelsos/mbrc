@@ -26,7 +26,8 @@ import toothpick.Toothpick
 import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
-class ConnectionManagerActivity : FontActivity(),
+class ConnectionManagerActivity :
+  FontActivity(),
   ConnectionManagerView,
   SettingsDialogFragment.SettingsSaveListener,
   ConnectionAdapter.ConnectionChangeListener {
@@ -93,7 +94,7 @@ class ConnectionManagerActivity : FontActivity(),
       this,
       ConnectionSettingsChanged::class.java,
       { this.onConnectionSettingsChange(it) },
-      true
+      true,
     )
     bus.register(this, DiscoveryStopped::class.java, { this.onDiscoveryStopped(it) }, true)
     bus.register(this, NotifyUser::class.java, { this.onUserNotification(it) }, true)
@@ -124,14 +125,15 @@ class ConnectionManagerActivity : FontActivity(),
   private fun onDiscoveryStopped(event: DiscoveryStopped) {
     findViewById<LinearProgressIndicator>(R.id.connection_manager__progress).isGone = true
 
-    val message: String = when (event.reason) {
-      DiscoveryStop.NO_WIFI -> getString(R.string.con_man_no_wifi)
-      DiscoveryStop.NOT_FOUND -> getString(R.string.con_man_not_found)
-      DiscoveryStop.COMPLETE -> {
-        presenter.load()
-        getString(R.string.con_man_success)
+    val message: String =
+      when (event.reason) {
+        DiscoveryStop.NO_WIFI -> getString(R.string.con_man_no_wifi)
+        DiscoveryStop.NOT_FOUND -> getString(R.string.con_man_not_found)
+        DiscoveryStop.COMPLETE -> {
+          presenter.load()
+          getString(R.string.con_man_success)
+        }
       }
-    }
 
     Snackbar.make(recyclerView, message, Snackbar.LENGTH_SHORT).show()
   }

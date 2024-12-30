@@ -33,7 +33,6 @@ import javax.inject.Singleton
 
 @Singleton
 class RemoteService : Service() {
-
   private val controllerBinder = ControllerBinder()
 
   @Inject
@@ -58,14 +57,17 @@ class RemoteService : Service() {
       val manager = NotificationManagerCompat.from(this)
       manager.createNotificationChannel(notificationChannel)
     }
-    val cancelIntent = getPendingIntent(RemoteViewIntentBuilder.CANCEL,this)
-    val action = NotificationCompat.Action.Builder(
-      R.drawable.ic_close_black_24dp,
-      getString(android.R.string.cancel),
-      cancelIntent
-    ).build()
+    val cancelIntent = getPendingIntent(RemoteViewIntentBuilder.CANCEL, this)
+    val action =
+      NotificationCompat.Action
+        .Builder(
+          R.drawable.ic_close_black_24dp,
+          getString(android.R.string.cancel),
+          cancelIntent,
+        ).build()
 
-    return NotificationCompat.Builder(this, CHANNEL_ID)
+    return NotificationCompat
+      .Builder(this, CHANNEL_ID)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
       .setSmallIcon(R.drawable.ic_mbrc_status)
       .setContentTitle(getString(R.string.application_name))
@@ -74,9 +76,7 @@ class RemoteService : Service() {
       .build()
   }
 
-  override fun onBind(intent: Intent?): IBinder {
-    return controllerBinder
-  }
+  override fun onBind(intent: Intent?): IBinder = controllerBinder
 
   override fun onCreate() {
     super.onCreate()
@@ -89,15 +89,21 @@ class RemoteService : Service() {
     ContextCompat.registerReceiver(this, receiver, receiver.filter(this), ContextCompat.RECEIVER_NOT_EXPORTED)
   }
 
-  override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+  override fun onStartCommand(
+    intent: Intent?,
+    flags: Int,
+    startId: Int,
+  ): Int {
     Timber.d("Background Service::Started")
     startForeground(NOW_PLAYING_PLACEHOLDER, placeholderNotification())
     CommandRegistration.register(remoteController, scope)
-    threadPoolExecutor = Executors.newSingleThreadExecutor {
-      Thread(it, "message-thread")
-    }.apply {
-      execute(remoteController)
-    }
+    threadPoolExecutor =
+      Executors
+        .newSingleThreadExecutor {
+          Thread(it, "message-thread")
+        }.apply {
+          execute(remoteController)
+        }
 
     remoteController.executeCommand(MessageEvent(UserInputEventType.StartConnection))
     discovery.startDiscovery()
@@ -107,7 +113,7 @@ class RemoteService : Service() {
 
   override fun onDestroy() {
     super.onDestroy()
-    SERVICE_STOPPING = true;
+    SERVICE_STOPPING = true
     ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
     this.unregisterReceiver(receiver)
     handler.postDelayed({

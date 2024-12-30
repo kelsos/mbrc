@@ -9,24 +9,23 @@ import com.kelsos.mbrc.model.MainDataModel
 import javax.inject.Inject
 
 class UpdateShuffle
-@Inject
-constructor(
-  private val model: MainDataModel,
-  private val bus: RxBus
-) : ICommand {
+  @Inject
+  constructor(
+    private val model: MainDataModel,
+    private val bus: RxBus,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      var data: String? = e.dataString
 
-  override fun execute(e: IEvent) {
-    var data: String? = e.dataString
+      // Older plugin support, where the shuffle had boolean value.
+      if (data == null) {
+        data = if ((e.data as JsonNode).asBoolean()) ShuffleChange.SHUFFLE else ShuffleChange.OFF
+      }
 
-    // Older plugin support, where the shuffle had boolean value.
-    if (data == null) {
-      data = if ((e.data as JsonNode).asBoolean()) ShuffleChange.SHUFFLE else ShuffleChange.OFF
-    }
-
-    if (data != model.shuffle) {
-      //noinspection ResourceType
-      model.shuffle = data
-      bus.post(ShuffleChange(data))
+      if (data != model.shuffle) {
+        //noinspection ResourceType
+        model.shuffle = data
+        bus.post(ShuffleChange(data))
+      }
     }
   }
-}

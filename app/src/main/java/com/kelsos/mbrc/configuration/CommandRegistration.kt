@@ -43,35 +43,38 @@ import com.kelsos.mbrc.controller.RemoteController
 import toothpick.Scope
 
 object CommandRegistration {
-  fun register(controller: RemoteController, scope: Scope) {
+  fun register(
+    controller: RemoteController,
+    scope: Scope,
+  ) {
     controller.register(
       ProtocolEventType.ReduceVolume,
-      scope.getInstance(ReduceVolumeOnRingCommand::class.java)
+      scope.getInstance(ReduceVolumeOnRingCommand::class.java),
     )
     controller.register(
       ProtocolEventType.HandshakeComplete,
-      scope.getInstance(HandshakeCompletionActions::class.java)
+      scope.getInstance(HandshakeCompletionActions::class.java),
     )
     controller.register(
       ProtocolEventType.InformClientNotAllowed,
-      scope.getInstance(NotifyNotAllowedCommand::class.java)
+      scope.getInstance(NotifyNotAllowedCommand::class.java),
     )
     controller.register(
       ProtocolEventType.InitiateProtocolRequest,
-      scope.getInstance(ProtocolRequest::class.java)
+      scope.getInstance(ProtocolRequest::class.java),
     )
     controller.register(
       ProtocolEventType.PluginVersionCheck,
-      scope.getInstance(VersionCheckCommand::class.java)
+      scope.getInstance(VersionCheckCommand::class.java),
     )
     controller.register(
       ProtocolEventType.UserAction,
-      scope.getInstance(ProcessUserAction::class.java)
+      scope.getInstance(ProcessUserAction::class.java),
     )
 
     controller.register(
       Protocol.NowPlayingTrack,
-      scope.getInstance(UpdateNowPlayingTrack::class.java)
+      scope.getInstance(UpdateNowPlayingTrack::class.java),
     )
     controller.register(Protocol.NowPlayingCover, scope.getInstance(UpdateCover::class.java))
     controller.register(Protocol.NowPlayingRating, scope.getInstance(UpdateRating::class.java))
@@ -85,74 +88,74 @@ object CommandRegistration {
     controller.register(Protocol.NowPlayingLyrics, scope.getInstance(UpdateLyrics::class.java))
     controller.register(
       Protocol.NowPlayingLfmRating,
-      scope.getInstance(UpdateLfmRating::class.java)
+      scope.getInstance(UpdateLfmRating::class.java),
     )
     controller.register(
       Protocol.NowPlayingListRemove,
-      scope.getInstance(UpdateNowPlayingTrackRemoval::class.java)
+      scope.getInstance(UpdateNowPlayingTrackRemoval::class.java),
     )
     controller.register(
       Protocol.NowPlayingListMove,
-      scope.getInstance(UpdateNowPlayingTrackMoved::class.java)
+      scope.getInstance(UpdateNowPlayingTrackMoved::class.java),
     )
     controller.register(
       Protocol.NowPlayingPosition,
-      scope.getInstance(UpdatePlaybackPositionCommand::class.java)
+      scope.getInstance(UpdatePlaybackPositionCommand::class.java),
     )
     controller.register(
       Protocol.PluginVersion,
-      scope.getInstance(UpdatePluginVersionCommand::class.java)
+      scope.getInstance(UpdatePluginVersionCommand::class.java),
     )
     controller.register(Protocol.PING, scope.getInstance(ProtocolPingHandle::class.java))
     controller.register(Protocol.PONG, scope.getInstance(ProtocolPongHandle::class.java))
 
     controller.register(
       UserInputEventType.SettingsChanged,
-      scope.getInstance(RestartConnectionCommand::class.java)
+      scope.getInstance(RestartConnectionCommand::class.java),
     )
     controller.register(
       UserInputEventType.CancelNotification,
-      scope.getInstance(CancelNotificationCommand::class.java)
+      scope.getInstance(CancelNotificationCommand::class.java),
     )
     controller.register(
       UserInputEventType.StartConnection,
-      scope.getInstance(InitiateConnectionCommand::class.java)
+      scope.getInstance(InitiateConnectionCommand::class.java),
     )
     controller.register(
       UserInputEventType.TerminateConnection,
-      scope.getInstance(TerminateConnectionCommand::class.java)
+      scope.getInstance(TerminateConnectionCommand::class.java),
     )
     controller.register(
       UserInputEventType.ResetConnection,
-      scope.getInstance(RestartConnectionCommand::class.java)
+      scope.getInstance(RestartConnectionCommand::class.java),
     )
     controller.register(
       UserInputEventType.StartDiscovery,
-      scope.getInstance(StartDiscoveryCommand::class.java)
+      scope.getInstance(StartDiscoveryCommand::class.java),
     )
     controller.register(
       UserInputEventType.KeyVolumeUp,
-      scope.getInstance(KeyVolumeUpCommand::class.java)
+      scope.getInstance(KeyVolumeUpCommand::class.java),
     )
     controller.register(
       UserInputEventType.KeyVolumeDown,
-      scope.getInstance(KeyVolumeDownCommand::class.java)
+      scope.getInstance(KeyVolumeDownCommand::class.java),
     )
     controller.register(
       ApplicationEvents.SocketDataAvailable,
-      scope.getInstance(SocketDataAvailableCommand::class.java)
+      scope.getInstance(SocketDataAvailableCommand::class.java),
     )
     controller.register(
       ApplicationEvents.SocketStatusChanged,
-      scope.getInstance(ConnectionStatusChangedCommand::class.java)
+      scope.getInstance(ConnectionStatusChangedCommand::class.java),
     )
     controller.register(
       ApplicationEvents.SocketHandshakeUpdate,
-      scope.getInstance(HandleHandshake::class.java)
+      scope.getInstance(HandleHandshake::class.java),
     )
     controller.register(
       ApplicationEvents.TerminateService,
-      scope.getInstance(TerminateServiceCommand::class.java)
+      scope.getInstance(TerminateServiceCommand::class.java),
     )
   }
 
@@ -160,4 +163,3 @@ object CommandRegistration {
     controller.clearCommands()
   }
 }
-

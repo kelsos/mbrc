@@ -41,8 +41,9 @@ import com.kelsos.mbrc.ui.preferences.SettingsActivity
 import timber.log.Timber
 import javax.inject.Inject
 
-
-abstract class BaseActivity : FontActivity(), NavigationView.OnNavigationItemSelectedListener {
+abstract class BaseActivity :
+  FontActivity(),
+  NavigationView.OnNavigationItemSelectedListener {
   @Inject
   lateinit var bus: RxBus
 
@@ -58,6 +59,7 @@ abstract class BaseActivity : FontActivity(), NavigationView.OnNavigationItemSel
   private var connect: ImageView? = null
 
   protected abstract fun active(): Int
+
   protected var isConnected: Boolean = false
 
   private fun onConnectLongClick(): Boolean {
@@ -96,7 +98,10 @@ abstract class BaseActivity : FontActivity(), NavigationView.OnNavigationItemSel
     toggle!!.syncState()
   }
 
-  override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+  override fun onKeyUp(
+    keyCode: Int,
+    event: KeyEvent,
+  ): Boolean {
     when (keyCode) {
       KeyEvent.KEYCODE_VOLUME_UP -> return true
       KeyEvent.KEYCODE_VOLUME_DOWN -> return true
@@ -107,6 +112,7 @@ abstract class BaseActivity : FontActivity(), NavigationView.OnNavigationItemSel
   private fun onConnection(event: ConnectionStatusChangeEvent) {
     Timber.v("Handling new connection status %s", event.status)
     @StringRes val resId: Int
+
     @ColorRes val colorId: Int
     if (event.status == Connection.OFF) {
       resId = R.string.drawer_connection_status_off
@@ -136,7 +142,10 @@ abstract class BaseActivity : FontActivity(), NavigationView.OnNavigationItemSel
     }
   }
 
-  override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+  override fun onKeyDown(
+    keyCode: Int,
+    event: KeyEvent,
+  ): Boolean {
     when (keyCode) {
       KeyEvent.KEYCODE_VOLUME_UP -> {
         bus.post(MessageEvent(UserInputEventType.KeyVolumeUp))
@@ -160,7 +169,6 @@ abstract class BaseActivity : FontActivity(), NavigationView.OnNavigationItemSel
   }
 
   internal fun navigate(itemId: Int) {
-
     if (active() == itemId) {
       return
     }
@@ -198,7 +206,6 @@ abstract class BaseActivity : FontActivity(), NavigationView.OnNavigationItemSel
       stopService(Intent(this, RemoteService::class.java))
     }
 
-
     if (this is MainActivity) {
       finish()
     } else {
@@ -207,7 +214,6 @@ abstract class BaseActivity : FontActivity(), NavigationView.OnNavigationItemSel
       intent.flags = FLAG_ACTIVITY_CLEAR_TOP
       startActivity(intent)
     }
-
   }
 
   private fun createBackStack(intent: Intent) {
@@ -254,7 +260,7 @@ abstract class BaseActivity : FontActivity(), NavigationView.OnNavigationItemSel
       this,
       ConnectionStatusChangeEvent::class.java,
       { this.onConnection(it) },
-      true
+      true,
     )
     this.bus.post(RequestConnectionStateEvent())
   }

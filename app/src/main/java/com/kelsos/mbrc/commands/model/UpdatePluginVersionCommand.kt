@@ -9,17 +9,16 @@ import com.kelsos.mbrc.model.MainDataModel
 import javax.inject.Inject
 
 class UpdatePluginVersionCommand
-@Inject
-constructor(
-  private val model: MainDataModel,
-  private val bus: RxBus
-) : ICommand {
-
-  override fun execute(e: IEvent) {
-    if (e.dataString.isEmpty()) {
-      return
+  @Inject
+  constructor(
+    private val model: MainDataModel,
+    private val bus: RxBus,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      if (e.dataString.isEmpty()) {
+        return
+      }
+      model.pluginVersion = e.dataString
+      bus.post(MessageEvent(ProtocolEventType.PluginVersionCheck))
     }
-    model.pluginVersion = e.dataString
-    bus.post(MessageEvent(ProtocolEventType.PluginVersionCheck))
   }
-}

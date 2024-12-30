@@ -5,8 +5,9 @@ import com.jakewharton.rxrelay.PublishRelay
 import rx.Subscription
 import java.util.concurrent.TimeUnit
 
-class SeekBarThrottler(private val action: (Int) -> Unit) : SeekBar.OnSeekBarChangeListener {
-
+class SeekBarThrottler(
+  private val action: (Int) -> Unit,
+) : SeekBar.OnSeekBarChangeListener {
   var fromUser: Boolean = false
     private set
   private val progressRelay = PublishRelay.create<Int>()
@@ -14,12 +15,18 @@ class SeekBarThrottler(private val action: (Int) -> Unit) : SeekBar.OnSeekBarCha
 
   init {
     this.fromUser = false
-    subscription = progressRelay.throttleLast(600, TimeUnit.MILLISECONDS)
-      .distinct()
-      .subscribe { this.onProgressChange(it) }
+    subscription =
+      progressRelay
+        .throttleLast(600, TimeUnit.MILLISECONDS)
+        .distinct()
+        .subscribe { this.onProgressChange(it) }
   }
 
-  override fun onProgressChanged(seekBar: SeekBar, value: Int, fromUser: Boolean) {
+  override fun onProgressChanged(
+    seekBar: SeekBar,
+    value: Int,
+    fromUser: Boolean,
+  ) {
     if (fromUser) {
       progressRelay.call(value)
     }

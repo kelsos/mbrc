@@ -7,10 +7,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder("devices", "active")
 data class OutputResponse(
-
   @field:JsonProperty("devices")
   val devices: List<String> = emptyList(),
-
   @field:JsonProperty("active")
-  val active: String = ""
+  val active: String = "",
 )

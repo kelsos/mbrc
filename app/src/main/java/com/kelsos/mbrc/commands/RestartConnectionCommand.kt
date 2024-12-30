@@ -7,9 +7,11 @@ import com.kelsos.mbrc.services.SocketService
 import javax.inject.Inject
 
 class RestartConnectionCommand
-@Inject constructor(private val socket: SocketService) : ICommand {
-
-  override fun execute(e: IEvent) {
-    socket.socketManager(RESET)
+  @Inject
+  constructor(
+    private val socket: SocketService,
+  ) : ICommand {
+    override fun execute(e: IEvent) {
+      socket.socketManager(RESET)
+    }
   }
-}

@@ -38,7 +38,6 @@ import androidx.core.content.ContextCompat
 import com.kelsos.mbrc.R
 
 class CircleImageView : ImageView {
-
   private val mDrawableRect = RectF()
   private val mBorderRect = RectF()
 
@@ -83,7 +82,7 @@ class CircleImageView : ImageView {
   constructor(context: Context, attrs: AttributeSet, defStyle: Int = 0) : super(
     context,
     attrs,
-    defStyle
+    defStyle,
   ) {
 
     val a = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView, defStyle, 0)
@@ -110,9 +109,7 @@ class CircleImageView : ImageView {
     }
   }
 
-  override fun getScaleType(): ImageView.ScaleType {
-    return SCALE_TYPE
-  }
+  override fun getScaleType(): ImageView.ScaleType = SCALE_TYPE
 
   override fun setScaleType(scaleType: ImageView.ScaleType) {
     if (scaleType != SCALE_TYPE) {
@@ -141,28 +138,35 @@ class CircleImageView : ImageView {
         mDrawableRect.centerX(),
         mDrawableRect.centerY(),
         mDrawableRadius,
-        mFillPaint
+        mFillPaint,
       )
     }
     canvas.drawCircle(
       mDrawableRect.centerX(),
       mDrawableRect.centerY(),
       mDrawableRadius,
-      mBitmapPaint
+      mBitmapPaint,
     )
     if (mBorderWidth != 0) {
       canvas.drawCircle(mBorderRect.centerX(), mBorderRect.centerY(), mBorderRadius, mBorderPaint)
     }
   }
 
-  override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+  override fun onSizeChanged(
+    w: Int,
+    h: Int,
+    oldw: Int,
+    oldh: Int,
+  ) {
     super.onSizeChanged(w, h, oldw, oldh)
     setup()
   }
 
   var borderColor: Int
     get() = mBorderColor
-    set(@ColorInt borderColor) {
+    set(
+    @ColorInt borderColor
+    ) {
       if (borderColor == mBorderColor) {
         return
       }
@@ -172,13 +176,17 @@ class CircleImageView : ImageView {
       invalidate()
     }
 
-  fun setBorderColorResource(@ColorRes borderColorRes: Int) {
+  fun setBorderColorResource(
+    @ColorRes borderColorRes: Int,
+  ) {
     borderColor = ContextCompat.getColor(context, borderColorRes)
   }
 
   var fillColor: Int
     get() = mFillColor
-    set(@ColorInt fillColor) {
+    set(
+    @ColorInt fillColor
+    ) {
       if (fillColor == mFillColor) {
         return
       }
@@ -188,7 +196,9 @@ class CircleImageView : ImageView {
       invalidate()
     }
 
-  fun setFillColorResource(@ColorRes fillColorRes: Int) {
+  fun setFillColorResource(
+    @ColorRes fillColorRes: Int,
+  ) {
     fillColor = ContextCompat.getColor(context, fillColorRes)
   }
 
@@ -224,7 +234,9 @@ class CircleImageView : ImageView {
     initializeBitmap()
   }
 
-  override fun setImageResource(@DrawableRes resId: Int) {
+  override fun setImageResource(
+    @DrawableRes resId: Int,
+  ) {
     super.setImageResource(resId)
     initializeBitmap()
   }
@@ -244,9 +256,7 @@ class CircleImageView : ImageView {
     invalidate()
   }
 
-  override fun getColorFilter(): ColorFilter {
-    return mColorFilter!!
-  }
+  override fun getColorFilter(): ColorFilter = mColorFilter!!
 
   private fun applyColorFilter() {
     mBitmapPaint.colorFilter = mColorFilter
@@ -280,7 +290,6 @@ class CircleImageView : ImageView {
       e.printStackTrace()
       return null
     }
-
   }
 
   private fun initializeBitmap() {
@@ -325,10 +334,11 @@ class CircleImageView : ImageView {
     mBitmapWidth = mBitmap!!.width
 
     mBorderRect.set(calculateBounds())
-    mBorderRadius = Math.min(
-      (mBorderRect.height() - mBorderWidth) / 2.0f,
-      (mBorderRect.width() - mBorderWidth) / 2.0f
-    )
+    mBorderRadius =
+      Math.min(
+        (mBorderRect.height() - mBorderWidth) / 2.0f,
+        (mBorderRect.width() - mBorderWidth) / 2.0f,
+      )
 
     mDrawableRect.set(mBorderRect)
     if (!mBorderOverlay) {
@@ -371,14 +381,13 @@ class CircleImageView : ImageView {
     mShaderMatrix.setScale(scale, scale)
     mShaderMatrix.postTranslate(
       (dx + 0.5f).toInt() + mDrawableRect.left,
-      (dy + 0.5f).toInt() + mDrawableRect.top
+      (dy + 0.5f).toInt() + mDrawableRect.top,
     )
 
     mBitmapShader!!.setLocalMatrix(mShaderMatrix)
   }
 
   companion object {
-
     private val SCALE_TYPE = ImageView.ScaleType.CENTER_CROP
 
     private val BITMAP_CONFIG = Bitmap.Config.ARGB_8888
@@ -389,5 +398,4 @@ class CircleImageView : ImageView {
     private val DEFAULT_FILL_COLOR = Color.TRANSPARENT
     private val DEFAULT_BORDER_OVERLAY = false
   }
-
 }

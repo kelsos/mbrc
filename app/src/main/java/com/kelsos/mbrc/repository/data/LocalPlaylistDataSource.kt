@@ -19,49 +19,60 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class LocalPlaylistDataSource
-@Inject constructor(private val dispatchers: AppDispatchers) : LocalDataSource<Playlist> {
-  override suspend fun deleteAll() = withContext(dispatchers.db) {
-    delete(Playlist::class).execute()
-  }
+  @Inject
+  constructor(
+    private val dispatchers: AppDispatchers,
+  ) : LocalDataSource<Playlist> {
+    override suspend fun deleteAll() =
+      withContext(dispatchers.db) {
+        delete(Playlist::class).execute()
+      }
 
-  override suspend fun saveAll(list: List<Playlist>) = withContext(dispatchers.db) {
-    val adapter = modelAdapter<Playlist>()
+    override suspend fun saveAll(list: List<Playlist>) =
+      withContext(dispatchers.db) {
+        val adapter = modelAdapter<Playlist>()
 
-    val transaction = FastStoreModelTransaction.insertBuilder(adapter)
-      .addAll(list)
-      .build()
+        val transaction =
+          FastStoreModelTransaction
+            .insertBuilder(adapter)
+            .addAll(list)
+            .build()
 
-    database<RemoteDatabase>().executeTransaction(transaction)
-  }
+        database<RemoteDatabase>().executeTransaction(transaction)
+      }
 
-  override suspend fun loadAllCursor(): FlowCursorList<Playlist> = withContext(dispatchers.db) {
-    val query = (select from Playlist::class)
-    return@withContext FlowCursorList.Builder(Playlist::class.java).modelQueriable(query).build()
-  }
+    override suspend fun loadAllCursor(): FlowCursorList<Playlist> =
+      withContext(dispatchers.db) {
+        val query = (select from Playlist::class)
+        return@withContext FlowCursorList.Builder(Playlist::class.java).modelQueriable(query).build()
+      }
 
-  override suspend fun search(term: String): FlowCursorList<Playlist> =
-    withContext(dispatchers.db) {
-      val query = (select from Playlist::class where Playlist_Table.name.like("%${term.escapeLike()}%"))
-      return@withContext FlowCursorList.Builder(Playlist::class.java).modelQueriable(query).build()
+    override suspend fun search(term: String): FlowCursorList<Playlist> =
+      withContext(dispatchers.db) {
+        val query = (select from Playlist::class where Playlist_Table.name.like("%${term.escapeLike()}%"))
+        return@withContext FlowCursorList.Builder(Playlist::class.java).modelQueriable(query).build()
+      }
+
+    override suspend fun isEmpty(): Boolean =
+      withContext(dispatchers.db) {
+        return@withContext SQLite.selectCountOf().from(Playlist::class.java).longValue() == 0L
+      }
+
+    override suspend fun count(): Long =
+      withContext(dispatchers.db) {
+        return@withContext SQLite.selectCountOf().from(Playlist::class.java).longValue()
+      }
+
+    override suspend fun removePreviousEntries(epoch: Long) {
+      withContext(dispatchers.db) {
+        SQLite
+          .delete()
+          .from(Playlist::class.java)
+          .where(
+            clause(Playlist_Table.date_added.lessThan(epoch)).or(
+              Playlist_Table.date_added.isNull,
+            ),
+          ).execute()
+      }
     }
-
-  override suspend fun isEmpty(): Boolean = withContext(dispatchers.db) {
-    return@withContext SQLite.selectCountOf().from(Playlist::class.java).longValue() == 0L
   }
-
-  override suspend fun count(): Long = withContext(dispatchers.db) {
-    return@withContext SQLite.selectCountOf().from(Playlist::class.java).longValue()
-  }
-
-  override suspend fun removePreviousEntries(epoch: Long) {
-    withContext(dispatchers.db) {
-      SQLite.delete()
-        .from(Playlist::class.java)
-        .where(
-          clause(Playlist_Table.date_added.lessThan(epoch)).or(
-            Playlist_Table.date_added.isNull
-          )
-        ).execute()
-    }
-  }
-}

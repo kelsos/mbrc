@@ -142,14 +142,6 @@ android {
       outputFileName = "${defaultConfig.applicationId}-${variant.flavorName}-${variant.versionCode}-v${variant.versionName}.apk"
     }
   }
-
-  sourceSets {
-    androidTest.java.srcDirs += "src/androidTest/kotlin"
-    test.java.srcDirs += 'src/test/kotlin'
-    main.java.srcDirs += 'src/main/kotlin'
-    debug.java.srcDirs += 'src/debug/kotlin'
-    play.java.srcDirs += 'src/play/kotlin'
-  }
 }
 
 idea {

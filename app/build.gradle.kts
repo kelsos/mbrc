@@ -215,7 +215,6 @@ dependencies {
   testImplementation(libs.kotlin.coroutines.test)
   testImplementation(libs.mockk)
   testImplementation(libs.robolectric)
-  testImplementation(libs.threetenbp)
 
   implementation(libs.androidx.annotation)
   implementation(libs.androidx.appcompat)
@@ -247,7 +246,6 @@ dependencies {
   implementation(libs.rxjava)
   implementation(libs.rxkotlin)
   implementation(libs.rxrelay)
-  implementation(libs.threetenabp)
 
   kapt(libs.dbflow.processor)
   kapt(libs.toothpick.compiler)

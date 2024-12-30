@@ -44,11 +44,9 @@ rxandroid = "1.2.1"
 rxjava = "1.3.8"
 rxkotlin = "1.0.0"
 rxrelay = "1.2.0"
-threetenabp = "1.4.8"
 toothpick = "1.1.3"
 squareup-leakcanary = "2.14"
 squareup-okio = "3.9.1"
-threetenbp = "1.7.0"
 timber = "5.0.1"
 truth = "1.4.4"
 
@@ -106,8 +104,6 @@ squareup-picasso = { module = "com.squareup.picasso:picasso", version.ref = "pic
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 squareup-leakcanary = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "squareup-leakcanary" }
 squareup-okio = { module = "com.squareup.okio:okio", version.ref = "squareup-okio" }
-threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
-threetenbp = { module = "org.threeten:threetenbp", version.ref = "threetenbp" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 toothpick-compiler = { module = "com.github.stephanenicolas.toothpick:toothpick-compiler", version.ref = "toothpick" }
 toothpick-runtime = { module = "com.github.stephanenicolas.toothpick:toothpick-runtime", version.ref = "toothpick" }

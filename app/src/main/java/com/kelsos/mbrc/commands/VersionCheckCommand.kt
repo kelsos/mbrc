@@ -9,11 +9,11 @@ import com.kelsos.mbrc.interfaces.ICommand
 import com.kelsos.mbrc.interfaces.IEvent
 import com.kelsos.mbrc.model.MainDataModel
 import com.kelsos.mbrc.utilities.SettingsManager
-import org.threeten.bp.Instant
-import org.threeten.bp.temporal.ChronoUnit
 import timber.log.Timber
 import java.io.IOException
 import java.net.URL
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 class VersionCheckCommand

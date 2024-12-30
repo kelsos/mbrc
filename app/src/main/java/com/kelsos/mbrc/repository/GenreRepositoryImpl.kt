@@ -7,7 +7,7 @@ import com.kelsos.mbrc.repository.data.RemoteGenreDataSource
 import com.raizlabs.android.dbflow.list.FlowCursorList
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.withContext
-import org.threeten.bp.Instant
+import java.time.Instant
 import javax.inject.Inject
 
 class GenreRepositoryImpl

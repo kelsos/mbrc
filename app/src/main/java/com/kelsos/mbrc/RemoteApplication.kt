@@ -2,7 +2,6 @@ package com.kelsos.mbrc
 
 import android.app.Application
 import androidx.annotation.CallSuper
-import com.jakewharton.threetenabp.AndroidThreeTen
 import com.kelsos.mbrc.di.modules.RemoteModule
 import com.raizlabs.android.dbflow.config.FlowConfig
 import com.raizlabs.android.dbflow.config.FlowManager
@@ -21,9 +20,6 @@ open class RemoteApplication : Application() {
   }
 
   protected open fun initialize() {
-    if (!testMode()) {
-      AndroidThreeTen.init(this)
-    }
     initializeDbflow()
     initializeToothpick()
     initializeTimber()

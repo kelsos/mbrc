@@ -7,8 +7,8 @@ import com.kelsos.mbrc.R
 import com.kelsos.mbrc.logging.FileLoggingTree
 import com.kelsos.mbrc.utilities.RemoteUtils.getVersionCode
 import com.kelsos.mbrc.utilities.SettingsManager.Companion.NONE
-import org.threeten.bp.Instant
 import timber.log.Timber
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 

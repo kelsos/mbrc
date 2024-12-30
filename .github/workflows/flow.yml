@@ -3,51 +3,77 @@ name: CI
 on:
   pull_request:
     branches:
-      - master
+      - main
+      - development
   push:
     branches:
-      - master
+      - main
+      - development
+
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  JVM_OPTS: -Xmx3200m
 
 jobs:
-  build:
+  check:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
-    env:
-      JVM_OPTS: -Xmx3200m
-      CC_TEST_REPORTER_ID: 4c45cf8b47a2ab0a5ae149b266e533747e8c3330aa3f5e7d2898d460c6d11562
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
-          java-version: 13
-      - name: Download Dependencies
-        run: ./gradlew androidDependencies
-      - name: Cache dependencies
-        uses: actions/cache@v2
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Static analysis
+        run: ./gradlew app:staticAnalysis app:collectSarifReports --continue --no-daemon
+
+      - name: Upload Report
+        uses: github/codeql-action/upload-sarif@v3
+        if: ${{ always() }}
         with:
-          path: |
-            ~/.gradle
-          key: jars-{{ hashFiles('build.gradle') }}-{{ hashFiles('app/build.gradle') }}
-      - name: Lint
-        run: ./gradlew ktlint
-      - name: Setup Code Climate test-reporter
-        run: |
-          # download test reporter as a static binary
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
+          sarif_file: app/build/reports/sarif/
+  test:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Run Tests
-        run: |
-          ./gradlew jacocoTestReport -PdisablePreDex --continue --stacktrace --no-daemon --max-workers 4
-      - name: Upload coverage
-        run: bash <(curl -s https://codecov.io/bash)
-      - name: Set jacoco.xml path for code climate
-        run:  JACOCO_SOURCE_PATH=app/src/main/java ./cc-test-reporter format-coverage app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml --input-type jacoco
-      - name: Upload code climate report
-        if: success()
-        run: ./cc-test-reporter upload-coverage -r $CC_TEST_REPORTER_ID
-      - uses: actions/upload-artifact@v2
+        run: ./gradlew koverXmlReport --continue --no-daemon
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./app/build/reports/kover/project-xml/report.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: app/build/test-results
-

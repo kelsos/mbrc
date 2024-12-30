@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+  <issue id="InvalidPackage">
+    <ignore regexp=".*okio.*" />
+    <ignore regexp=".*velocity.*" />
+    <ignore regexp="java.awt.*" />
+    <ignore regexp="java.nio.file" />
+  </issue>
+  <issue id="HardcodedText" severity="error" />
+  <issue id="DuplicateStrings" severity="warning" />
+  <issue id="ImplicitSamInstance" severity="warning" />
+  <issue id="InvalidPackage" severity="warning" />
+  <issue id="KotlinPropertyAccess" severity="warning"/>
+  <issue id="LambdaLast" severity="warning" />
+  <issue id="SyntheticAccessor" severity="warning" />
+  <issue id="WrongThreadInterprocedural" severity="warning"/>
+  <issue id="ObsoleteLintCustomCheck" severity="ignore" />
+</lint>

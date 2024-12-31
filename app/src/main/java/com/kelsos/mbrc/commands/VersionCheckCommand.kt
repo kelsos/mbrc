@@ -2,13 +2,13 @@ package com.kelsos.mbrc.commands
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.kelsos.mbrc.common.state.MainDataModel
 import com.kelsos.mbrc.constants.ProtocolEventType
 import com.kelsos.mbrc.events.MessageEvent
 import com.kelsos.mbrc.events.bus.RxBus
-import com.kelsos.mbrc.interfaces.ICommand
-import com.kelsos.mbrc.interfaces.IEvent
-import com.kelsos.mbrc.model.MainDataModel
-import com.kelsos.mbrc.utilities.SettingsManager
+import com.kelsos.mbrc.features.settings.SettingsManager
+import com.kelsos.mbrc.networking.protocol.ProtocolAction
+import com.kelsos.mbrc.networking.protocol.ProtocolMessage
 import timber.log.Timber
 import java.io.IOException
 import java.net.URL
@@ -23,8 +23,8 @@ class VersionCheckCommand
     private val mapper: ObjectMapper,
     private val manager: SettingsManager,
     private val bus: RxBus,
-  ) : ICommand {
-    override fun execute(e: IEvent) {
+  ) : ProtocolAction {
+    override fun execute(message: ProtocolMessage) {
       val now = Instant.now()
 
       if (check(MINIMUM_REQUIRED)) {
@@ -33,7 +33,7 @@ class VersionCheckCommand
           Timber.d("Next update required check is @ $next")
           return
         }
-        bus.post(MessageEvent(ProtocolEventType.PluginUpdateRequired))
+        bus.post(MessageEvent(ProtocolEventType.PLUGIN_UPDATE_REQUIRED))
         model.minimumRequired = MINIMUM_REQUIRED
         model.pluginUpdateRequired = true
         manager.setLastUpdated(now, true)
@@ -64,7 +64,7 @@ class VersionCheckCommand
       val found = model.pluginVersion
       if (expected != found && check(expected)) {
         model.pluginUpdateAvailable = true
-        bus.post(MessageEvent(ProtocolEventType.PluginUpdateAvailable))
+        bus.post(MessageEvent(ProtocolEventType.PLUGIN_UPDATE_AVAILABLE))
       }
 
       manager.setLastUpdated(now, false)

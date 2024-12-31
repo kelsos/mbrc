@@ -1,12 +1,12 @@
 package com.kelsos.mbrc.networking
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.kelsos.mbrc.data.Page
-import com.kelsos.mbrc.data.PageRange
-import com.kelsos.mbrc.data.SocketMessage
+import com.kelsos.mbrc.common.data.RemoteDataSource.Companion.LIMIT
 import com.kelsos.mbrc.networking.client.GenericSocketMessage
 import com.kelsos.mbrc.networking.client.ResponseWithPayload
-import com.kelsos.mbrc.repository.data.RemoteDataSource.Companion.LIMIT
+import com.kelsos.mbrc.networking.client.SocketMessage
+import com.kelsos.mbrc.networking.protocol.Page
+import com.kelsos.mbrc.networking.protocol.PageRange
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber

@@ -11,4 +11,4 @@ fun <T : ViewModel> Fragment.obtainViewModel(viewModelClass: Class<T>) =
     Toothpick
       .openScope(requireActivity().application)
       .getInstance(ViewModelFactory::class.java),
-  ).get(viewModelClass)
+  )[viewModelClass]

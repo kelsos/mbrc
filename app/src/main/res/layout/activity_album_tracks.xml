@@ -72,7 +72,7 @@
       app:layout_constraintTop_toBottomOf="@id/album_tracks__cover"
       tools:text="Album" />
 
-    <com.kelsos.mbrc.ui.widgets.EmptyRecyclerView
+    <com.kelsos.mbrc.common.ui.EmptyRecyclerView
       android:id="@+id/list_tracks"
       android:layout_width="0dp"
       android:layout_height="0dp"

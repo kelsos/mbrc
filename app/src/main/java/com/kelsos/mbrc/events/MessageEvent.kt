@@ -3,12 +3,12 @@ package com.kelsos.mbrc.events
 import com.fasterxml.jackson.databind.node.TextNode
 import com.kelsos.mbrc.constants.ProtocolEventType
 import com.kelsos.mbrc.data.UserAction
-import com.kelsos.mbrc.interfaces.IEvent
+import com.kelsos.mbrc.networking.protocol.ProtocolMessage
 
 data class MessageEvent(
   override var type: String = "",
   override var data: Any = "",
-) : IEvent {
+) : ProtocolMessage {
   override val dataString: String
     get() {
       return when (data.javaClass) {
@@ -19,6 +19,6 @@ data class MessageEvent(
     }
 
   companion object {
-    fun action(data: UserAction): MessageEvent = MessageEvent(ProtocolEventType.UserAction, data)
+    fun action(data: UserAction): MessageEvent = MessageEvent(ProtocolEventType.USER_ACTION, data)
   }
 }

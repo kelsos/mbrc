@@ -1,6 +1,6 @@
 package com.kelsos.mbrc
 
-class PlayRemoteApplication : RemoteApplication() {
+class PlayRemoteApplication : App() {
   override fun onCreate() {
     super.onCreate()
   }

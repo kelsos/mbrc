@@ -1,0 +1,11 @@
+package com.kelsos.mbrc.features.library
+
+import toothpick.config.Module
+
+class BrowseTrackModule : Module() {
+  init {
+    bind(BrowseTrackPresenter::class.java)
+      .to(BrowseTrackPresenterImpl::class.java)
+      .singletonInScope()
+  }
+}

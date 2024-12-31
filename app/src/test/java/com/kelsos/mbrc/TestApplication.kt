@@ -4,7 +4,7 @@ import org.robolectric.TestLifecycleApplication
 import java.lang.reflect.Method
 
 class TestApplication :
-  RemoteApplication(),
+  App(),
   TestLifecycleApplication {
   override fun testMode(): Boolean = true
 

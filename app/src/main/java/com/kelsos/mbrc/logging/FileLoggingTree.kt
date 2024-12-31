@@ -13,11 +13,9 @@ class FileLoggingTree(
   context: Context,
 ) : Timber.DebugTree() {
   private val handler: FileHandler
-  private val logger: Logger
+  private val logger: Logger = Logger.getLogger(LOGGER_NAME)
 
   init {
-
-    logger = Logger.getLogger(LOGGER_NAME)
     logger.level = Level.ALL
     logger.useParentHandlers = false
 

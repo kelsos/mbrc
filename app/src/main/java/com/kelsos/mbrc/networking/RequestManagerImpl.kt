@@ -2,12 +2,12 @@ package com.kelsos.mbrc.networking
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.kelsos.mbrc.constants.Protocol
-import com.kelsos.mbrc.data.ProtocolPayload
-import com.kelsos.mbrc.data.SocketMessage
-import com.kelsos.mbrc.di.modules.AppDispatchers
-import com.kelsos.mbrc.mappers.InetAddressMapper
-import com.kelsos.mbrc.repository.ConnectionRepository
+import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
+import com.kelsos.mbrc.features.settings.ConnectionRepository
+import com.kelsos.mbrc.networking.client.SocketMessage
+import com.kelsos.mbrc.networking.connections.InetAddressMapper
+import com.kelsos.mbrc.networking.protocol.Protocol
+import com.kelsos.mbrc.networking.protocol.ProtocolPayload
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.IOException
@@ -20,11 +20,11 @@ class RequestManagerImpl
   constructor(
     private val mapper: ObjectMapper,
     private val repository: ConnectionRepository,
-    private val dispatchers: AppDispatchers,
+    private val dispatchers: AppCoroutineDispatchers,
   ) : RequestManager {
     override suspend fun openConnection(handshake: Boolean): ActiveConnection =
       withContext(dispatchers.io) {
-        val firstMessage = if (handshake) SocketMessage.create(Protocol.Player, "Android") else null
+        val firstMessage = if (handshake) SocketMessage.create(Protocol.PLAYER, "Android") else null
         val socket = connect(firstMessage)
 
         val inputStream = socket.getInputStream()
@@ -40,22 +40,22 @@ class RequestManagerImpl
 
           val context = message.context
           Timber.v("incoming context => $context")
-          if (Protocol.Player == context) {
+          if (Protocol.PLAYER == context) {
             val payload = getProtocolPayload()
-            socket.send(SocketMessage.create(Protocol.ProtocolTag, payload))
-          } else if (Protocol.ProtocolTag == context) {
+            socket.send(SocketMessage.create(Protocol.PROTOCOL_TAG, payload))
+          } else if (Protocol.PROTOCOL_TAG == context) {
             Timber.v("socket handshake complete")
             break
           }
         }
 
-        return@withContext ActiveConnection(socket, bufferedReader, handshake)
+        return@withContext ActiveConnection(socket, bufferedReader)
       }
 
     private fun getProtocolPayload(): ProtocolPayload =
       ProtocolPayload().apply {
         noBroadcast = true
-        protocolVersion = Protocol.ProtocolVersionNumber
+        protocolVersion = Protocol.PROTOCOL_VERSION_NUMBER
       }
 
     override suspend fun request(

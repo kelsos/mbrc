@@ -16,7 +16,7 @@
 
   <androidx.fragment.app.FragmentContainerView
     android:id="@+id/lyrics_mini_control"
-    android:name="com.kelsos.mbrc.ui.mini_control.MiniControlFragment"
+    android:name="com.kelsos.mbrc.features.minicontrol.MiniControlFragment"
     android:layout_width="match_parent"
     android:layout_height="@dimen/mini_control_height"
     android:layout="@layout/ui_fragment_mini_control"

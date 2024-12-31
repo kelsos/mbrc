@@ -15,10 +15,11 @@ class DBFlowTestRule : TestRule {
     object : Statement() {
       @Throws(Throwable::class)
       override fun evaluate() {
-        FlowManager.init(FlowConfig.Builder(RuntimeEnvironment.application).build())
+        FlowManager.init(FlowConfig.Builder(RuntimeEnvironment.getApplication()).build())
         try {
           base.evaluate()
         } finally {
+          FlowManager.close()
           FlowManager.reset()
           FlowManager.destroy()
         }

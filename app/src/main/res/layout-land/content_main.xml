@@ -167,7 +167,7 @@
     tools:layout_constraintTop_creator="1" />
 
 
-  <com.kelsos.mbrc.ui.widgets.SquareImageButton
+  <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_mute_button"
     android:layout_width="23dp"
     android:layout_height="23dp"
@@ -183,7 +183,7 @@
     app:layout_constraintTop_toTopOf="@+id/main_volume_seeker"
     app:layout_constraintVertical_bias="0.0" />
 
-  <com.kelsos.mbrc.ui.widgets.SquareImageButton
+  <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_repeat_button"
     android:layout_width="0dp"
     android:layout_height="0dp"
@@ -202,7 +202,7 @@
     app:layout_constraintVertical_bias="0.0" />
 
 
-  <com.kelsos.mbrc.ui.widgets.SquareImageButton
+  <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_button_previous"
     android:layout_width="0dp"
     android:layout_height="0dp"
@@ -221,7 +221,7 @@
     app:layout_constraintRight_toLeftOf="@+id/main_button_play_pause"
     app:layout_constraintTop_toTopOf="@+id/main_button_play_pause" />
 
-  <com.kelsos.mbrc.ui.widgets.SquareImageButton
+  <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_button_play_pause"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
@@ -239,7 +239,7 @@
     app:layout_constraintRight_toLeftOf="@+id/main_button_next"
     app:layout_constraintTop_toBottomOf="@+id/main_track_progress_seeker" />
 
-  <com.kelsos.mbrc.ui.widgets.SquareImageButton
+  <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_button_next"
     android:layout_width="0dp"
     android:layout_height="0dp"
@@ -255,7 +255,7 @@
     app:layout_constraintRight_toLeftOf="@+id/main_shuffle_button"
     app:layout_constraintTop_toTopOf="@+id/main_button_play_pause" />
 
-  <com.kelsos.mbrc.ui.widgets.SquareImageButton
+  <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_shuffle_button"
     android:layout_width="0dp"
     android:layout_height="0dp"
@@ -274,7 +274,7 @@
     app:layout_constraintVertical_bias="1.0" />
 
 
-  <com.kelsos.mbrc.ui.widgets.SquareImageView
+  <com.kelsos.mbrc.common.ui.SquareImageView
     android:id="@+id/main_album_cover_image_view"
     android:layout_width="0dp"
     android:layout_height="0dp"

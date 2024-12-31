@@ -5,11 +5,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 class TrackRemoval(
   node: ObjectNode,
 ) {
-  val index: Int
-  val isSuccess: Boolean
-
-  init {
-    index = node.path("index").asInt()
-    isSuccess = node.path("success").asBoolean()
-  }
+  val index: Int = node.path("index").asInt()
+  val isSuccess: Boolean = node.path("success").asBoolean()
 }

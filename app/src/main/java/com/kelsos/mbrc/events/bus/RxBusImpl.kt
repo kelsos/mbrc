@@ -6,7 +6,7 @@ import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import timber.log.Timber
-import java.util.*
+import java.util.LinkedList
 import javax.inject.Inject
 
 class RxBusImpl

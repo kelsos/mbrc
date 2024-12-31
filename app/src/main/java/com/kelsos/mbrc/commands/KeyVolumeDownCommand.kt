@@ -1,12 +1,12 @@
 package com.kelsos.mbrc.commands
 
-import com.kelsos.mbrc.constants.Protocol
+import com.kelsos.mbrc.common.state.MainDataModel
 import com.kelsos.mbrc.data.UserAction
 import com.kelsos.mbrc.events.MessageEvent
 import com.kelsos.mbrc.events.bus.RxBus
-import com.kelsos.mbrc.interfaces.ICommand
-import com.kelsos.mbrc.interfaces.IEvent
-import com.kelsos.mbrc.model.MainDataModel
+import com.kelsos.mbrc.networking.protocol.Protocol
+import com.kelsos.mbrc.networking.protocol.ProtocolAction
+import com.kelsos.mbrc.networking.protocol.ProtocolMessage
 import javax.inject.Inject
 
 class KeyVolumeDownCommand
@@ -14,8 +14,8 @@ class KeyVolumeDownCommand
   constructor(
     private val model: MainDataModel,
     private val bus: RxBus,
-  ) : ICommand {
-    override fun execute(e: IEvent) {
+  ) : ProtocolAction {
+    override fun execute(message: ProtocolMessage) {
       if (model.volume >= 10) {
         val mod = model.volume % 10
         val volume: Int
@@ -28,7 +28,7 @@ class KeyVolumeDownCommand
           volume = model.volume - mod
         }
 
-        bus.post(MessageEvent.action(UserAction(Protocol.PlayerVolume, volume)))
+        bus.post(MessageEvent.action(UserAction(Protocol.PLAYER_VOLUME, volume)))
       }
     }
   }

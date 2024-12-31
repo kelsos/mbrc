@@ -45,7 +45,7 @@
     app:layout_constraintRight_toRightOf="parent"
     tools:text="192.168.100.10:7777" />
 
-  <com.kelsos.mbrc.ui.widgets.CircleImageView
+  <com.kelsos.mbrc.common.ui.CircleImageView
     android:id="@+id/circleImageView"
     android:layout_width="74dp"
     android:layout_height="74dp"

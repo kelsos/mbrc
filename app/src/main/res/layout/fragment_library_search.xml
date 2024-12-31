@@ -8,7 +8,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.kelsos.mbrc.ui.widgets.EmptyRecyclerView
+    <com.kelsos.mbrc.common.ui.EmptyRecyclerView
       android:id="@+id/library_data_list"
       android:layout_width="match_parent"
       android:layout_height="match_parent"

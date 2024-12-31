@@ -8,7 +8,6 @@ import java.net.Socket
 class ActiveConnection(
   private val socket: Socket,
   private val bufferedReader: BufferedReader,
-  val handshaked: Boolean,
 ) {
   fun send(bytes: ByteArray) {
     socket.getOutputStream().write(bytes)

@@ -11,7 +11,7 @@
   <androidx.coordinatorlayout.widget.CoordinatorLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.navigation.library.LibraryActivity">
+    tools:context=".features.library.LibraryActivity">
 
     <androidx.viewpager2.widget.ViewPager2
       android:id="@+id/search_pager"

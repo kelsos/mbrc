@@ -1,11 +1,11 @@
 package com.kelsos.mbrc.commands
 
-import com.kelsos.mbrc.constants.Protocol
-import com.kelsos.mbrc.data.SocketMessage
-import com.kelsos.mbrc.interfaces.ICommand
-import com.kelsos.mbrc.interfaces.IEvent
-import com.kelsos.mbrc.model.MainDataModel
-import com.kelsos.mbrc.services.SocketService
+import com.kelsos.mbrc.common.state.MainDataModel
+import com.kelsos.mbrc.networking.client.SocketMessage
+import com.kelsos.mbrc.networking.client.SocketService
+import com.kelsos.mbrc.networking.protocol.Protocol
+import com.kelsos.mbrc.networking.protocol.ProtocolAction
+import com.kelsos.mbrc.networking.protocol.ProtocolMessage
 import javax.inject.Inject
 
 class ReduceVolumeOnRingCommand
@@ -13,11 +13,11 @@ class ReduceVolumeOnRingCommand
   constructor(
     private val model: MainDataModel,
     private val service: SocketService,
-  ) : ICommand {
-    override fun execute(e: IEvent) {
+  ) : ProtocolAction {
+    override fun execute(message: ProtocolMessage) {
       if (model.isMute || model.volume == 0) {
         return
       }
-      service.sendData(SocketMessage.create(Protocol.PlayerVolume, (model.volume * 0.2).toInt()))
+      service.sendData(SocketMessage.create(Protocol.PLAYER_VOLUME, (model.volume * 0.2).toInt()))
     }
   }

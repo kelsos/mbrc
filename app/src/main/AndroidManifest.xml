@@ -14,7 +14,7 @@
   <uses-sdk tools:overrideLibrary="timber.log" />
 
   <application
-    android:name=".RemoteApplication"
+    android:name=".App"
     android:allowBackup="true"
     android:description="@string/application_description"
     android:icon="@mipmap/ic_launcher"
@@ -28,93 +28,93 @@
       android:exported="true" />
 
     <activity
-      android:name=".ui.navigation.main.MainActivity"
+      android:name=".features.player.PlayerActivity"
       android:launchMode="singleTop"
       android:windowSoftInputMode="adjustNothing" />
 
     <activity
-      android:name=".ui.navigation.library.LibraryActivity"
+      android:name=".features.library.LibraryActivity"
       android:label="@string/nav_library"
-      android:parentActivityName=".ui.navigation.main.MainActivity">
+      android:parentActivityName=".features.player.PlayerActivity">
 
       <!-- Parent activity meta-data to support 4.0 and lower -->
       <meta-data
         android:name="android.support.PARENT_ACTIVITY"
-        android:value=".ui.navigation.main.MainActivity" />
+        android:value=".features.player.PlayerActivity" />
     </activity>
 
-    <activity android:name=".ui.navigation.library.album_tracks.AlbumTracksActivity" />
+    <activity android:name=".features.library.AlbumTracksActivity" />
 
-    <activity android:name=".ui.navigation.library.artist_albums.ArtistAlbumsActivity" />
+    <activity android:name=".features.library.ArtistAlbumsActivity" />
 
-    <activity android:name=".ui.navigation.library.genre_artists.GenreArtistsActivity" />
+    <activity android:name=".features.library.GenreArtistsActivity" />
 
     <activity
-      android:name=".ui.navigation.lyrics.LyricsActivity"
+      android:name=".features.lyrics.LyricsActivity"
       android:label="@string/nav_lyrics"
-      android:parentActivityName=".ui.navigation.main.MainActivity">
+      android:parentActivityName=".features.player.PlayerActivity">
 
       <!-- Parent activity meta-data to support 4.0 and lower -->
       <meta-data
         android:name="android.support.PARENT_ACTIVITY"
-        android:value=".ui.navigation.main.MainActivity" />
+        android:value=".features.player.PlayerActivity" />
     </activity>
 
     <activity
-      android:name=".ui.navigation.nowplaying.NowPlayingActivity"
+      android:name=".features.nowplaying.NowPlayingActivity"
       android:label="@string/nav_now_playing"
-      android:parentActivityName=".ui.navigation.main.MainActivity">
+      android:parentActivityName=".features.player.PlayerActivity">
 
       <!-- Parent activity meta-data to support 4.0 and lower -->
       <meta-data
         android:name="android.support.PARENT_ACTIVITY"
-        android:value=".ui.navigation.main.MainActivity" />
+        android:value=".features.player.PlayerActivity" />
     </activity>
 
     <activity
-      android:name=".ui.navigation.playlists.PlaylistActivity"
+      android:name=".features.playlists.PlaylistActivity"
       android:label="@string/nav_playlists"
-      android:parentActivityName=".ui.navigation.main.MainActivity">
+      android:parentActivityName=".features.player.PlayerActivity">
 
       <!-- Parent activity meta-data to support 4.0 and lower -->
       <meta-data
         android:name="android.support.PARENT_ACTIVITY"
-        android:value=".ui.navigation.main.MainActivity" />
+        android:value=".features.player.PlayerActivity" />
     </activity>
 
     <activity
-      android:name=".ui.preferences.SettingsActivity"
-      android:parentActivityName=".ui.navigation.main.MainActivity">
+      android:name=".features.settings.SettingsActivity"
+      android:parentActivityName=".features.player.PlayerActivity">
 
       <!-- Parent activity meta-data to support 4.0 and lower -->
       <meta-data
         android:name="android.support.PARENT_ACTIVITY"
-        android:value=".ui.navigation.main.MainActivity" />
+        android:value=".features.player.PlayerActivity" />
     </activity>
 
     <activity
-      android:name=".ui.connection_manager.ConnectionManagerActivity"
-      android:parentActivityName=".ui.preferences.SettingsActivity"
+      android:name=".features.settings.ConnectionManagerActivity"
+      android:parentActivityName=".features.settings.SettingsActivity"
       android:windowSoftInputMode="adjustNothing">
 
       <!-- Parent activity meta-data to support 4.0 and lower -->
       <meta-data
         android:name="android.support.PARENT_ACTIVITY"
-        android:value=".ui.preferences.SettingsActivity" />
+        android:value=".features.settings.SettingsActivity" />
     </activity>
 
     <activity
-      android:name=".ui.help_feedback.HelpFeedbackActivity"
+      android:name=".features.help.HelpFeedbackActivity"
       android:label="@string/title_activity_help_feedback"
-      android:parentActivityName=".ui.navigation.main.MainActivity"
+      android:parentActivityName=".features.player.PlayerActivity"
       android:windowSoftInputMode="adjustNothing">
       <meta-data
         android:name="android.support.PARENT_ACTIVITY"
-        android:value="com.kelsos.mbrc.ui.navigation.main.MainActivity" />
+        android:value="com.kelsos.mbrc.features.player.PlayerActivity" />
     </activity>
 
     <activity
-      android:name=".ui.activities.SplashActivity"
+      android:name=".SplashActivity"
       android:exported="true"
       android:noHistory="true">
       <intent-filter>
@@ -125,16 +125,16 @@
     </activity>
 
     <activity
-      android:name=".ui.navigation.radio.RadioActivity"
+      android:name=".features.radio.RadioActivity"
       android:label="@string/title_activity_radios"
-      android:parentActivityName=".ui.navigation.main.MainActivity">
+      android:parentActivityName=".features.player.PlayerActivity">
       <meta-data
         android:name="android.support.PARENT_ACTIVITY"
-        android:value="com.kelsos.mbrc.ui.navigation.main.MainActivity" />
+        android:value="com.kelsos.mbrc.features.player.PlayerActivity" />
     </activity>
 
     <receiver
-      android:name=".widgets.WidgetNormal"
+      android:name=".features.widgets.WidgetNormal"
       android:exported="false">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -146,7 +146,7 @@
     </receiver>
 
     <receiver
-      android:name=".utilities.MediaButtonReceiver"
+      android:name=".platform.mediasession.MediaButtonReceiver"
       android:exported="false">
       <intent-filter>
         <action android:name="android.intent.action.MEDIA_BUTTON" />
@@ -154,7 +154,7 @@
     </receiver>
 
     <receiver
-      android:name=".widgets.WidgetSmall"
+      android:name=".features.widgets.WidgetSmall"
       android:exported="false">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -166,7 +166,7 @@
     </receiver>
 
     <service
-      android:name=".controller.RemoteService"
+      android:name=".platform.RemoteService"
       android:description="@string/info_service_description"
       android:exported="false"
       android:foregroundServiceType="connectedDevice">

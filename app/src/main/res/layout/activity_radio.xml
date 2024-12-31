@@ -26,19 +26,19 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.kelsos.mbrc.ui.widgets.MultiSwipeRefreshLayout
+    <com.kelsos.mbrc.common.ui.MultiSwipeRefreshLayout
       android:id="@+id/swipe_layout"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:layout_marginBottom="@dimen/mini_control_height"
       app:layout_behavior="@string/appbar_scrolling_view_behavior"
-      tools:context="com.kelsos.mbrc.ui.navigation.radio.RadioActivity">
+      tools:context="com.kelsos.mbrc.features.radio.RadioActivity">
 
       <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.kelsos.mbrc.ui.widgets.EmptyRecyclerView
+        <com.kelsos.mbrc.common.ui.EmptyRecyclerView
           android:id="@+id/radio_list"
           android:layout_width="match_parent"
           android:layout_height="match_parent"
@@ -51,7 +51,7 @@
 
       </FrameLayout>
 
-    </com.kelsos.mbrc.ui.widgets.MultiSwipeRefreshLayout>
+    </com.kelsos.mbrc.common.ui.MultiSwipeRefreshLayout>
 
     <include
       android:id="@+id/radio_mini_control"

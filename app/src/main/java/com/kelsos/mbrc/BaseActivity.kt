@@ -13,6 +13,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -42,7 +43,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 abstract class BaseActivity :
-  FontActivity(),
+  AppCompatActivity(),
   NavigationView.OnNavigationItemSelectedListener {
   @Inject
   lateinit var bus: RxBus

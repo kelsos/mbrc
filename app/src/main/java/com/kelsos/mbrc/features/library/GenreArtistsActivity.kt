@@ -3,11 +3,11 @@ package com.kelsos.mbrc.features.library
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
-import com.kelsos.mbrc.FontActivity
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.annotations.Queue
 import com.kelsos.mbrc.common.ui.EmptyRecyclerView
@@ -21,7 +21,7 @@ import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
 class GenreArtistsActivity :
-  FontActivity(),
+  AppCompatActivity(),
   GenreArtistsView,
   MenuItemSelectedListener {
   private lateinit var recyclerView: EmptyRecyclerView

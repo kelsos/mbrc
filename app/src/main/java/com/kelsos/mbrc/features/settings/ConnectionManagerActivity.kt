@@ -3,13 +3,13 @@ package com.kelsos.mbrc.features.settings
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
-import com.kelsos.mbrc.FontActivity
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.constants.UserInputEventType
 import com.kelsos.mbrc.events.DefaultSettingsChangedEvent
@@ -25,7 +25,7 @@ import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
 class ConnectionManagerActivity :
-  FontActivity(),
+  AppCompatActivity(),
   ConnectionManagerView,
   SettingsDialogFragment.SettingsSaveListener,
   ConnectionAdapter.ConnectionChangeListener {

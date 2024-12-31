@@ -7,11 +7,11 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.BundleCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
-import com.kelsos.mbrc.FontActivity
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.common.utilities.RemoteUtils.sha1
@@ -25,7 +25,7 @@ import java.io.File
 import javax.inject.Inject
 
 class AlbumTracksActivity :
-  FontActivity(),
+  AppCompatActivity(),
   AlbumTracksView,
   TrackEntryAdapter.MenuItemSelectedListener {
   @Inject

@@ -2,8 +2,8 @@ package com.kelsos.mbrc.features.settings
 
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.appbar.MaterialToolbar
-import com.kelsos.mbrc.FontActivity
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.events.bus.RxBus
 import toothpick.Scope
@@ -11,7 +11,7 @@ import toothpick.Toothpick
 import toothpick.smoothie.module.SmoothieActivityModule
 import javax.inject.Inject
 
-class SettingsActivity : FontActivity() {
+class SettingsActivity : AppCompatActivity() {
   @Inject
   lateinit var bus: RxBus
   private lateinit var scope: Scope

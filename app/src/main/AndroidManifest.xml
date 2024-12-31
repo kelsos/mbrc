@@ -31,7 +31,16 @@
     <activity
       android:name=".features.player.PlayerActivity"
       android:launchMode="singleTop"
-      android:windowSoftInputMode="adjustNothing" />
+      android:exported="true"
+      android:noHistory="true"
+      android:theme="@style/Theme.App.Starting"
+      android:windowSoftInputMode="adjustNothing" >
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
 
     <activity
       android:name=".features.library.LibraryActivity"
@@ -112,17 +121,6 @@
       <meta-data
         android:name="android.support.PARENT_ACTIVITY"
         android:value="com.kelsos.mbrc.features.player.PlayerActivity" />
-    </activity>
-
-    <activity
-      android:name=".SplashActivity"
-      android:exported="true"
-      android:noHistory="true">
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
     </activity>
 
     <activity

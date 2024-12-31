@@ -165,8 +165,8 @@ abstract class BaseActivity :
     }
 
     if (itemId == R.id.nav_home) {
-      val upIntent = getParentActivityIntent() ?: throw Exception("invalid intent")
-      if (shouldUpRecreateTask(upIntent)) {
+      val upIntent = getParentActivityIntent()
+      if (upIntent == null || shouldUpRecreateTask(upIntent)) {
         createBackStack(Intent(this, PlayerActivity::class.java))
       } else {
         navigateUpTo(upIntent)

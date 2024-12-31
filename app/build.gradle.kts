@@ -226,6 +226,7 @@ dependencies {
   implementation(libs.androidx.paging.runtime.ktx)
   implementation(libs.androidx.preference.ktx)
   implementation(libs.androidx.recyclerview)
+  implementation(libs.androidx.core.splashscreen)
   implementation(libs.androidx.viewpager2)
   implementation(libs.bundles.androidx.lifecycle)
   implementation(libs.androidx.legacy.support.v4)

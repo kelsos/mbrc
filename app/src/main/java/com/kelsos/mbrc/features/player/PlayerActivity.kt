@@ -18,6 +18,7 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.ShareActionProvider
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.MenuItemCompat
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
@@ -83,6 +84,7 @@ class PlayerActivity :
   private lateinit var scope: Scope
 
   override fun onCreate(savedInstanceState: Bundle?) {
+    installSplashScreen()
     scope = Toothpick.openScopes(application, presenterScope, this)
     scope.installModules(SmoothieActivityModule(this), PlayerModule())
     window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)

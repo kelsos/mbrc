@@ -22,4 +22,10 @@
   </style>
 
   <color name="background">#121212</color>
+
+  <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+    <item name="windowSplashScreenBackground">@color/background</item>
+    <item name="windowSplashScreenAnimationDuration">200</item>
+    <item name="postSplashScreenTheme">@style/Theme.App</item>
+  </style>
 </resources>

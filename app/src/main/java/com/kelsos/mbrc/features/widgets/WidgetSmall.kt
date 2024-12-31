@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import androidx.core.os.BundleCompat
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.annotations.PlayerState
 import com.kelsos.mbrc.features.player.PlayerActivity
@@ -43,7 +44,7 @@ class WidgetSmall : AppWidgetProvider() {
         updateCover(context, widgetManager, widgetsIds, path)
       }
       extras.getBoolean(WidgetUpdater.INFO, false) -> {
-        val info = extras.getParcelable<TrackInfo>(WidgetUpdater.TRACK_INFO)
+        val info = BundleCompat.getParcelable<TrackInfo>(extras, WidgetUpdater.TRACK_INFO, TrackInfo::class.java)
         info?.run {
           updateInfo(context, widgetManager, widgetsIds, this)
         }

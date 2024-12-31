@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.view.isGone
@@ -76,6 +77,18 @@ class LibraryActivity :
     super.onCreate(savedInstanceState)
     Toothpick.inject(this, scope)
     setContentView(R.layout.activity_library)
+
+    onBackPressedDispatcher.addCallback(
+      this,
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          if (closeSearch()) {
+            return
+          }
+          onBackPressedDispatcher.onBackPressed()
+        }
+      },
+    )
 
     pager = findViewById(R.id.search_pager)
     tabs = findViewById(R.id.pager_tab_strip)
@@ -190,13 +203,6 @@ class LibraryActivity :
   override fun onStop() {
     super.onStop()
     presenter.detach()
-  }
-
-  override fun onBackPressed() {
-    if (closeSearch()) {
-      return
-    }
-    super.onBackPressed()
   }
 
   override fun updateArtistOnlyPreference(albumArtistOnly: Boolean?) {

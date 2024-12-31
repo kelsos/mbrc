@@ -3,15 +3,16 @@ package com.kelsos.mbrc
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.core.app.NavUtils
 import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -79,14 +80,6 @@ abstract class BaseActivity :
     drawer.removeDrawerListener(toggle!!)
   }
 
-  override fun onBackPressed() {
-    if (drawer.isDrawerOpen(GravityCompat.START)) {
-      drawer.closeDrawer(GravityCompat.START)
-    } else {
-      super.onBackPressed()
-    }
-  }
-
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
     toggle!!.onConfigurationChanged(newConfig)
@@ -100,13 +93,12 @@ abstract class BaseActivity :
   override fun onKeyUp(
     keyCode: Int,
     event: KeyEvent,
-  ): Boolean {
+  ): Boolean =
     when (keyCode) {
-      KeyEvent.KEYCODE_VOLUME_UP -> return true
-      KeyEvent.KEYCODE_VOLUME_DOWN -> return true
-      else -> return super.onKeyUp(keyCode, event)
+      KeyEvent.KEYCODE_VOLUME_UP -> true
+      KeyEvent.KEYCODE_VOLUME_DOWN -> true
+      else -> super.onKeyUp(keyCode, event)
     }
-  }
 
   private fun onConnection(event: ConnectionStatusChangeEvent) {
     Timber.v("Handling new connection status %s", event.status)
@@ -173,11 +165,11 @@ abstract class BaseActivity :
     }
 
     if (itemId == R.id.nav_home) {
-      val upIntent = NavUtils.getParentActivityIntent(this) ?: throw Exception("invalid intent")
-      if (NavUtils.shouldUpRecreateTask(this, upIntent)) {
+      val upIntent = getParentActivityIntent() ?: throw Exception("invalid intent")
+      if (shouldUpRecreateTask(upIntent)) {
         createBackStack(Intent(this, PlayerActivity::class.java))
       } else {
-        NavUtils.navigateUpTo(this, upIntent)
+        navigateUpTo(upIntent)
       }
     } else if (itemId == R.id.nav_library) {
       createBackStack(Intent(this, LibraryActivity::class.java))
@@ -219,7 +211,12 @@ abstract class BaseActivity :
     val builder = TaskStackBuilder.create(this)
     builder.addNextIntentWithParentStack(intent)
     builder.startActivities()
-    overridePendingTransition(R.anim.slide_in, R.anim.slide_out)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.slide_in, R.anim.slide_out)
+    } else {
+      @Suppress("DEPRECATION")
+      overridePendingTransition(R.anim.slide_in, R.anim.slide_out)
+    }
   }
 
   /**
@@ -227,6 +224,18 @@ abstract class BaseActivity :
    */
   fun setup() {
     Timber.v("Initializing base activity")
+    onBackPressedDispatcher.addCallback(
+      this,
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START)
+          } else {
+            onBackPressedDispatcher.onBackPressed()
+          }
+        }
+      },
+    )
     toolbar = findViewById(R.id.toolbar)
     drawer = findViewById(R.id.drawer_layout)
     navigationView = findViewById(R.id.nav_view)

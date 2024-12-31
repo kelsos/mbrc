@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -81,6 +82,19 @@ class NowPlayingActivity :
     scope.installModules(SmoothieActivityModule(this), NowPlayingModule.create())
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_nowplaying)
+
+    onBackPressedDispatcher.addCallback(
+      this,
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          if (closeSearch()) {
+            return
+          }
+          onBackPressedDispatcher.onBackPressed()
+        }
+      },
+    )
+
     nowPlayingList = findViewById(R.id.now_playing_list)
     swipeRefreshLayout = findViewById(R.id.swipe_layout)
     emptyView = findViewById(R.id.empty_view)
@@ -180,13 +194,6 @@ class NowPlayingActivity :
   override fun failure(throwable: Throwable) {
     swipeRefreshLayout.isRefreshing = false
     Snackbar.make(nowPlayingList, R.string.refresh_failed, Snackbar.LENGTH_SHORT).show()
-  }
-
-  override fun onBackPressed() {
-    if (closeSearch()) {
-      return
-    }
-    super.onBackPressed()
   }
 
   override fun onStartDrag(viewHolder: RecyclerView.ViewHolder) {

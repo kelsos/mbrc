@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
@@ -41,12 +42,21 @@ class HelpFragment : Fragment() {
   }
 
   private class RemoteWebViewClient : WebViewClient() {
-    @Suppress("OverridingDeprecatedMember")
+    @Deprecated("Deprecated in Java")
     override fun shouldOverrideUrlLoading(
       view: WebView,
       url: String,
     ): Boolean {
       view.loadUrl(url)
+      return false
+    }
+
+    override fun shouldOverrideUrlLoading(
+      view: WebView?,
+      request: WebResourceRequest?,
+    ): Boolean {
+      val url = request?.url.toString()
+      view?.loadUrl(url)
       return false
     }
   }

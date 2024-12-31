@@ -106,7 +106,7 @@ class ConnectionManagerActivity :
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
-      android.R.id.home -> onBackPressed()
+      android.R.id.home -> onBackPressedDispatcher.onBackPressed()
       else -> return false
     }
     return true

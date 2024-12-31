@@ -6,6 +6,8 @@ import android.view.MenuItem
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
+import androidx.core.os.BundleCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -46,12 +48,22 @@ class AlbumTracksActivity :
       AlbumTracksModule(),
     )
     super.onCreate(savedInstanceState)
+
     Toothpick.inject(this, scope)
     setContentView(R.layout.activity_album_tracks)
+    onBackPressedDispatcher.addCallback(
+      this,
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          finish()
+        }
+      },
+    )
+
     val extras = intent.extras
 
     if (extras != null) {
-      album = extras.getParcelable(ALBUM)
+      album = BundleCompat.getParcelable(extras, ALBUM, AlbumInfo::class.java)
     }
 
     val selectedAlbum = album
@@ -111,7 +123,7 @@ class AlbumTracksActivity :
     val itemId = item.itemId
 
     if (itemId == android.R.id.home) {
-      onBackPressed()
+      onBackPressedDispatcher.onBackPressed()
       return true
     }
 
@@ -162,10 +174,6 @@ class AlbumTracksActivity :
   override fun onDestroy() {
     super.onDestroy()
     Toothpick.closeScope(this)
-  }
-
-  override fun onBackPressed() {
-    finish()
   }
 
   companion object {

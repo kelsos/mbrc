@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.library
 
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.OnBackPressedCallback
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.MaterialToolbar
@@ -49,6 +50,15 @@ class GenreArtistsActivity :
     )
     Toothpick.inject(this, scope)
 
+    onBackPressedDispatcher.addCallback(
+      this,
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          finish()
+        }
+      },
+    )
+
     recyclerView = findViewById(R.id.genre_artists_recycler)
     toolbar = findViewById(R.id.toolbar)
     emptyView = findViewById(R.id.empty_view)
@@ -77,7 +87,7 @@ class GenreArtistsActivity :
     val itemId = item.itemId
 
     if (itemId == android.R.id.home) {
-      onBackPressed()
+      onBackPressedDispatcher.onBackPressed()
       return true
     }
 
@@ -131,10 +141,6 @@ class GenreArtistsActivity :
   override fun onDestroy() {
     super.onDestroy()
     Toothpick.closeScope(this)
-  }
-
-  override fun onBackPressed() {
-    finish()
   }
 
   companion object {

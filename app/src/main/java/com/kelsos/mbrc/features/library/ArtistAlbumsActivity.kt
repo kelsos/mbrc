@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.library
 
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.OnBackPressedCallback
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.MaterialToolbar
@@ -46,6 +47,16 @@ class ArtistAlbumsActivity :
     super.onCreate(savedInstanceState)
     Toothpick.inject(this, scope)
     setContentView(R.layout.activity_artist_albums)
+
+    onBackPressedDispatcher.addCallback(
+      this,
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          finish()
+        }
+      },
+    )
+
     recyclerView = findViewById(R.id.album_recycler)
     toolbar = findViewById(R.id.toolbar)
     emptyView = findViewById(R.id.empty_view)
@@ -82,7 +93,7 @@ class ArtistAlbumsActivity :
     val itemId = item.itemId
 
     if (itemId == android.R.id.home) {
-      onBackPressed()
+      onBackPressedDispatcher.onBackPressed()
       return true
     }
 
@@ -136,10 +147,6 @@ class ArtistAlbumsActivity :
   override fun onStop() {
     super.onStop()
     presenter.detach()
-  }
-
-  override fun onBackPressed() {
-    finish()
   }
 
   companion object {

@@ -12,6 +12,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
@@ -89,6 +90,16 @@ class PlayerActivity :
     window.sharedElementsUseOverlay = false
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
+
+    onBackPressedDispatcher.addCallback(
+      this,
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          finishAfterTransition()
+        }
+      },
+    )
+
     Toothpick.inject(this, scope)
     artistLabel = findViewById(R.id.main_artist_label)
     titleLabel = findViewById(R.id.main_title_label)
@@ -454,11 +465,6 @@ class PlayerActivity :
         currentMinutes,
         currentSeconds,
       )
-  }
-
-  override fun onBackPressed() {
-    super.onBackPressed()
-    finishAfterTransition()
   }
 
   override fun onDestroy() {

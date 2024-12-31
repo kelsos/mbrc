@@ -17,9 +17,11 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
 import java.net.DatagramPacket
+import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.MulticastSocket
-import java.util.Locale
+import java.net.NetworkInterface
+import java.net.SocketException
 import javax.inject.Inject
 
 class RemoteServiceDiscovery
@@ -102,17 +104,27 @@ class RemoteServiceDiscovery
       multiCastLock = null
     }
 
-    private fun getWifiAddress(): String {
-      val wifiInfo = manager.connectionInfo
-      val address = wifiInfo.ipAddress
-      return String.Companion.format(
-        Locale.getDefault(),
-        "%d.%d.%d.%d",
-        address and 0xff,
-        address shr 8 and 0xff,
-        address shr 16 and 0xff,
-        address shr 24 and 0xff,
-      )
+    private fun getWifiAddress(): String? {
+      if (!isWifiConnected()) {
+        return null
+      }
+
+      try {
+        val interfaces = NetworkInterface.getNetworkInterfaces()
+        for (networkInterface in interfaces) {
+          if (networkInterface.isUp && !networkInterface.isLoopback) {
+            for (address in networkInterface.inetAddresses) {
+              if (address is Inet4Address && !address.isLoopbackAddress) {
+                return address.hostAddress
+              }
+            }
+          }
+        }
+        return null
+      } catch (e: SocketException) {
+        Timber.e(e, "Failed to get wifi address")
+        return null
+      }
     }
 
     private fun isWifiConnected(): Boolean {

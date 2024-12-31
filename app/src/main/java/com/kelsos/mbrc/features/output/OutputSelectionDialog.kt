@@ -64,8 +64,11 @@ class OutputSelectionDialog :
     Toothpick.inject(this, scope)
   }
 
-  override fun onActivityCreated(savedInstanceState: Bundle?) {
-    super.onActivityCreated(savedInstanceState)
+  override fun onViewCreated(
+    view: View,
+    savedInstanceState: Bundle?,
+  ) {
+    super.onViewCreated(view, savedInstanceState)
     viewModel.outputs.observe(this) {
       update(it)
     }

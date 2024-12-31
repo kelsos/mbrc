@@ -2,6 +2,7 @@ package com.kelsos.mbrc.platform.mediasession
 
 import android.content.Intent
 import android.view.KeyEvent
+import androidx.core.os.BundleCompat
 import com.kelsos.mbrc.constants.ProtocolEventType
 import com.kelsos.mbrc.data.UserAction
 import com.kelsos.mbrc.events.MessageEvent
@@ -26,7 +27,10 @@ class MediaIntentHandler
       var result = false
       if (mediaIntent?.action == Intent.ACTION_MEDIA_BUTTON) {
         val extras = mediaIntent.extras
-        val keyEvent = extras?.get(Intent.EXTRA_KEY_EVENT) as KeyEvent?
+        if (extras == null) {
+          return false
+        }
+        val keyEvent = BundleCompat.getParcelable<KeyEvent>(extras, Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
 
         if (keyEvent?.action != KeyEvent.ACTION_DOWN) {
           return false

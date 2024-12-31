@@ -7,7 +7,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.MenuItem
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.os.HandlerCompat
 import androidx.preference.CheckBoxPreference
@@ -24,12 +25,27 @@ import timber.log.Timber
 
 class SettingsFragment : PreferenceFragmentCompat() {
   private var bus: RxBus? = null
+  private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
   override fun onCreatePreferences(
     savedInstanceState: Bundle?,
     rootKey: String?,
   ) {
     addPreferencesFromResource(R.xml.application_settings)
+
+    requestPermissionLauncher =
+      registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+      ) { isGranted: Boolean ->
+        if (isGranted) {
+          // Permission granted
+          Timber.v("Permission granted for READ_PHONE_STATE")
+          restartService()
+        } else {
+          // Permission denied
+          Timber.w("Permission denied for READ_PHONE_STATE")
+        }
+      }
 
     val reduceOnIncoming =
       findPreference<ListPreference>(getString(R.string.settings_key_incoming_call_action))
@@ -88,7 +104,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
   }
 
   private fun requestPhoneStatePermission() {
-    requestPermissions(arrayOf(Manifest.permission.READ_PHONE_STATE), REQUEST_CODE)
+    if (ActivityCompat.checkSelfPermission(
+        requireContext(),
+        Manifest.permission.READ_PHONE_STATE,
+      ) == PackageManager.PERMISSION_GRANTED
+    ) {
+      restartService()
+    } else {
+      requestPermissionLauncher.launch(Manifest.permission.READ_PHONE_STATE)
+    }
   }
 
   private fun hasPhonePermission(): Boolean =
@@ -115,49 +139,26 @@ class SettingsFragment : PreferenceFragmentCompat() {
     dialog.show(requireActivity().supportFragmentManager, "licenses_dialogs")
   }
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean =
-    when (item.itemId) {
-      android.R.id.home -> {
-        requireActivity().finish()
-        true
-      }
-      else -> super.onOptionsItemSelected(item)
-    }
-
   fun setBus(bus: RxBus) {
     this.bus = bus
   }
 
-  override fun onRequestPermissionsResult(
-    requestCode: Int,
-    permissions: Array<out String>,
-    grantResults: IntArray,
-  ) {
-    if (
-      requestCode == REQUEST_CODE &&
-      grantResults.isNotEmpty() &&
-      grantResults.first() == PackageManager.PERMISSION_GRANTED
-    ) {
-      requireActivity().run {
-        Timber.v("Restarting service")
-        stopService(Intent(this, RemoteService::class.java))
-        val handler = Handler(Looper.getMainLooper())
-        HandlerCompat.postDelayed(handler, {
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(Intent(this, RemoteService::class.java))
-          } else {
-            startService(Intent(this, RemoteService::class.java))
-          }
-        }, null, 600)
-      }
-    } else {
-      super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+  private fun restartService() {
+    requireActivity().run {
+      Timber.v("Restarting service")
+      stopService(Intent(this, RemoteService::class.java))
+      val handler = Handler(Looper.getMainLooper())
+      HandlerCompat.postDelayed(handler, {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+          startForegroundService(Intent(this, RemoteService::class.java))
+        } else {
+          startService(Intent(this, RemoteService::class.java))
+        }
+      }, null, 600)
     }
   }
 
   companion object {
-    private const val REQUEST_CODE = 15
-
     fun newInstance(bus: RxBus): SettingsFragment {
       val fragment = SettingsFragment()
       fragment.setBus(bus)

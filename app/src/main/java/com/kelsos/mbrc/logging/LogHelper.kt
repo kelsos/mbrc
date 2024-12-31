@@ -16,7 +16,11 @@ object LogHelper {
     return Single.fromCallable {
       val filesDir = context.filesDir
       val logDir = File(filesDir, LOGS_DIR)
-      val logFiles = logDir.listFiles().filter { it.extension != "lck" }
+      val files = logDir.listFiles()
+      if (files == null) {
+        return@fromCallable false
+      }
+      val logFiles = files.filter { it.extension != "lck" }
       return@fromCallable logFiles.isNotEmpty()
     }
   }
@@ -30,8 +34,13 @@ object LogHelper {
         throw FileNotFoundException(logDir.canonicalPath)
       }
 
+      val files = logDir.listFiles()
+      if (files == null) {
+        throw RuntimeException("No log files found")
+      }
+
       val logFiles =
-        logDir.listFiles().filter {
+        files.filter {
           it.extension != "lck"
         }
 

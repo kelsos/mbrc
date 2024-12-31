@@ -1,6 +1,6 @@
 package com.kelsos.mbrc.features.settings
 
-import android.R
+import android.R.string.ok
 import android.app.Dialog
 import android.os.Bundle
 import android.webkit.WebView
@@ -18,7 +18,7 @@ class WebViewDialog : DialogFragment() {
         WebView(requireActivity()).apply {
           loadUrl(url)
         },
-      ).setPositiveButton(R.string.ok) { dialog, _ -> dialog.dismiss() }
+      ).setPositiveButton(ok) { dialog, _ -> dialog.dismiss() }
       .show()
   }
 

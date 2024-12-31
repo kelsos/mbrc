@@ -6,8 +6,7 @@
   android:elevation="2dp"
   android:gravity="bottom"
   android:orientation="vertical"
-  tools:showIn="@layout/activity_lyrics"
-  tools:targetApi="lollipop">
+  tools:showIn="@layout/activity_lyrics">
 
   <View
     android:layout_width="match_parent"

@@ -103,7 +103,7 @@ class RemoteSessionManager
       }
     }
 
-    private fun postAction(action: UserAction) {
+    internal fun postAction(action: UserAction) {
       bus.post(MessageEvent(ProtocolEventType.USER_ACTION, action))
     }
 

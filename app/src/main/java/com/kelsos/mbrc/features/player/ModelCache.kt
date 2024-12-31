@@ -15,7 +15,7 @@ import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 
-private val Context.cacheDataStore: DataStore<Store> by dataStore(
+internal val Context.cacheDataStore: DataStore<Store> by dataStore(
   fileName = "cache_store.db",
   serializer = PlayerStateSerializer,
 )

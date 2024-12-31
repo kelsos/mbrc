@@ -3,7 +3,6 @@ package com.kelsos.mbrc.features.output
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.AdapterView
@@ -100,8 +99,7 @@ class OutputSelectionDialog :
   @SuppressLint("InflateParams")
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val context = requireContext()
-    val inflater = LayoutInflater.from(context)
-    val view = inflater.inflate(R.layout.dialog__output_selection, null, false)
+    val view = layoutInflater.inflate(R.layout.dialog__output_selection, null, false)
 
     availableOutputs = view.findViewById(R.id.output_selection__available_outputs)
     loadingProgress = view.findViewById(R.id.output_selection__loading_outputs)

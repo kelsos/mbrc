@@ -70,7 +70,7 @@ class WidgetSmall : AppWidgetProvider() {
     for (appWidgetId in appWidgetIds) {
       // Create an Intent to launch ExampleActivity
       val intent = Intent(context, PlayerActivity::class.java)
-      val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+      val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
       // Get the layout for the App Widget and attach an on-click listener
       // to the button

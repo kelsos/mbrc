@@ -55,7 +55,7 @@ class LibraryActivity :
     return true
   }
 
-  private fun closeSearch(): Boolean {
+  internal fun closeSearch(): Boolean {
     searchView?.let {
       if (it.isShown) {
         it.isIconified = true
@@ -206,7 +206,7 @@ class LibraryActivity :
   }
 
   override fun updateArtistOnlyPreference(albumArtistOnly: Boolean?) {
-    this.albumArtistOnly?.isChecked = albumArtistOnly ?: false
+    this.albumArtistOnly?.isChecked = albumArtistOnly == true
   }
 
   override fun active(): Int = R.id.nav_library

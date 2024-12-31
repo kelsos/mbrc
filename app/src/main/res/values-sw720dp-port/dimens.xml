@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-  <dimen name="mbrc_volume_seekbar_height">8dp</dimen>
-  <dimen name="mbrc_volume_seekbar_padding">9dp</dimen>
-  <dimen name="mbrc_volume_seekbar_thumb_offset">16dp</dimen>
-  <dimen name="main_action_button_landscape_size">72dp</dimen>
-</resources>

@@ -11,11 +11,7 @@
   <dimen name="text_title_size">20sp</dimen>
   <dimen name="text_subhead_size">16sp</dimen>
   <dimen name="text_body_size">14sp</dimen>
-  <dimen name="mbrc_info_tab_height">72dp</dimen>
   <dimen name="list_dual_item_height">72dp</dimen>
-  <dimen name="medium_button_size">48dp</dimen>
-  <dimen name="large_button_size">68dp</dimen>
-  <dimen name="small_button_size">30dp</dimen>
   <dimen name="rating_dialog_height">64dp</dimen>
   <dimen name="rating_bar_height">48dp</dimen>
   <!-- Default screen margins, per the Android Design guidelines. -->
@@ -29,29 +25,19 @@
   <dimen name="widget_normal_min_width">250dp</dimen>
   <dimen name="widget_normal_height">128dp</dimen>
   <dimen name="widget_normal_text">16sp</dimen>
-  <dimen name="mbrc_volume_seekbar_height">8dp</dimen>
-  <dimen name="mbrc_volume_seekbar_padding">9dp</dimen>
-  <dimen name="mbrc_volume_seekbar_thumb_offset">16dp</dimen>
   <dimen name="fab_margin">8dp</dimen>
   <dimen name="dual_list_title">16sp</dimen>
   <dimen name="dual_list_subtitle">14sp</dimen>
-  <dimen name="list_item_padding">16dp</dimen>
   <dimen name="mini_control_title_text_size">16sp</dimen>
   <dimen name="mini_control_subtitle_text_size">14sp</dimen>
   <dimen name="nav_header_vertical_spacing">16dp</dimen>
   <dimen name="nav_header_height">160dp</dimen>
   <dimen name="list_padding_top">8dp</dimen>
-  <dimen name="subheader_height">48dp</dimen>
-  <dimen name="section_header_text_size">14sp</dimen>
-  <dimen name="play_button_size">52dp</dimen>
-  <dimen name="default_check_icon_size">28dp</dimen>
-  <dimen name="semicolon_padding">2dp</dimen>
   <dimen name="mini_control_peek_height">80dp</dimen>
 
   <dimen name="empty_view_icon_margin_top">20dp</dimen>
   <dimen name="empty_view_icon_margin_bottom">40dp</dimen>
   <dimen name="empty_view_icon_size">80dp</dimen>
-  <dimen name="main_action_button_landscape_size">44dp</dimen>
   <dimen name="list_album_size">48dp</dimen>
   <dimen name="cover_size">86dp</dimen>
 </resources>

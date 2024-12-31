@@ -11,9 +11,7 @@
   <color name="black">#000</color>
   <color name="power_on">#33A328</color>
   <color name="background_dark">#ff303030</color>
-  <color name="primary_text_material_light">#de000000</color>
   <color name="secondary_text_material_light">#8a000000</color>
   <color name="empty_view_icon_tint">#bdbdbd</color>
   <color name="light_gray">#bdbdbd</color>
-  <color name="update_background">#CC121212</color>
 </resources>

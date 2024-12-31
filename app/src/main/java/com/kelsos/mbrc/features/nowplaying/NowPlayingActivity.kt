@@ -51,7 +51,7 @@ class NowPlayingActivity :
     return true
   }
 
-  private fun closeSearch(): Boolean {
+  internal fun closeSearch(): Boolean {
     searchView?.let {
       if (it.isShown) {
         it.isIconified = true

@@ -30,14 +30,14 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.AttributeSet
-import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
 import com.kelsos.mbrc.R
 
-class CircleImageView : ImageView {
+class CircleImageView : AppCompatImageView {
   private val mDrawableRect = RectF()
   private val mBorderRect = RectF()
 

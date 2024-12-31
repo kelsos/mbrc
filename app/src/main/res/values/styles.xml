@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <style name="ActionBarStyle" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar">
-    <item name="android:textColorPrimary">@color/primary_text_material_light</item>
-    <item name="android:textColor">@color/primary_text</item>
-    <item name="actionMenuTextColor">@color/primary_text_material_light</item>
-    <item name="android:textColorSecondary">@color/secondary_text_material_light</item>
-  </style>
-
   <style name="Theme.App.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" >
     <item name="autoCompleteTextViewStyle">@style/Widget.App.AutoCompleteTextView.SearchView</item>
 
@@ -17,8 +10,6 @@
     <item name="android:textColorHint">#5000</item>
     <item name="android:textColor">@color/secondary_text_material_light</item>
   </style>>
-
-  <style name="Theme.App.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 
   <style name="empty_view_image">
     <item name="android:tint">@color/empty_view_icon_tint</item>

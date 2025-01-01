@@ -19,10 +19,7 @@ import com.kelsos.mbrc.features.dragsort.OnStartDragListener
 import com.kelsos.mbrc.features.dragsort.SimpleItemTouchHelper
 import com.kelsos.mbrc.features.player.TrackInfo
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import toothpick.Scope
-import toothpick.Toothpick
-import toothpick.smoothie.module.SmoothieActivityModule
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 
 class NowPlayingActivity :
   BaseActivity(),
@@ -34,14 +31,11 @@ class NowPlayingActivity :
   private lateinit var swipeRefreshLayout: MultiSwipeRefreshLayout
   private lateinit var emptyView: View
 
-  @Inject
-  lateinit var adapter: NowPlayingAdapter
+  private val adapter: NowPlayingAdapter by inject()
+  private val presenter: NowPlayingPresenter by inject()
 
-  @Inject
-  lateinit var presenter: NowPlayingPresenter
   private var searchView: SearchView? = null
   private var searchMenuItem: MenuItem? = null
-  private lateinit var scope: Scope
   private lateinit var touchListener: NowPlayingTouchListener
   private var itemTouchHelper: ItemTouchHelper? = null
 
@@ -78,8 +72,6 @@ class NowPlayingActivity :
   }
 
   public override fun onCreate(savedInstanceState: Bundle?) {
-    scope = Toothpick.openScopes(application, this)
-    scope.installModules(SmoothieActivityModule(this), NowPlayingModule.create())
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_nowplaying)
 
@@ -99,8 +91,8 @@ class NowPlayingActivity :
     swipeRefreshLayout = findViewById(R.id.swipe_layout)
     emptyView = findViewById(R.id.empty_view)
 
-    Toothpick.inject(this, scope)
     super.setup()
+
     swipeRefreshLayout.setSwipeableChildren(R.id.now_playing_list, R.id.empty_view)
     nowPlayingList.emptyView = emptyView
     val manager = LinearLayoutManager(this)
@@ -166,11 +158,6 @@ class NowPlayingActivity :
   }
 
   override fun active(): Int = R.id.nav_now_playing
-
-  override fun onDestroy() {
-    Toothpick.closeScope(this)
-    super.onDestroy()
-  }
 
   override fun update(cursor: FlowCursorList<NowPlaying>) {
     adapter.update(cursor)

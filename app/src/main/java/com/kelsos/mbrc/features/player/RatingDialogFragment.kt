@@ -12,31 +12,22 @@ import com.kelsos.mbrc.events.MessageEvent
 import com.kelsos.mbrc.events.bus.RxBus
 import com.kelsos.mbrc.events.ui.RatingChanged
 import com.kelsos.mbrc.networking.protocol.Protocol
-import toothpick.Scope
-import toothpick.Toothpick
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 
 class RatingDialogFragment : DialogFragment() {
-  @Inject
-  lateinit var bus: RxBus
-
-  @Inject
-  lateinit var model: MainDataModel
+  private val bus: RxBus by inject()
+  private val model: MainDataModel by inject()
   private var ratingBar: RatingBar? = null
   private var rating: Float = 0.toFloat()
-  private var scope: Scope? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    scope = Toothpick.openScopes(requireActivity().application, this)
-    Toothpick.inject(this, scope)
     bus.register(this, RatingChanged::class.java) { this.handleRatingChange(it) }
   }
 
   override fun onDestroy() {
     super.onDestroy()
     bus.unregister(this)
-    Toothpick.closeScope(this)
   }
 
   private fun handleRatingChange(event: RatingChanged) {

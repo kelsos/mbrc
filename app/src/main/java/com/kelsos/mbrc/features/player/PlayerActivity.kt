@@ -31,33 +31,21 @@ import com.kelsos.mbrc.annotations.PlayerState.State
 import com.kelsos.mbrc.annotations.Repeat
 import com.kelsos.mbrc.annotations.Repeat.Mode
 import com.kelsos.mbrc.changelog.ChangelogDialog
-import com.kelsos.mbrc.events.ui.OnMainFragmentOptionsInflated
 import com.kelsos.mbrc.events.ui.ShuffleChange
 import com.kelsos.mbrc.events.ui.ShuffleChange.ShuffleState
 import com.kelsos.mbrc.events.ui.UpdateDuration
 import com.kelsos.mbrc.extensions.getDimens
 import com.kelsos.mbrc.features.player.ProgressSeekerHelper.ProgressUpdate
 import com.squareup.picasso.Picasso
-import toothpick.Scope
-import toothpick.Toothpick
-import toothpick.smoothie.module.SmoothieActivityModule
+import org.koin.android.ext.android.inject
 import java.io.File
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class PlayerActivity :
   BaseActivity(),
   PlayerView,
   ProgressUpdate {
-  private val presenterScope: Class<*> = Presenter::class.java
-
-  // Injects
-  @Inject
-  lateinit var presenter: PlayerViewPresenter
-
-  @Inject
-  lateinit var progressHelper: ProgressSeekerHelper
+  private val presenter: PlayerViewPresenter by inject()
+  private val progressHelper: ProgressSeekerHelper by inject()
 
   private lateinit var artistLabel: TextView
   private lateinit var titleLabel: TextView
@@ -81,12 +69,8 @@ class PlayerActivity :
   private var volumeChangeListener: SeekBarThrottler? = null
   private var positionChangeListener: SeekBarThrottler? = null
 
-  private lateinit var scope: Scope
-
   override fun onCreate(savedInstanceState: Bundle?) {
     installSplashScreen()
-    scope = Toothpick.openScopes(application, presenterScope, this)
-    scope.installModules(SmoothieActivityModule(this), PlayerModule())
     window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
     setExitSharedElementCallback(MaterialContainerTransformSharedElementCallback())
     window.sharedElementsUseOverlay = false
@@ -102,7 +86,6 @@ class PlayerActivity :
       },
     )
 
-    Toothpick.inject(this, scope)
     artistLabel = findViewById(R.id.main_artist_label)
     titleLabel = findViewById(R.id.main_title_label)
     albumLabel = findViewById(R.id.main_label_album)
@@ -130,9 +113,9 @@ class PlayerActivity :
     presenter.attach(this)
   }
 
-  override fun onNewIntent(intent: Intent?) {
+  override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
-    if (intent?.getBooleanExtra(EXIT_APP, false) == true) {
+    if (intent.getBooleanExtra(EXIT_APP, false) == true) {
       exitApplication()
       return
     }
@@ -205,7 +188,6 @@ class PlayerActivity :
   override fun onStop() {
     super.onStop()
     presenter.detach()
-    bus.unregister(this)
     progressHelper.setProgressListener(null)
     volumeChangeListener?.terminate()
     volumeChangeListener = null
@@ -221,7 +203,6 @@ class PlayerActivity :
     val shareItem = menu.findItem(R.id.actionbar_share)
     mShareActionProvider = MenuItemCompat.getActionProvider(shareItem) as ShareActionProvider
     mShareActionProvider!!.setShareIntent(shareIntent)
-    bus.post(OnMainFragmentOptionsInflated())
     return super.onCreateOptionsMenu(menu)
   }
 
@@ -470,12 +451,6 @@ class PlayerActivity :
   }
 
   override fun onDestroy() {
-    Toothpick.closeScope(this)
-    if (isFinishing) {
-      // when we leave the presenter flow,
-      // we close its scope
-      Toothpick.closeScope(presenterScope)
-    }
     outOfDateDialog?.dismiss()
     changeLogDialog?.dismiss()
     super.onDestroy()
@@ -495,9 +470,4 @@ class PlayerActivity :
         else -> STOPPED
       }
   }
-
-  @javax.inject.Scope
-  @Target(AnnotationTarget.TYPE)
-  @Retention(AnnotationRetention.RUNTIME)
-  annotation class Presenter
 }

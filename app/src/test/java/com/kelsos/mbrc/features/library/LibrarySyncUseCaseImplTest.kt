@@ -23,79 +23,65 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import toothpick.Scope
-import toothpick.Toothpick
-import toothpick.config.Module
-import toothpick.testing.ToothPickRule
-import toothpick.testing.ToothPickTestModule
+import org.koin.core.context.GlobalContext.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.inject
 import java.net.SocketTimeoutException
 
-class LibrarySyncInteractorImplTest {
-  @Rule
-  fun toothPickRule() = ToothPickRule(this)
-
-  private val scopeClass: Class<*> = TestCase::class.java
-
-  lateinit var genreRepository: GenreRepository
-  lateinit var artistRepository: ArtistRepository
-  lateinit var albumRepository: AlbumRepository
-  lateinit var trackRepository: TrackRepository
-  lateinit var playlistRepository: PlaylistRepository
-  lateinit var bus: RxBus
-
-  private lateinit var scope: Scope
+class LibrarySyncUseCaseImplTest : KoinTest {
+  private val genreRepository: GenreRepository by inject()
+  private val artistRepository: ArtistRepository by inject()
+  private val albumRepository: AlbumRepository by inject()
+  private val trackRepository: TrackRepository by inject()
+  private val playlistRepository: PlaylistRepository by inject()
+  private val sync: LibrarySyncUseCase by inject()
+  private val bus: RxBus by inject()
 
   private val testDispatcher = StandardTestDispatcher()
 
+  private val testModule =
+    module {
+      single {
+        AppCoroutineDispatchers(
+          testDispatcher,
+          testDispatcher,
+          testDispatcher,
+          testDispatcher,
+        )
+      }
+      singleOf(::LibrarySyncUseCaseImpl) { bind<LibrarySyncUseCase>() }
+      single { mockk<GenreRepository>() }
+      single { mockk<ArtistRepository>() }
+      single { mockk<AlbumRepository>() }
+      single { mockk<TrackRepository>() }
+      single { mockk<PlaylistRepository>() }
+      single { mockk<RxBus>() }
+      single { ObjectMapper().registerKotlinModule() }
+      single { mockk<CoverCache>(relaxed = true) }
+    }
+
   @Before
   fun setUp() {
-    genreRepository = mockk()
-    artistRepository = mockk()
-    albumRepository = mockk()
-    trackRepository = mockk()
-    playlistRepository = mockk()
-    bus = mockk()
-    scope = Toothpick.openScope(scopeClass)
-    scope.installModules(
-      ToothPickTestModule(this),
-      object : Module() {
-        init {
-          bind(AppCoroutineDispatchers::class.java).toInstance(
-            AppCoroutineDispatchers(
-              testDispatcher,
-              testDispatcher,
-              testDispatcher,
-            ),
-          )
-          bind(GenreRepository::class.java).toInstance(genreRepository)
-          bind(ArtistRepository::class.java).toInstance(artistRepository)
-          bind(AlbumRepository::class.java).toInstance(albumRepository)
-          bind(TrackRepository::class.java).toInstance(trackRepository)
-          bind(PlaylistRepository::class.java).toInstance(playlistRepository)
-          bind(RxBus::class.java).toInstance(bus)
-          bind(LibrarySyncInteractor::class.java).to(LibrarySyncInteractorImpl::class.java).singletonInScope()
-          bind(ObjectMapper::class.java).toInstance(ObjectMapper().registerKotlinModule())
-          bind(CoverCache::class.java).toInstance(mockk(relaxed = true))
-        }
-      },
-    )
-
+    startKoin {
+      modules(listOf(testModule))
+    }
     every { bus.post(any()) } just Runs
   }
 
   @After
   fun tearDown() {
-    Toothpick.closeScope(scopeClass)
-    Toothpick.reset()
+    stopKoin()
   }
 
   @Test
   fun emptyLibraryAutoSync() =
     runTest(testDispatcher) {
       val onCompleteListener = setupOnCompleteListener()
-      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
       mockCacheState(true)
       mockSuccessfulRepositoryResponse()
@@ -120,7 +106,6 @@ class LibrarySyncInteractorImplTest {
   fun nonEmptyLibraryAutoSync() =
     runTest(testDispatcher) {
       val onCompleteListener = setupOnCompleteListener()
-      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
       mockCacheState(false)
       mockSuccessfulRepositoryResponse()
@@ -142,7 +127,6 @@ class LibrarySyncInteractorImplTest {
   fun nonEmptyLibraryManualSyncTwiceConsecutiveCalled() =
     runTest(testDispatcher) {
       val onCompleteListener = setupOnCompleteListener()
-      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
       mockCacheState(false)
       mockSuccessfulRepositoryResponse()
@@ -169,7 +153,6 @@ class LibrarySyncInteractorImplTest {
   fun nonEmptyLibraryManualSyncAndSecondAfterCompletion() =
     runTest(testDispatcher) {
       var onCompleteListener = setupOnCompleteListener()
-      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
       mockCacheState(false)
       mockSuccessfulRepositoryResponse()
@@ -216,7 +199,6 @@ class LibrarySyncInteractorImplTest {
   fun nonEmptyLibraryManualSyncFailure() =
     runTest(testDispatcher) {
       val onCompleteListener = setupOnCompleteListener()
-      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
 
       mockCacheState(false)
       mockFailedRepositoryResponse()
@@ -237,8 +219,8 @@ class LibrarySyncInteractorImplTest {
       assertThat(sync.isRunning()).isFalse()
     }
 
-  private fun setupOnCompleteListener(): LibrarySyncInteractor.OnCompleteListener {
-    val onCompleteListener = mockk<LibrarySyncInteractor.OnCompleteListener>()
+  private fun setupOnCompleteListener(): LibrarySyncUseCase.OnCompleteListener {
+    val onCompleteListener = mockk<LibrarySyncUseCase.OnCompleteListener>()
     every { onCompleteListener.onTermination() } just Runs
     every { onCompleteListener.onSuccess(any()) } just Runs
     every { onCompleteListener.onFailure(any()) } just Runs
@@ -248,8 +230,6 @@ class LibrarySyncInteractorImplTest {
   @Test
   fun syncWithoutCompletionListener() =
     runTest(testDispatcher) {
-      val sync = scope.getInstance(LibrarySyncInteractor::class.java)
-
       mockCacheState(false)
       mockSuccessfulRepositoryResponse()
 
@@ -301,11 +281,6 @@ class LibrarySyncInteractorImplTest {
     coEvery { trackRepository.getRemote() } coAnswers { wait() }
     coEvery { playlistRepository.getRemote() } coAnswers { wait() }
   }
-
-  @javax.inject.Scope
-  @Target(AnnotationTarget.TYPE)
-  @Retention(AnnotationRetention.RUNTIME)
-  annotation class TestCase
 
   companion object {
     const val TASK_DELAY = 400L

@@ -16,105 +16,102 @@ import com.kelsos.mbrc.common.ui.SquareImageView
 import com.raizlabs.android.dbflow.list.FlowCursorList
 import com.squareup.picasso.Picasso
 import java.io.File
-import javax.inject.Inject
 
-class AlbumEntryAdapter
-  @Inject
-  constructor(
-    context: Activity,
-  ) : RecyclerView.Adapter<AlbumEntryAdapter.ViewHolder>() {
-    private val inflater: LayoutInflater = LayoutInflater.from(context)
-    private var data: FlowCursorList<Album>? = null
-    private var listener: MenuItemSelectedListener? = null
-    private val cache = File(context.cacheDir, "covers")
+class AlbumEntryAdapter(
+  context: Activity,
+) : RecyclerView.Adapter<AlbumEntryAdapter.ViewHolder>() {
+  private val inflater: LayoutInflater = LayoutInflater.from(context)
+  private var data: FlowCursorList<Album>? = null
+  private var listener: MenuItemSelectedListener? = null
+  private val cache = File(context.cacheDir, "covers")
 
-    override fun onCreateViewHolder(
-      parent: ViewGroup,
-      viewType: Int,
-    ): ViewHolder {
-      val view = inflater.inflate(R.layout.ui_list_dual, parent, false)
-      val holder = ViewHolder(view)
-      holder.indicator.setOnClickListener {
-        val popupMenu = PopupMenu(it.context, it)
-        popupMenu.inflate(R.menu.popup_album)
-        popupMenu.setOnMenuItemClickListener { menuItem ->
-          val data = this.data ?: return@setOnMenuItemClickListener false
-          val position = holder.bindingAdapterPosition.toLong()
-          val album = data.getItem(position) ?: return@setOnMenuItemClickListener false
-          listener?.onMenuItemSelected(menuItem, album)
-          true
-        }
-        popupMenu.show()
-      }
-
-      holder.itemView.setOnClickListener {
-        val data = this.data ?: return@setOnClickListener
+  override fun onCreateViewHolder(
+    parent: ViewGroup,
+    viewType: Int,
+  ): ViewHolder {
+    val view = inflater.inflate(R.layout.ui_list_dual, parent, false)
+    val holder = ViewHolder(view)
+    holder.indicator.setOnClickListener {
+      val popupMenu = PopupMenu(it.context, it)
+      popupMenu.inflate(R.menu.popup_album)
+      popupMenu.setOnMenuItemClickListener { menuItem ->
+        val data = this.data ?: return@setOnMenuItemClickListener false
         val position = holder.bindingAdapterPosition.toLong()
-        val album = data.getItem(position) ?: return@setOnClickListener
-        listener?.onItemClicked(album)
+        val album = data.getItem(position) ?: return@setOnMenuItemClickListener false
+        listener?.onMenuItemSelected(menuItem, album)
+        true
       }
-      return holder
+      popupMenu.show()
     }
 
-    override fun onBindViewHolder(
-      holder: ViewHolder,
-      position: Int,
-    ) {
-      val data = this.data ?: return
-      val item = data.getItem(position.toLong()) ?: return
-      val (artist, album, _, _) = item
-      holder.album.text = if (album.isNullOrBlank()) holder.emptyAlbum else album
-      holder.artist.text = if (artist.isNullOrBlank()) holder.unknownArtist else artist
-      Picasso
-        .get()
-        .load(File(cache, item.key()))
-        .noFade()
-        .config(Bitmap.Config.RGB_565)
-        .error(R.drawable.ic_image_no_cover)
-        .placeholder(R.drawable.ic_image_no_cover)
-        .resizeDimen(R.dimen.list_album_size, R.dimen.list_album_size)
-        .centerCrop()
-        .into(holder.image)
+    holder.itemView.setOnClickListener {
+      val data = this.data ?: return@setOnClickListener
+      val position = holder.bindingAdapterPosition.toLong()
+      val album = data.getItem(position) ?: return@setOnClickListener
+      listener?.onItemClicked(album)
     }
+    return holder
+  }
 
-    fun refresh() {
-      data?.refresh()
-      notifyDataSetChanged()
-    }
+  override fun onBindViewHolder(
+    holder: ViewHolder,
+    position: Int,
+  ) {
+    val data = this.data ?: return
+    val item = data.getItem(position.toLong()) ?: return
+    val (artist, album, _, _) = item
+    holder.album.text = if (album.isNullOrBlank()) holder.emptyAlbum else album
+    holder.artist.text = if (artist.isNullOrBlank()) holder.unknownArtist else artist
+    Picasso
+      .get()
+      .load(File(cache, item.key()))
+      .noFade()
+      .config(Bitmap.Config.RGB_565)
+      .error(R.drawable.ic_image_no_cover)
+      .placeholder(R.drawable.ic_image_no_cover)
+      .resizeDimen(R.dimen.list_album_size, R.dimen.list_album_size)
+      .centerCrop()
+      .into(holder.image)
+  }
 
-    override fun getItemCount(): Int = data?.count?.toInt() ?: 0
+  fun refresh() {
+    data?.refresh()
+    notifyDataSetChanged()
+  }
 
-    fun setMenuItemSelectedListener(listener: MenuItemSelectedListener) {
-      this.listener = listener
-    }
+  override fun getItemCount(): Int = data?.count?.toInt() ?: 0
 
-    interface MenuItemSelectedListener {
-      fun onMenuItemSelected(
-        menuItem: MenuItem,
-        album: Album,
-      )
+  fun setMenuItemSelectedListener(listener: MenuItemSelectedListener) {
+    this.listener = listener
+  }
 
-      fun onItemClicked(album: Album)
-    }
+  interface MenuItemSelectedListener {
+    fun onMenuItemSelected(
+      menuItem: MenuItem,
+      album: Album,
+    )
 
-    class ViewHolder(
-      itemView: View,
-    ) : RecyclerView.ViewHolder(itemView) {
-      val artist: TextView = itemView.findViewById(R.id.line_two)
-      val album: TextView = itemView.findViewById(R.id.line_one)
-      val image: SquareImageView = itemView.findViewById(R.id.cover)
-      val indicator: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
+    fun onItemClicked(album: Album)
+  }
 
-      val unknownArtist: String = itemView.context.getString(R.string.unknown_artist)
-      val emptyAlbum: String = itemView.context.getString(R.string.non_album_tracks)
+  class ViewHolder(
+    itemView: View,
+  ) : RecyclerView.ViewHolder(itemView) {
+    val artist: TextView = itemView.findViewById(R.id.line_two)
+    val album: TextView = itemView.findViewById(R.id.line_one)
+    val image: SquareImageView = itemView.findViewById(R.id.cover)
+    val indicator: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
 
-      init {
-        image.isGone = false
-      }
-    }
+    val unknownArtist: String = itemView.context.getString(R.string.unknown_artist)
+    val emptyAlbum: String = itemView.context.getString(R.string.non_album_tracks)
 
-    fun update(albums: FlowCursorList<Album>) {
-      data = albums
-      notifyDataSetChanged()
+    init {
+      image.isGone = false
     }
   }
+
+  fun update(albums: FlowCursorList<Album>) {
+    data = albums
+    notifyDataSetChanged()
+  }
+}

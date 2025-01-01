@@ -22,10 +22,8 @@ import java.net.InetAddress
 import java.net.MulticastSocket
 import java.net.NetworkInterface
 import java.net.SocketException
-import javax.inject.Inject
 
 class RemoteServiceDiscovery
-  @Inject
   internal constructor(
     private val manager: WifiManager,
     private val connectivityManager: ConnectivityManager,

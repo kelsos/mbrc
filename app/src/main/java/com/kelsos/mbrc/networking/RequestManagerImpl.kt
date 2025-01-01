@@ -13,89 +13,86 @@ import timber.log.Timber
 import java.io.IOException
 import java.net.Socket
 import java.nio.charset.Charset
-import javax.inject.Inject
 
-class RequestManagerImpl
-  @Inject
-  constructor(
-    private val mapper: ObjectMapper,
-    private val repository: ConnectionRepository,
-    private val dispatchers: AppCoroutineDispatchers,
-  ) : RequestManager {
-    override suspend fun openConnection(handshake: Boolean): ActiveConnection =
-      withContext(dispatchers.io) {
-        val firstMessage = if (handshake) SocketMessage.create(Protocol.PLAYER, "Android") else null
-        val socket = connect(firstMessage)
+class RequestManagerImpl(
+  private val mapper: ObjectMapper,
+  private val repository: ConnectionRepository,
+  private val dispatchers: AppCoroutineDispatchers,
+) : RequestManager {
+  override suspend fun openConnection(handshake: Boolean): ActiveConnection =
+    withContext(dispatchers.io) {
+      val firstMessage = if (handshake) SocketMessage.create(Protocol.PLAYER, "Android") else null
+      val socket = connect(firstMessage)
 
-        val inputStream = socket.getInputStream()
-        val bufferedReader = inputStream.bufferedReader(Charset.defaultCharset())
+      val inputStream = socket.getInputStream()
+      val bufferedReader = inputStream.bufferedReader(Charset.defaultCharset())
 
-        while (handshake) {
-          val line = bufferedReader.readLine()
-          if (line.isNullOrEmpty()) {
-            break
-          }
-
-          val message = mapper.readValue<SocketMessage>(line)
-
-          val context = message.context
-          Timber.v("incoming context => $context")
-          if (Protocol.PLAYER == context) {
-            val payload = getProtocolPayload()
-            socket.send(SocketMessage.create(Protocol.PROTOCOL_TAG, payload))
-          } else if (Protocol.PROTOCOL_TAG == context) {
-            Timber.v("socket handshake complete")
-            break
-          }
+      while (handshake) {
+        val line = bufferedReader.readLine()
+        if (line.isNullOrEmpty()) {
+          break
         }
 
-        return@withContext ActiveConnection(socket, bufferedReader)
-      }
+        val message = mapper.readValue<SocketMessage>(line)
 
-    private fun getProtocolPayload(): ProtocolPayload =
-      ProtocolPayload().apply {
-        noBroadcast = true
-        protocolVersion = Protocol.PROTOCOL_VERSION_NUMBER
-      }
-
-    override suspend fun request(
-      connection: ActiveConnection,
-      message: SocketMessage,
-    ): String =
-      withContext(dispatchers.io) {
-        connection.send(message.getBytes())
-        val readLine = connection.readLine()
-        return@withContext if (readLine.isEmpty()) {
-          connection.readLine()
-        } else {
-          readLine
+        val context = message.context
+        Timber.v("incoming context => $context")
+        if (Protocol.PLAYER == context) {
+          val payload = getProtocolPayload()
+          socket.send(SocketMessage.create(Protocol.PROTOCOL_TAG, payload))
+        } else if (Protocol.PROTOCOL_TAG == context) {
+          Timber.v("socket handshake complete")
+          break
         }
       }
 
-    private suspend fun connect(firstMessage: SocketMessage?): Socket {
-      val mapper = InetAddressMapper()
-      val connectionSettings = checkNotNull(repository.getDefault())
+      return@withContext ActiveConnection(socket, bufferedReader)
+    }
 
-      try {
-        val socketAddress = mapper.map(connectionSettings)
-        Timber.v("Creating new socket")
+  private fun getProtocolPayload(): ProtocolPayload =
+    ProtocolPayload().apply {
+      noBroadcast = true
+      protocolVersion = Protocol.PROTOCOL_VERSION_NUMBER
+    }
 
-        return Socket().apply {
-          soTimeout = 20 * 1000
-          connect(socketAddress)
-          firstMessage?.let {
-            send(it)
-          }
-        }
-      } catch (e: IOException) {
-        Timber.v("failed to create socket")
-        throw e
+  override suspend fun request(
+    connection: ActiveConnection,
+    message: SocketMessage,
+  ): String =
+    withContext(dispatchers.io) {
+      connection.send(message.getBytes())
+      val readLine = connection.readLine()
+      return@withContext if (readLine.isEmpty()) {
+        connection.readLine()
+      } else {
+        readLine
       }
     }
 
-    private fun SocketMessage.getBytes(): ByteArray = (mapper.writeValueAsString(this) + "\r\n").toByteArray()
+  private suspend fun connect(firstMessage: SocketMessage?): Socket {
+    val mapper = InetAddressMapper()
+    val connectionSettings = checkNotNull(repository.getDefault())
 
-    private fun Socket.send(socketMessage: SocketMessage) {
-      this.outputStream.write(socketMessage.getBytes())
+    try {
+      val socketAddress = mapper.map(connectionSettings)
+      Timber.v("Creating new socket")
+
+      return Socket().apply {
+        soTimeout = 20 * 1000
+        connect(socketAddress)
+        firstMessage?.let {
+          send(it)
+        }
+      }
+    } catch (e: IOException) {
+      Timber.v("failed to create socket")
+      throw e
     }
   }
+
+  private fun SocketMessage.getBytes(): ByteArray = (mapper.writeValueAsString(this) + "\r\n").toByteArray()
+
+  private fun Socket.send(socketMessage: SocketMessage) {
+    this.outputStream.write(socketMessage.getBytes())
+  }
+}

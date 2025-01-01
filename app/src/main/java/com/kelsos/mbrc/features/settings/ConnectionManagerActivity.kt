@@ -3,7 +3,6 @@ package com.kelsos.mbrc.features.settings
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,27 +18,21 @@ import com.kelsos.mbrc.events.ui.ConnectionSettingsChanged
 import com.kelsos.mbrc.events.ui.DiscoveryStopped
 import com.kelsos.mbrc.events.ui.NotifyUser
 import com.kelsos.mbrc.networking.discovery.DiscoveryStop
-import toothpick.Scope
-import toothpick.Toothpick
-import toothpick.smoothie.module.SmoothieActivityModule
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
+import org.koin.androidx.scope.ScopeActivity
 
 class ConnectionManagerActivity :
-  AppCompatActivity(),
+  ScopeActivity(),
   ConnectionManagerView,
   SettingsDialogFragment.SettingsSaveListener,
   ConnectionAdapter.ConnectionChangeListener {
-  @Inject
-  lateinit var bus: RxBus
-
-  @Inject
-  lateinit var presenter: ConnectionManagerPresenter
+  private val bus: RxBus by inject()
+  private val presenter: ConnectionManagerPresenter by inject()
 
   private lateinit var recyclerView: RecyclerView
   private lateinit var toolbar: MaterialToolbar
 
   private var adapter: ConnectionAdapter? = null
-  private var scope: Scope? = null
 
   private fun onAddButtonClick() {
     val settingsDialog = SettingsDialogFragment()
@@ -52,10 +45,7 @@ class ConnectionManagerActivity :
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    scope = Toothpick.openScopes(application, this)
-    scope!!.installModules(SmoothieActivityModule(this), ConnectionManagerModule.create())
     super.onCreate(savedInstanceState)
-    Toothpick.inject(this, scope)
     setContentView(R.layout.ui_activity_connection_manager)
     recyclerView = findViewById(R.id.connection_list)
     toolbar = findViewById(R.id.toolbar)
@@ -71,11 +61,6 @@ class ConnectionManagerActivity :
     recyclerView.adapter = adapter
     presenter.attach(this)
     presenter.load()
-  }
-
-  override fun onDestroy() {
-    Toothpick.closeScope(this)
-    super.onDestroy()
   }
 
   override fun onStart() {

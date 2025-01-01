@@ -19,32 +19,19 @@ import com.kelsos.mbrc.networking.protocol.CommandRegistration
 import com.kelsos.mbrc.networking.protocol.RemoteController
 import com.kelsos.mbrc.platform.mediasession.RemoteViewIntentBuilder
 import com.kelsos.mbrc.platform.mediasession.SessionNotificationManager
+import org.koin.android.ext.android.getKoin
+import org.koin.android.ext.android.inject
 import timber.log.Timber
-import toothpick.Scope
-import toothpick.Toothpick
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class RemoteService : Service() {
   private val controllerBinder = ControllerBinder()
 
-  @Inject
-  lateinit var remoteController: RemoteController
-
-  @Inject
-  lateinit var discovery: RemoteServiceDiscovery
-
-  @Inject
-  lateinit var receiver: RemoteBroadcastReceiver
-
-  @Inject
-  lateinit var sessionNotificationManager: SessionNotificationManager
-
+  private val remoteController: RemoteController by inject()
+  private val discovery: RemoteServiceDiscovery by inject()
+  private val receiver: RemoteBroadcastReceiver by inject()
   private var threadPoolExecutor: ExecutorService? = null
-  private lateinit var scope: Scope
   private lateinit var handler: Handler
 
   private fun placeholderNotification(): Notification {
@@ -80,8 +67,6 @@ class RemoteService : Service() {
     startForeground(SessionNotificationManager.Companion.NOW_PLAYING_PLACEHOLDER, placeholderNotification())
     handler = Handler(Looper.myLooper()!!)
     serviceRunning = true
-    scope = Toothpick.openScope(application)
-    Toothpick.inject(this, scope)
     ContextCompat.registerReceiver(this, receiver, receiver.filter(this), ContextCompat.RECEIVER_NOT_EXPORTED)
   }
 
@@ -92,7 +77,7 @@ class RemoteService : Service() {
   ): Int {
     Timber.Forest.d("Background Service::Started")
     startForeground(SessionNotificationManager.Companion.NOW_PLAYING_PLACEHOLDER, placeholderNotification())
-    CommandRegistration.register(remoteController, scope)
+    CommandRegistration.register(remoteController, getKoin())
     threadPoolExecutor =
       Executors
         .newSingleThreadExecutor {
@@ -116,7 +101,6 @@ class RemoteService : Service() {
       remoteController.executeCommand(MessageEvent(UserInputEventType.TERMINATE_CONNECTION))
       CommandRegistration.unregister(remoteController)
       threadPoolExecutor?.shutdownNow()
-      Toothpick.closeScope(this)
 
       serviceStopping = false
       serviceRunning = false

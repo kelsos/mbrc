@@ -3,24 +3,18 @@ package com.kelsos.mbrc.platform.mediasession
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import toothpick.Scope
-import toothpick.Toothpick
-import javax.inject.Inject
+import org.koin.core.component.KoinComponent
 
-class MediaButtonReceiver : BroadcastReceiver() {
-  @Inject
-  lateinit var handler: MediaIntentHandler
-  private var scope: Scope? = null
-
+class MediaButtonReceiver :
+  BroadcastReceiver(),
+  KoinComponent {
   override fun onReceive(
     context: Context,
     intent: Intent,
   ) {
-    if (scope == null) {
-      scope = Toothpick.openScope(context.applicationContext)
-      Toothpick.inject(this, scope)
+    if (intent.action != Intent.ACTION_MEDIA_BUTTON) {
+      return
     }
-
-    handler.handleMediaIntent(intent)
+    getKoin().get<MediaIntentHandler>().handleMediaIntent(intent)
   }
 }

@@ -17,28 +17,26 @@ import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.features.library.ArtistEntryAdapter.MenuItemSelectedListener
 import com.kelsos.mbrc.features.queue.PopupActionHandler
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import toothpick.Scope
-import toothpick.Toothpick
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
+import org.koin.android.scope.AndroidScopeComponent
+import org.koin.androidx.scope.fragmentScope
+import org.koin.core.scope.Scope
 
 class BrowseArtistFragment :
   Fragment(),
   BrowseArtistView,
-  MenuItemSelectedListener {
+  MenuItemSelectedListener,
+  AndroidScopeComponent {
   private lateinit var recycler: EmptyRecyclerView
   private lateinit var emptyView: View
   private lateinit var emptyTitle: TextView
 
-  @Inject
-  lateinit var adapter: ArtistEntryAdapter
+  override val scope: Scope by fragmentScope()
 
-  @Inject
-  lateinit var actionHandler: PopupActionHandler
+  private val adapter: ArtistEntryAdapter by inject()
+  private val actionHandler: PopupActionHandler by inject()
+  private val presenter: BrowseArtistPresenter by inject()
 
-  @Inject
-  lateinit var presenter: BrowseArtistPresenter
-
-  private var scope: Scope? = null
   private lateinit var syncButton: Button
 
   override fun search(term: String) {
@@ -59,13 +57,6 @@ class BrowseArtistFragment :
       .make(recycler, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
       .setText(message)
       .show()
-  }
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    scope = Toothpick.openScopes(requireActivity().application, LibraryActivity.Companion.LIBRARY_SCOPE, activity, this)
-    scope?.installModules(BrowseArtistModule())
-    super.onCreate(savedInstanceState)
-    Toothpick.inject(this, scope)
   }
 
   override fun onStart() {

@@ -16,26 +16,25 @@ import com.kelsos.mbrc.annotations.Queue
 import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.features.queue.PopupActionHandler
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import toothpick.Toothpick
-import toothpick.smoothie.module.SmoothieActivityModule
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
+import org.koin.android.scope.AndroidScopeComponent
+import org.koin.androidx.scope.fragmentScope
+import org.koin.core.scope.Scope
 
 class BrowseAlbumFragment :
   Fragment(),
   BrowseAlbumView,
+  AndroidScopeComponent,
   AlbumEntryAdapter.MenuItemSelectedListener {
   private lateinit var recycler: EmptyRecyclerView
   private lateinit var emptyView: View
   private lateinit var emptyTitle: TextView
 
-  @Inject
-  lateinit var adapter: AlbumEntryAdapter
+  override val scope: Scope by fragmentScope()
 
-  @Inject
-  lateinit var actionHandler: PopupActionHandler
-
-  @Inject
-  lateinit var presenter: BrowseAlbumPresenter
+  private val adapter: AlbumEntryAdapter by inject()
+  private val actionHandler: PopupActionHandler by inject()
+  private val presenter: BrowseAlbumPresenter by inject()
 
   private lateinit var syncButton: Button
 
@@ -73,19 +72,7 @@ class BrowseAlbumFragment :
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    val scope =
-      Toothpick.openScopes(
-        requireActivity().application,
-        LibraryActivity.Companion.LIBRARY_SCOPE,
-        activity,
-        this,
-      )
-    scope.installModules(
-      SmoothieActivityModule(requireActivity()),
-      BrowseAlbumModule(),
-    )
     super.onCreate(savedInstanceState)
-    Toothpick.inject(this, scope)
     presenter.attach(this)
     presenter.load()
   }
@@ -139,10 +126,5 @@ class BrowseAlbumFragment :
       .make(recycler, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
       .setText(message)
       .show()
-  }
-
-  override fun onDestroy() {
-    Toothpick.closeScope(this)
-    super.onDestroy()
   }
 }

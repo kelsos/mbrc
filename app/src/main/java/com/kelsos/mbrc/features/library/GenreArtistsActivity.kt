@@ -3,7 +3,6 @@ package com.kelsos.mbrc.features.library
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.MaterialToolbar
@@ -15,40 +14,26 @@ import com.kelsos.mbrc.extensions.enableHome
 import com.kelsos.mbrc.features.library.ArtistEntryAdapter.MenuItemSelectedListener
 import com.kelsos.mbrc.features.queue.PopupActionHandler
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import toothpick.Scope
-import toothpick.Toothpick
-import toothpick.smoothie.module.SmoothieActivityModule
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
+import org.koin.androidx.scope.ScopeActivity
 
 class GenreArtistsActivity :
-  AppCompatActivity(),
+  ScopeActivity(),
   GenreArtistsView,
   MenuItemSelectedListener {
   private lateinit var recyclerView: EmptyRecyclerView
   private lateinit var toolbar: MaterialToolbar
   private lateinit var emptyView: ConstraintLayout
 
-  @Inject
-  lateinit var adapter: ArtistEntryAdapter
-
-  @Inject
-  lateinit var actionHandler: PopupActionHandler
-
-  @Inject
-  lateinit var presenter: GenreArtistsPresenter
+  private val adapter: ArtistEntryAdapter by inject()
+  private val actionHandler: PopupActionHandler by inject()
+  private val presenter: GenreArtistsPresenter by inject()
 
   private var genre: String? = null
-  private var scope: Scope? = null
 
   public override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_genre_artists)
-    scope = Toothpick.openScopes(application, this)
-    scope!!.installModules(
-      SmoothieActivityModule(this),
-      GenreArtistsModule(),
-    )
-    Toothpick.inject(this, scope)
 
     onBackPressedDispatcher.addCallback(
       this,
@@ -136,11 +121,6 @@ class GenreArtistsActivity :
   override fun onStop() {
     super.onStop()
     presenter.detach()
-  }
-
-  override fun onDestroy() {
-    super.onDestroy()
-    Toothpick.closeScope(this)
   }
 
   companion object {

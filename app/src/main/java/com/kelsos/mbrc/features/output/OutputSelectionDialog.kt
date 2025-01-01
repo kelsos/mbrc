@@ -1,6 +1,5 @@
 package com.kelsos.mbrc.features.output
 
-import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.view.MotionEvent
@@ -15,15 +14,24 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.kelsos.mbrc.R
-import com.kelsos.mbrc.di.modules.obtainViewModel
-import toothpick.Scope
-import toothpick.Toothpick
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import org.koin.android.scope.AndroidScopeComponent
+import org.koin.androidx.scope.fragmentScope
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.scope.Scope
 
 class OutputSelectionDialog :
   DialogFragment(),
+  AndroidScopeComponent,
   View.OnTouchListener {
+  override val scope: Scope by fragmentScope()
+
   private var touchInitiated: Boolean = false
   private lateinit var fm: FragmentManager
   private lateinit var dialog: AlertDialog
@@ -32,11 +40,12 @@ class OutputSelectionDialog :
   private lateinit var loadingProgress: ProgressBar
   private lateinit var errorMessage: TextView
 
-  private var scope: Scope? = null
+  private val viewModel: OutputSelectionViewModel by viewModel()
 
   private val onItemSelectedListener =
     object : AdapterView.OnItemSelectedListener {
       override fun onNothingSelected(parent: AdapterView<*>?) {
+        // We don't handle this
       }
 
       override fun onItemSelected(
@@ -55,48 +64,6 @@ class OutputSelectionDialog :
       }
     }
 
-  private lateinit var viewModel: OutputSelectionViewModel
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    scope = Toothpick.openScopes(requireActivity().application, this)
-    Toothpick.inject(this, scope)
-  }
-
-  override fun onViewCreated(
-    view: View,
-    savedInstanceState: Bundle?,
-  ) {
-    super.onViewCreated(view, savedInstanceState)
-    viewModel.outputs.observe(this) {
-      update(it)
-    }
-    viewModel.selection.observe(this) {
-      val adapter = availableOutputs.adapter as ArrayAdapter<*>
-      for (position in 0 until adapter.count) {
-        if (it == adapter.getItem(position)) {
-          availableOutputs.setSelection(position, false)
-          break
-        }
-      }
-    }
-    viewModel.events.observe(this) {
-      if (it.handled) {
-        return@observe
-      }
-      it.handled = true
-      when (it) {
-        OutputSelectionResult.Success -> {
-          availableOutputs.isVisible = true
-          errorMessage.isInvisible = true
-        }
-        else -> error(it)
-      }
-    }
-    viewModel.reload()
-  }
-
-  @SuppressLint("InflateParams")
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val context = requireContext()
     val view = layoutInflater.inflate(R.layout.dialog__output_selection, null, false)
@@ -104,8 +71,6 @@ class OutputSelectionDialog :
     availableOutputs = view.findViewById(R.id.output_selection__available_outputs)
     loadingProgress = view.findViewById(R.id.output_selection__loading_outputs)
     errorMessage = view.findViewById(R.id.output_selection__error_message)
-
-    viewModel = obtainViewModel(OutputSelectionViewModel::class.java)
 
     dialog =
       MaterialAlertDialogBuilder(context)
@@ -115,12 +80,36 @@ class OutputSelectionDialog :
           dialogInterface.dismiss()
         }.create()
 
-    return dialog
-  }
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.outputs.collectLatest {
+          update(it.devices)
 
-  override fun onDestroy() {
-    Toothpick.closeScope(this)
-    super.onDestroy()
+          val adapter = availableOutputs.adapter as ArrayAdapter<*>
+          for (position in 0 until adapter.count) {
+            if (it.active == adapter.getItem(position)) {
+              availableOutputs.setSelection(position, false)
+              break
+            }
+          }
+        }
+
+        viewModel.events.collectLatest {
+          when (it) {
+            OutputSelectionResult.Success -> {
+              availableOutputs.isVisible = true
+              errorMessage.isInvisible = true
+            }
+
+            else -> error(it)
+          }
+        }
+      }
+    }
+
+    viewModel.reload()
+
+    return dialog
   }
 
   override fun onTouch(

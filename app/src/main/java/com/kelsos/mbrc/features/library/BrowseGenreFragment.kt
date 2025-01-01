@@ -17,25 +17,25 @@ import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.features.library.GenreEntryAdapter.MenuItemSelectedListener
 import com.kelsos.mbrc.features.queue.PopupActionHandler
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import toothpick.Toothpick
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
+import org.koin.android.scope.AndroidScopeComponent
+import org.koin.androidx.scope.fragmentScope
+import org.koin.core.scope.Scope
 
 class BrowseGenreFragment :
   Fragment(),
+  AndroidScopeComponent,
   BrowseGenreView,
   MenuItemSelectedListener {
   private lateinit var recycler: EmptyRecyclerView
   private lateinit var emptyView: View
   private lateinit var emptyTitle: TextView
 
-  @Inject
-  lateinit var adapter: GenreEntryAdapter
+  override val scope: Scope by fragmentScope()
 
-  @Inject
-  lateinit var actionHandler: PopupActionHandler
-
-  @Inject
-  lateinit var presenter: BrowseGenrePresenter
+  private val adapter: GenreEntryAdapter by inject()
+  private val actionHandler: PopupActionHandler by inject()
+  private val presenter: BrowseGenrePresenter by inject()
 
   private lateinit var syncButton: Button
 
@@ -79,15 +79,6 @@ class BrowseGenreFragment :
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    val scope =
-      Toothpick.openScopes(
-        requireActivity().application,
-        LibraryActivity.Companion.LIBRARY_SCOPE,
-        activity,
-        this,
-      )
-    scope.installModules(BrowseGenreModule())
-    Toothpick.inject(this, scope)
     presenter.attach(this)
     presenter.load()
   }
@@ -132,10 +123,5 @@ class BrowseGenreFragment :
 
   override fun onItemClicked(genre: Genre) {
     actionHandler.genreSelected(genre, requireActivity())
-  }
-
-  override fun onDestroy() {
-    Toothpick.closeScope(this)
-    super.onDestroy()
   }
 }

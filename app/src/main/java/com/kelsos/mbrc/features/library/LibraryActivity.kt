@@ -17,10 +17,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.kelsos.mbrc.BaseActivity
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.annotations.Search
-import toothpick.Scope
-import toothpick.Toothpick
-import toothpick.smoothie.module.SmoothieActivityModule
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 
 class LibraryActivity :
   BaseActivity(),
@@ -34,10 +31,7 @@ class LibraryActivity :
   private var albumArtistOnly: MenuItem? = null
   private var searchClear: MenuItem? = null
   private var pagerAdapter: LibraryPagerAdapter? = null
-  private var scope: Scope? = null
-
-  @Inject
-  lateinit var presenter: LibraryPresenter
+  private val presenter: LibraryPresenter by inject()
 
   override fun onQueryTextSubmit(query: String): Boolean {
     val search = query.trim()
@@ -71,11 +65,7 @@ class LibraryActivity :
   override fun onQueryTextChange(newText: String): Boolean = false
 
   public override fun onCreate(savedInstanceState: Bundle?) {
-    Toothpick.openScope(LIBRARY_SCOPE).installModules(LibraryModule())
-    scope = Toothpick.openScopes(application, LIBRARY_SCOPE, this)
-    scope!!.installModules(SmoothieActivityModule(this))
     super.onCreate(savedInstanceState)
-    Toothpick.inject(this, scope)
     setContentView(R.layout.activity_library)
 
     onBackPressedDispatcher.addCallback(
@@ -186,13 +176,8 @@ class LibraryActivity :
   }
 
   public override fun onDestroy() {
-    Toothpick.closeScope(this)
     super.onDestroy()
     pagerAdapter = null
-
-    if (isDestroyed) {
-      Toothpick.closeScope(LIBRARY_SCOPE)
-    }
   }
 
   override fun onStart() {

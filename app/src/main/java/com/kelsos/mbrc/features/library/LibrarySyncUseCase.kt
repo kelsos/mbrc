@@ -3,7 +3,7 @@ package com.kelsos.mbrc.features.library
 /**
  * The class is responsible for the library metadata and playlist data sync.
  */
-interface LibrarySyncInteractor {
+interface LibrarySyncUseCase {
   /**
    * Starts the sync process for the library and playlist metadata. The sync can be
    * either manual or automatic. The automatic sync should happen only under certain

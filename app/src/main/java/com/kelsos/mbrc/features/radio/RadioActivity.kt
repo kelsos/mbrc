@@ -13,18 +13,13 @@ import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.common.ui.MultiSwipeRefreshLayout
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import toothpick.Scope
-import toothpick.Toothpick
-import toothpick.smoothie.module.SmoothieActivityModule
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 
 class RadioActivity :
   BaseActivity(),
   RadioView,
   SwipeRefreshLayout.OnRefreshListener,
   RadioAdapter.OnRadioPressedListener {
-  private val presenterScope: Class<*> = Presenter::class.java
-
   private lateinit var swipeLayout: MultiSwipeRefreshLayout
   private lateinit var radioView: EmptyRecyclerView
   private lateinit var emptyView: View
@@ -33,23 +28,14 @@ class RadioActivity :
   private lateinit var emptyViewSubTitle: TextView
   private lateinit var emptyViewProgress: ProgressBar
 
-  @Inject
-  lateinit var presenter: RadioPresenter
-
-  @Inject
-  lateinit var adapter: RadioAdapter
+  private val presenter: RadioPresenter by inject()
+  private val adapter: RadioAdapter by inject()
 
   override fun active(): Int = R.id.nav_radio
 
-  private lateinit var scope: Scope
-
   override fun onCreate(savedInstanceState: Bundle?) {
-    Toothpick.openScope(presenterScope).installModules(RadioModule())
-    scope = Toothpick.openScopes(application, presenterScope, this)
-    scope.installModules(SmoothieActivityModule(this))
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_radio)
-    Toothpick.inject(this, scope)
 
     swipeLayout = findViewById(R.id.swipe_layout)
     radioView = findViewById(R.id.radio_list)
@@ -80,14 +66,6 @@ class RadioActivity :
     super.onStop()
     presenter.detach()
     adapter.setOnRadioPressedListener(null)
-  }
-
-  override fun onDestroy() {
-    super.onDestroy()
-    if (isFinishing) {
-      Toothpick.closeScope(presenterScope)
-    }
-    Toothpick.closeScope(this)
   }
 
   override fun update(data: FlowCursorList<RadioStation>) {
@@ -128,8 +106,4 @@ class RadioActivity :
     emptyViewSubTitle.visibility = View.VISIBLE
     swipeLayout.isRefreshing = false
   }
-
-  @javax.inject.Scope
-  @Retention(AnnotationRetention.RUNTIME)
-  annotation class Presenter
 }

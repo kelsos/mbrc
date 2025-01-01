@@ -204,7 +204,6 @@ dependencies {
 
   implementation(projects.changelog)
 
-  testImplementation(libs.toothpick.testing)
   testImplementation(libs.androidx.arch.core.testing)
   testImplementation(libs.androidx.test.core)
   testImplementation(libs.androidx.test.runner)
@@ -212,6 +211,7 @@ dependencies {
   testImplementation(libs.androidx.test.truth)
   testImplementation(libs.bundles.androidx.test.espresso)
   testImplementation(libs.truth)
+  testImplementation(libs.koin.test)
   testImplementation(libs.kotlin.coroutines.test)
   testImplementation(libs.mockk)
   testImplementation(libs.robolectric)
@@ -232,6 +232,7 @@ dependencies {
   implementation(libs.androidx.legacy.support.v4)
   implementation(libs.androidx.legacy.support.v13)
   implementation(libs.bundles.coroutines)
+  implementation(libs.bundles.koin)
   implementation(libs.google.material)
   implementation(libs.google.protobuf.javalite)
   implementation(libs.squareup.okio)
@@ -239,7 +240,6 @@ dependencies {
 
   implementation(libs.bundles.dbflow)
   implementation(libs.bundles.jackson)
-  implementation(libs.bundles.toothpick)
   implementation(libs.kotlin.stdlib)
   implementation(libs.kotlin.reflect)
   implementation(libs.squareup.picasso)
@@ -249,7 +249,6 @@ dependencies {
   implementation(libs.rxrelay)
 
   kapt(libs.dbflow.processor)
-  kapt(libs.toothpick.compiler)
 
   debugImplementation(libs.squareup.leakcanary)
   debugImplementation(libs.androidx.fragment.testing)
@@ -379,16 +378,16 @@ tasks {
   }
 }
 
+kotlin {
+  sourceSets.all {
+    languageSettings.enableLanguageFeature("ExplicitBackingFields")
+  }
+}
+
 configurations.all {
   resolutionStrategy {
     force("com.google.code.findbugs:jsr305:3.0.2")
     force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${project.libs.versions.kotlin.get()}")
     force("org.jetbrains.kotlin:kotlin-reflect:${project.libs.versions.kotlin.get()}")
-  }
-}
-
-kapt {
-  arguments {
-    arg("toothpick_registry_package_name", *arrayOf("com.kelsos.mbrc").map { it }.toTypedArray())
   }
 }

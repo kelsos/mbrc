@@ -7,7 +7,6 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.BundleCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,38 +17,23 @@ import com.kelsos.mbrc.common.utilities.RemoteUtils.sha1
 import com.kelsos.mbrc.features.queue.PopupActionHandler
 import com.raizlabs.android.dbflow.list.FlowCursorList
 import com.squareup.picasso.Picasso
-import toothpick.Scope
-import toothpick.Toothpick
-import toothpick.smoothie.module.SmoothieActivityModule
+import org.koin.android.ext.android.inject
+import org.koin.androidx.scope.ScopeActivity
 import java.io.File
-import javax.inject.Inject
 
 class AlbumTracksActivity :
-  AppCompatActivity(),
+  ScopeActivity(),
   AlbumTracksView,
   TrackEntryAdapter.MenuItemSelectedListener {
-  @Inject
-  lateinit var adapter: TrackEntryAdapter
-
-  @Inject
-  lateinit var actionHandler: PopupActionHandler
-
-  @Inject
-  lateinit var presenter: AlbumTracksPresenter
+  private val adapter: TrackEntryAdapter by inject()
+  private val actionHandler: PopupActionHandler by inject()
+  private val presenter: AlbumTracksPresenter by inject()
 
   private var album: AlbumInfo? = null
-  private var scope: Scope? = null
   private lateinit var recyclerView: EmptyRecyclerView
 
   public override fun onCreate(savedInstanceState: Bundle?) {
-    scope = Toothpick.openScopes(application, this)
-    scope!!.installModules(
-      SmoothieActivityModule(this),
-      AlbumTracksModule(),
-    )
     super.onCreate(savedInstanceState)
-
-    Toothpick.inject(this, scope)
     setContentView(R.layout.activity_album_tracks)
     onBackPressedDispatcher.addCallback(
       this,
@@ -169,11 +153,6 @@ class AlbumTracksActivity :
   override fun onStop() {
     super.onStop()
     presenter.detach()
-  }
-
-  override fun onDestroy() {
-    super.onDestroy()
-    Toothpick.closeScope(this)
   }
 
   companion object {

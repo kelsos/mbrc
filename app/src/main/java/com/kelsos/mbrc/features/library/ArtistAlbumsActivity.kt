@@ -3,7 +3,6 @@ package com.kelsos.mbrc.features.library
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.MaterialToolbar
@@ -13,39 +12,25 @@ import com.kelsos.mbrc.annotations.Queue
 import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.features.queue.PopupActionHandler
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import toothpick.Scope
-import toothpick.Toothpick
-import toothpick.smoothie.module.SmoothieActivityModule
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
+import org.koin.androidx.scope.ScopeActivity
 
 class ArtistAlbumsActivity :
-  AppCompatActivity(),
+  ScopeActivity(),
   ArtistAlbumsView,
   AlbumEntryAdapter.MenuItemSelectedListener {
   private lateinit var recyclerView: EmptyRecyclerView
   private lateinit var toolbar: MaterialToolbar
   private lateinit var emptyView: ConstraintLayout
 
-  @Inject
-  lateinit var actionHandler: PopupActionHandler
-
-  @Inject
-  lateinit var adapter: AlbumEntryAdapter
-
-  @Inject
-  lateinit var presenter: ArtistAlbumsPresenter
+  private val actionHandler: PopupActionHandler by inject()
+  private val adapter: AlbumEntryAdapter by inject()
+  private val presenter: ArtistAlbumsPresenter by inject()
 
   private var artist: String? = null
-  private var scope: Scope? = null
 
   public override fun onCreate(savedInstanceState: Bundle?) {
-    scope = Toothpick.openScopes(application, this)
-    scope!!.installModules(
-      SmoothieActivityModule(this),
-      ArtistAlbumsModule(),
-    )
     super.onCreate(savedInstanceState)
-    Toothpick.inject(this, scope)
     setContentView(R.layout.activity_artist_albums)
 
     onBackPressedDispatcher.addCallback(
@@ -132,11 +117,6 @@ class ArtistAlbumsActivity :
       .make(recyclerView, R.string.queue_result__success, Snackbar.LENGTH_SHORT)
       .setText(message)
       .show()
-  }
-
-  override fun onDestroy() {
-    super.onDestroy()
-    Toothpick.closeScope(this)
   }
 
   override fun onStart() {

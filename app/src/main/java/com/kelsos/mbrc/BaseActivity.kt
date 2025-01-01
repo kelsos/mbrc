@@ -13,7 +13,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -39,17 +38,15 @@ import com.kelsos.mbrc.features.radio.RadioActivity
 import com.kelsos.mbrc.features.settings.SettingsActivity
 import com.kelsos.mbrc.platform.RemoteService
 import com.kelsos.mbrc.platform.ServiceChecker
+import org.koin.android.ext.android.inject
+import org.koin.androidx.scope.ScopeActivity
 import timber.log.Timber
-import javax.inject.Inject
 
 abstract class BaseActivity :
-  AppCompatActivity(),
+  ScopeActivity(),
   NavigationView.OnNavigationItemSelectedListener {
-  @Inject
-  lateinit var bus: RxBus
-
-  @Inject
-  lateinit var serviceChecker: ServiceChecker
+  private val bus: RxBus by inject()
+  private val serviceChecker: ServiceChecker by inject()
 
   private lateinit var toolbar: MaterialToolbar
   private lateinit var drawer: DrawerLayout

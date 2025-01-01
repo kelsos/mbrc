@@ -1,7 +1,7 @@
 package com.kelsos.mbrc.networking.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.constants.Const
 import com.kelsos.mbrc.features.settings.ConnectionRepository
@@ -15,44 +15,68 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import toothpick.config.Module
-import toothpick.testing.ToothPickRule
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.inject
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.net.ServerSocket
-import java.util.*
+import java.util.Random
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class ConnectivityVerifierImplTest {
+class ConnectivityVerifierImplTest : KoinTest {
   private var server: ServerSocket? = null
-  private val connectionRepository: ConnectionRepository = mockk()
+  private val connectionRepository: ConnectionRepository by inject()
   private val testDispatcher = StandardTestDispatcher()
+  private val verifier: ConnectivityVerifier by inject()
 
-  @Rule
-  @JvmField
-  val toothpickRule: ToothPickRule =
-    ToothPickRule(this, "verifier")
-      .setRootRegistryPackage("com.kelsos.mbrc")
   private val mapper = ObjectMapper()
   private val port: Int = 36000
 
   private lateinit var executor: ExecutorService
 
+  private val testModule =
+    module {
+      single { mapper }
+      single { mockk<ConnectionRepository>() }
+      singleOf(::RequestManagerImpl) { bind<RequestManager>() }
+      singleOf(::ConnectivityVerifierImpl) { bind<ConnectivityVerifier>() }
+      single {
+        AppCoroutineDispatchers(
+          testDispatcher,
+          testDispatcher,
+          testDispatcher,
+          testDispatcher,
+        )
+      }
+    }
+
   @Before
   fun setUp() {
-    toothpickRule.scope.installModules(TestModule())
+    startKoin {
+      modules(listOf(testModule))
+    }
     executor = Executors.newSingleThreadExecutor()
+  }
+
+  @After
+  fun tearDown() {
+    executor.shutdownNow()
+    stopKoin()
   }
 
   private fun startMockServer(
     prematureDisconnect: Boolean = false,
-    responseContext: String = Protocol.Companion.VERIFY_CONNECTION,
+    responseContext: String = Protocol.VERIFY_CONNECTION,
     json: Boolean = true,
   ) {
     val random = Random()
@@ -67,7 +91,7 @@ class ConnectivityVerifierImplTest {
           val line = inputReader.readLine()
           val value = mapper.readValue(line, SocketMessage::class.java)
 
-          if (value.context != Protocol.Companion.VERIFY_CONNECTION) {
+          if (value.context != Protocol.VERIFY_CONNECTION) {
             connection.close()
             server?.close()
             return@Runnable
@@ -102,11 +126,6 @@ class ConnectivityVerifierImplTest {
     executor.execute(mockSocket)
   }
 
-  @After
-  fun tearDown() {
-    executor.shutdownNow()
-  }
-
   @Test
   fun testSuccessfulVerification() =
     runTest(testDispatcher) {
@@ -119,8 +138,7 @@ class ConnectivityVerifierImplTest {
         settings
       }
 
-      val verifier = toothpickRule.getInstance(ConnectivityVerifier::class.java)
-      Truth.assertThat(verifier.verify()).isTrue()
+      assertThat(verifier.verify()).isTrue()
     }
 
   @Test
@@ -134,19 +152,18 @@ class ConnectivityVerifierImplTest {
         settings
       }
 
-      val verifier = toothpickRule.getInstance(ConnectivityVerifier::class.java)
       try {
         verifier.verify()
         error("Test should throw")
       } catch (e: Exception) {
-        Truth.assertThat(e).isInstanceOf(RuntimeException::class.java)
+        assertThat(e).isInstanceOf(RuntimeException::class.java)
       }
     }
 
   @Test
   fun testInvalidPluginResponseVerification() =
     runTest(testDispatcher) {
-      startMockServer(false, Protocol.Companion.CLIENT_NOT_ALLOWED)
+      startMockServer(false, Protocol.CLIENT_NOT_ALLOWED)
       coEvery { connectionRepository.getDefault() } answers {
         val settings = ConnectionSettings()
         settings.address = server!!.inetAddress.hostAddress
@@ -154,12 +171,11 @@ class ConnectivityVerifierImplTest {
         settings
       }
 
-      val verifier = toothpickRule.getInstance(ConnectivityVerifier::class.java)
       try {
         println(verifier.verify())
         error("Test should throw")
       } catch (e: Exception) {
-        Truth.assertThat(e).isInstanceOf(ConnectivityVerifierImpl.NoValidPluginConnection::class.java)
+        assertThat(e).isInstanceOf(ConnectivityVerifierImpl.NoValidPluginConnection::class.java)
       }
     }
 
@@ -172,12 +188,11 @@ class ConnectivityVerifierImplTest {
         null
       }
 
-      val verifier = toothpickRule.getInstance(ConnectivityVerifier::class.java)
       try {
         verifier.verify()
         error("Test should throw")
       } catch (e: Exception) {
-        Truth.assertThat(e).isInstanceOf(RuntimeException::class.java)
+        assertThat(e).isInstanceOf(RuntimeException::class.java)
       }
     }
 
@@ -190,28 +205,11 @@ class ConnectivityVerifierImplTest {
         null
       }
 
-      val verifier = toothpickRule.getInstance(ConnectivityVerifier::class.java)
       try {
         verifier.verify()
         error("Test should throw")
       } catch (e: Exception) {
-        Truth.assertThat(e).isInstanceOf(RuntimeException::class.java)
+        assertThat(e).isInstanceOf(RuntimeException::class.java)
       }
     }
-
-  inner class TestModule : Module() {
-    init {
-      bind(ObjectMapper::class.java).toInstance(mapper)
-      bind(RequestManager::class.java).to(RequestManagerImpl::class.java)
-      bind(ConnectionRepository::class.java).toInstance(connectionRepository)
-      bind(ConnectivityVerifier::class.java).to(ConnectivityVerifierImpl::class.java)
-      bind(AppCoroutineDispatchers::class.java).toInstance(
-        AppCoroutineDispatchers(
-          testDispatcher,
-          testDispatcher,
-          testDispatcher,
-        ),
-      )
-    }
-  }
 }

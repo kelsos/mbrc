@@ -20,122 +20,122 @@ import com.kelsos.mbrc.commands.visual.NotifyNotAllowedCommand
 import com.kelsos.mbrc.constants.ApplicationEvents
 import com.kelsos.mbrc.constants.ProtocolEventType
 import com.kelsos.mbrc.constants.UserInputEventType
-import toothpick.Scope
+import org.koin.core.Koin
 
 object CommandRegistration {
   fun register(
     controller: RemoteController,
-    scope: Scope,
+    koin: Koin,
   ) {
     controller.register(
       ProtocolEventType.REDUCE_VOLUME,
-      scope.getInstance(ReduceVolumeOnRingCommand::class.java),
+      koin.get<ReduceVolumeOnRingCommand>(),
     )
     controller.register(
       ProtocolEventType.HANDSHAKE_COMPLETE,
-      scope.getInstance(HandshakeCompletionActions::class.java),
+      koin.get<HandshakeCompletionActions>(),
     )
     controller.register(
       ProtocolEventType.INFORM_CLIENT_NOT_ALLOWED,
-      scope.getInstance(NotifyNotAllowedCommand::class.java),
+      koin.get<NotifyNotAllowedCommand>(),
     )
     controller.register(
       ProtocolEventType.INITIATE_PROTOCOL_REQUEST,
-      scope.getInstance(ProtocolRequest::class.java),
+      koin.get<ProtocolRequest>(),
     )
     controller.register(
       ProtocolEventType.PLUGIN_VERSION_CHECK,
-      scope.getInstance(VersionCheckCommand::class.java),
+      koin.get<VersionCheckCommand>(),
     )
     controller.register(
       ProtocolEventType.USER_ACTION,
-      scope.getInstance(ProcessUserAction::class.java),
+      koin.get<ProcessUserAction>(),
     )
 
     controller.register(
       Protocol.NOW_PLAYING_TRACK,
-      scope.getInstance(UpdateNowPlayingTrack::class.java),
+      koin.get<UpdateNowPlayingTrack>(),
     )
-    controller.register(Protocol.NOW_PLAYING_COVER, scope.getInstance(UpdateCover::class.java))
-    controller.register(Protocol.NOW_PLAYING_RATING, scope.getInstance(UpdateRating::class.java))
-    controller.register(Protocol.PLAYER_STATUS, scope.getInstance(UpdatePlayerStatus::class.java))
-    controller.register(Protocol.PLAYER_STATE, scope.getInstance(UpdatePlayState::class.java))
-    controller.register(Protocol.PLAYER_REPEAT, scope.getInstance(UpdateRepeat::class.java))
-    controller.register(Protocol.PLAYER_VOLUME, scope.getInstance(UpdateVolume::class.java))
-    controller.register(Protocol.PLAYER_MUTE, scope.getInstance(UpdateMute::class.java))
-    controller.register(Protocol.PLAYER_SHUFFLE, scope.getInstance(UpdateShuffle::class.java))
-    controller.register(Protocol.PLAYER_SCROBBLE, scope.getInstance(UpdateLastFm::class.java))
-    controller.register(Protocol.NOW_PLAYING_LYRICS, scope.getInstance(UpdateLyrics::class.java))
+    controller.register(Protocol.NOW_PLAYING_COVER, koin.get<UpdateCover>())
+    controller.register(Protocol.NOW_PLAYING_RATING, koin.get<UpdateRating>())
+    controller.register(Protocol.PLAYER_STATUS, koin.get<UpdatePlayerStatus>())
+    controller.register(Protocol.PLAYER_STATE, koin.get<UpdatePlayState>())
+    controller.register(Protocol.PLAYER_REPEAT, koin.get<UpdateRepeat>())
+    controller.register(Protocol.PLAYER_VOLUME, koin.get<UpdateVolume>())
+    controller.register(Protocol.PLAYER_MUTE, koin.get<UpdateMute>())
+    controller.register(Protocol.PLAYER_SHUFFLE, koin.get<UpdateShuffle>())
+    controller.register(Protocol.PLAYER_SCROBBLE, koin.get<UpdateLastFm>())
+    controller.register(Protocol.NOW_PLAYING_LYRICS, koin.get<UpdateLyrics>())
     controller.register(
       Protocol.NOW_PLAYING_LFM_RATING,
-      scope.getInstance(UpdateLfmRating::class.java),
+      koin.get<UpdateLfmRating>(),
     )
     controller.register(
       Protocol.NOW_PLAYING_LIST_REMOVE,
-      scope.getInstance(UpdateNowPlayingTrackRemoval::class.java),
+      koin.get<UpdateNowPlayingTrackRemoval>(),
     )
     controller.register(
       Protocol.NOW_PLAYING_LIST_MOVE,
-      scope.getInstance(UpdateNowPlayingTrackMoved::class.java),
+      koin.get<UpdateNowPlayingTrackMoved>(),
     )
     controller.register(
       Protocol.NOW_PLAYING_POSITION,
-      scope.getInstance(UpdatePlaybackPositionCommand::class.java),
+      koin.get<UpdatePlaybackPositionCommand>(),
     )
     controller.register(
       Protocol.PLUGIN_VERSION,
-      scope.getInstance(UpdatePluginVersionCommand::class.java),
+      koin.get<UpdatePluginVersionCommand>(),
     )
-    controller.register(Protocol.PING, scope.getInstance(ProtocolPingHandle::class.java))
-    controller.register(Protocol.PONG, scope.getInstance(SimpleLogCommand::class.java))
+    controller.register(Protocol.PING, koin.get<ProtocolPingHandle>())
+    controller.register(Protocol.PONG, koin.get<SimpleLogCommand>())
 
     controller.register(
       UserInputEventType.SETTINGS_CHANGED,
-      scope.getInstance(RestartConnectionCommand::class.java),
+      koin.get<RestartConnectionCommand>(),
     )
     controller.register(
       UserInputEventType.CANCEL_NOTIFICATION,
-      scope.getInstance(CancelNotificationCommand::class.java),
+      koin.get<CancelNotificationCommand>(),
     )
     controller.register(
       UserInputEventType.START_CONNECTION,
-      scope.getInstance(InitiateConnectionCommand::class.java),
+      koin.get<InitiateConnectionCommand>(),
     )
     controller.register(
       UserInputEventType.TERMINATE_CONNECTION,
-      scope.getInstance(TerminateConnectionCommand::class.java),
+      koin.get<TerminateConnectionCommand>(),
     )
     controller.register(
       UserInputEventType.RESET_CONNECTION,
-      scope.getInstance(RestartConnectionCommand::class.java),
+      koin.get<RestartConnectionCommand>(),
     )
     controller.register(
       UserInputEventType.START_DISCOVERY,
-      scope.getInstance(StartDiscoveryCommand::class.java),
+      koin.get<StartDiscoveryCommand>(),
     )
     controller.register(
       UserInputEventType.KEY_VOLUME_UP,
-      scope.getInstance(KeyVolumeUpCommand::class.java),
+      koin.get<KeyVolumeUpCommand>(),
     )
     controller.register(
       UserInputEventType.KEY_VOLUME_DOWN,
-      scope.getInstance(KeyVolumeDownCommand::class.java),
+      koin.get<KeyVolumeDownCommand>(),
     )
     controller.register(
       ApplicationEvents.SOCKET_DATA_AVAILABLE,
-      scope.getInstance(SocketDataAvailableCommand::class.java),
+      koin.get<SocketDataAvailableCommand>(),
     )
     controller.register(
       ApplicationEvents.SOCKET_STATUS_CHANGED,
-      scope.getInstance(ConnectionStatusChangedCommand::class.java),
+      koin.get<ConnectionStatusChangedCommand>(),
     )
     controller.register(
       ApplicationEvents.SOCKET_HANDSHAKE_UPDATE,
-      scope.getInstance(HandleHandshake::class.java),
+      koin.get<HandleHandshake>(),
     )
     controller.register(
       ApplicationEvents.TERMINATE_SERVICE,
-      scope.getInstance(TerminateServiceCommand::class.java),
+      koin.get<TerminateServiceCommand>(),
     )
   }
 

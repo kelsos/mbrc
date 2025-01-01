@@ -18,28 +18,24 @@ import com.kelsos.mbrc.extensions.getDimens
 import com.kelsos.mbrc.features.player.PlayerActivity
 import com.kelsos.mbrc.features.player.TrackInfo
 import com.squareup.picasso.Picasso
-import toothpick.Toothpick
+import org.koin.android.ext.android.inject
+import org.koin.android.scope.AndroidScopeComponent
+import org.koin.androidx.scope.fragmentScope
+import org.koin.core.scope.Scope
 import java.io.File
-import javax.inject.Inject
-import javax.inject.Scope
 
 class MiniControlFragment :
   Fragment(),
-  MiniControlView {
+  MiniControlView,
+  AndroidScopeComponent {
   private lateinit var trackCover: ImageView
   private lateinit var trackArtist: TextView
   private lateinit var trackTitle: TextView
   private lateinit var playPause: ImageButton
 
-  @Inject
-  lateinit var presenter: MiniControlPresenter
+  override val scope: Scope by fragmentScope()
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    val scope = Toothpick.openScopes(requireActivity().application, this)
-    scope.installModules(MiniControlModule())
-    super.onCreate(savedInstanceState)
-    Toothpick.inject(this, scope)
-  }
+  private val presenter: MiniControlPresenter by inject()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -47,6 +43,7 @@ class MiniControlFragment :
     savedInstanceState: Bundle?,
   ): View? {
     val view = inflater.inflate(R.layout.ui_fragment_mini_control, container, false)
+    checkNotNull(scope)
     trackArtist = view.findViewById(R.id.mc_track_artist)
     trackTitle = view.findViewById(R.id.mc_track_title)
     trackCover = view.findViewById(R.id.mc_track_cover)
@@ -110,13 +107,4 @@ class MiniControlFragment :
       else -> playPause.setImageResource(R.drawable.ic_action_play)
     }
   }
-
-  override fun onDestroy() {
-    Toothpick.closeScope(this)
-    super.onDestroy()
-  }
-
-  @Scope
-  @Retention(AnnotationRetention.RUNTIME)
-  annotation class Presenter
 }

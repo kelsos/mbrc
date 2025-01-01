@@ -27,6 +27,7 @@ class NowPlayingTouchListener(
     rv: RecyclerView,
     e: MotionEvent,
   ) {
+    // We don't have any use for this.
   }
 
   override fun onInterceptTouchEvent(
@@ -44,5 +45,6 @@ class NowPlayingTouchListener(
   }
 
   override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
+    // We don't have any use for this.
   }
 }

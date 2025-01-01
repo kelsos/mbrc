@@ -4,9 +4,7 @@ import rx.Completable
 import rx.Subscription
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
 
-@Singleton
 class SocketActivityChecker {
   private var subscription: Subscription? = null
   private var pingTimeoutListener: PingTimeoutListener? = null

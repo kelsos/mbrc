@@ -16,25 +16,25 @@ import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.features.library.TrackEntryAdapter.MenuItemSelectedListener
 import com.kelsos.mbrc.features.queue.PopupActionHandler
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import toothpick.Toothpick
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
+import org.koin.android.scope.AndroidScopeComponent
+import org.koin.androidx.scope.fragmentScope
+import org.koin.core.scope.Scope
 
 class BrowseTrackFragment :
   Fragment(),
+  AndroidScopeComponent,
   BrowseTrackView,
   MenuItemSelectedListener {
   private lateinit var recycler: EmptyRecyclerView
   private lateinit var emptyView: View
   private lateinit var emptyTitle: TextView
 
-  @Inject
-  lateinit var adapter: TrackEntryAdapter
+  override val scope: Scope by fragmentScope()
 
-  @Inject
-  lateinit var actionHandler: PopupActionHandler
-
-  @Inject
-  lateinit var presenter: BrowseTrackPresenter
+  private val adapter: TrackEntryAdapter by inject()
+  private val actionHandler: PopupActionHandler by inject()
+  private val presenter: BrowseTrackPresenter by inject()
 
   private lateinit var syncButton: Button
 
@@ -77,15 +77,6 @@ class BrowseTrackFragment :
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    val scope =
-      Toothpick.openScopes(
-        requireActivity().application,
-        LibraryActivity.Companion.LIBRARY_SCOPE,
-        activity,
-        this,
-      )
-    scope.installModules(BrowseTrackModule())
-    Toothpick.inject(this, scope)
     adapter.setCoverMode(true)
     presenter.attach(this)
     presenter.load()

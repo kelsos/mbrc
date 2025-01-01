@@ -11,30 +11,21 @@ import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.common.ui.MultiSwipeRefreshLayout
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import toothpick.Scope
-import toothpick.Toothpick
-import toothpick.smoothie.module.SmoothieActivityModule
+import org.koin.android.ext.android.inject
 import java.net.ConnectException
-import javax.inject.Inject
 
 class PlaylistActivity :
   BaseActivity(),
   PlaylistView,
   PlaylistAdapter.OnPlaylistPressedListener,
   SwipeRefreshLayout.OnRefreshListener {
-  private val presenterScope: Class<*> = Presenter::class.java
-
   private lateinit var swipeLayout: MultiSwipeRefreshLayout
   private lateinit var playlistList: EmptyRecyclerView
   private lateinit var emptyView: View
   private lateinit var emptyViewTitle: TextView
 
-  @Inject
-  lateinit var adapter: PlaylistAdapter
-
-  @Inject
-  lateinit var presenter: PlaylistPresenter
-  private lateinit var scope: Scope
+  private val adapter: PlaylistAdapter by inject()
+  private val presenter: PlaylistPresenter by inject()
 
   public override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -43,10 +34,6 @@ class PlaylistActivity :
     playlistList = findViewById(R.id.playlist_list)
     emptyView = findViewById(R.id.empty_view)
     emptyViewTitle = findViewById(R.id.list_empty_title)
-
-    scope = Toothpick.openScopes(application, presenterScope, this)
-    scope.installTestModules(SmoothieActivityModule(this), PlaylistModule())
-    Toothpick.inject(this, scope)
 
     super.setup()
 
@@ -76,15 +63,6 @@ class PlaylistActivity :
 
   override fun active(): Int = R.id.nav_playlists
 
-  override fun onDestroy() {
-    Toothpick.closeScope(this)
-
-    if (isFinishing) {
-      Toothpick.closeScope(presenterScope)
-    }
-    super.onDestroy()
-  }
-
   override fun onRefresh() {
     if (!swipeLayout.isRefreshing) {
       swipeLayout.isRefreshing = true
@@ -106,9 +84,4 @@ class PlaylistActivity :
       Snackbar.make(swipeLayout, R.string.playlists_load_failed, Snackbar.LENGTH_SHORT).show()
     }
   }
-
-  @javax.inject.Scope
-  @Target(AnnotationTarget.TYPE)
-  @Retention(AnnotationRetention.RUNTIME)
-  annotation class Presenter
 }

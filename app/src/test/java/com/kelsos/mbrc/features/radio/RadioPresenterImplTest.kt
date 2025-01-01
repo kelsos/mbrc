@@ -4,7 +4,6 @@ import android.os.Looper
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.features.queue.QueueHandler
 import com.kelsos.mbrc.features.queue.QueueResult
-import com.kelsos.mbrc.features.radio.RadioActivity.Presenter
 import com.raizlabs.android.dbflow.list.FlowCursorList
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -20,33 +19,44 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertThrows
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.RuleChain
-import org.junit.rules.TestRule
-import toothpick.config.Module
-import toothpick.testing.ToothPickRule
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.inject
 
-class RadioPresenterImplTest {
-  private val toothpickRule: ToothPickRule =
-    ToothPickRule(this, Presenter::class.java)
-      .setRootRegistryPackage("com.kelsos.mbrc")
-
-  @Rule
-  @JvmField
-  val chain: TestRule = RuleChain.outerRule(toothpickRule)
-  private val radioView: RadioView = mockk()
-  private val radioRepository: RadioRepository = mockk()
-  private val queue: QueueHandler = mockk()
+class RadioPresenterImplTest : KoinTest {
+  private val radioView: RadioView by inject()
+  private val radioRepository: RadioRepository by inject()
+  private val queue: QueueHandler by inject()
   private val result: FlowCursorList<RadioStation> = mockk()
+  private val presenter: RadioPresenter by inject()
   private val testDispatcher = StandardTestDispatcher()
 
-  private lateinit var presenter: RadioPresenter
+  private val testModule =
+    module {
+      single {
+        AppCoroutineDispatchers(
+          testDispatcher,
+          testDispatcher,
+          testDispatcher,
+          testDispatcher,
+        )
+      }
+      single { mockk<RadioView>() }
+      single { mockk<RadioRepository>() }
+      single { mockk<QueueHandler>() }
+      singleOf(::RadioPresenterImpl) { bind<RadioPresenter>() }
+    }
 
   @Before
   fun setUp() {
-    toothpickRule.scope.installModules(RadioModule(), TestModule())
-    presenter = toothpickRule.getInstance(RadioPresenter::class.java)
+    startKoin {
+      modules(listOf(testModule))
+    }
     every { radioView.showLoading() } just Runs
     every { radioView.hideLoading() } just Runs
     every { radioView.radioPlayFailed() } just Runs
@@ -67,6 +77,7 @@ class RadioPresenterImplTest {
 
   @After
   fun tearDown() {
+    stopKoin()
     unmockkAll()
   }
 
@@ -273,19 +284,4 @@ class RadioPresenterImplTest {
       verify(exactly = 0) { radioView.radioPlayFailed() }
       verify(exactly = 0) { radioView.radioPlaySuccessful() }
     }
-
-  inner class TestModule : Module() {
-    init {
-      bind(AppCoroutineDispatchers::class.java).toInstance(
-        AppCoroutineDispatchers(
-          testDispatcher,
-          testDispatcher,
-          testDispatcher,
-        ),
-      )
-      bind(RadioView::class.java).toInstance(radioView)
-      bind(RadioRepository::class.java).toInstance(radioRepository)
-      bind(QueueHandler::class.java).toInstance(queue)
-    }
-  }
 }

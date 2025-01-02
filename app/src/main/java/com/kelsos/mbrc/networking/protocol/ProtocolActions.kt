@@ -104,9 +104,9 @@ class UpdateMute(
 
 class UpdateNowPlayingTrack(
   private val model: MainDataModel,
-  private val context: Application,
   private val bus: RxBus,
   private val cache: ModelCache,
+  private val widgetUpdater: WidgetUpdater,
   dispatchers: AppCoroutineDispatchers,
 ) : ProtocolAction {
   private val job = SupervisorJob()
@@ -123,7 +123,7 @@ class UpdateNowPlayingTrack(
     save(model.trackInfo)
     bus.post(RemoteClientMetaData(model.trackInfo, model.coverPath, model.duration))
     bus.post(TrackInfoChangeEvent(model.trackInfo))
-    WidgetUpdater.updateTrackInfo(context, model.trackInfo)
+    widgetUpdater.updatePlayingTrack(model.trackInfo)
   }
 
   private fun save(info: TrackInfo) {
@@ -178,8 +178,8 @@ class UpdatePlayerStatus(
 
 class UpdatePlayState(
   private val model: MainDataModel,
-  private val context: Application,
   private val bus: RxBus,
+  private val widgetUpdater: WidgetUpdater,
   dispatchers: AppCoroutineDispatchers,
 ) : ProtocolAction {
   private val job = SupervisorJob()
@@ -194,7 +194,7 @@ class UpdatePlayState(
       stop()
     }
 
-    WidgetUpdater.updatePlaystate(context, message.dataString)
+    widgetUpdater.updatePlayState(message.dataString)
   }
 
   private fun stop() {
@@ -280,6 +280,7 @@ class UpdateCover(
   private val coverService: ApiBase,
   private val model: MainDataModel,
   private val cache: ModelCache,
+  private val widgetUpdater: WidgetUpdater,
   appCoroutineDispatchers: AppCoroutineDispatchers,
 ) : ProtocolAction {
   private val coverDir: File = File(context.filesDir, COVER_DIR)
@@ -291,7 +292,7 @@ class UpdateCover(
 
     if (payload.status == CoverPayload.Companion.NOT_FOUND) {
       bus.post(CoverChangedEvent())
-      WidgetUpdater.updateCover(context)
+      widgetUpdater.updateCover()
     } else if (payload.status == CoverPayload.Companion.READY) {
       scope.launch {
         retrieveCover()
@@ -320,7 +321,7 @@ class UpdateCover(
       savePath(path)
       bus.post(CoverChangedEvent(path))
       bus.post(RemoteClientMetaData(model.trackInfo, model.coverPath, model.duration))
-      WidgetUpdater.updateCover(context, path)
+      widgetUpdater.updateCover(path)
     } catch (e: Exception) {
       removeCover(e)
     }

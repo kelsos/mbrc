@@ -1,95 +1,42 @@
 package com.kelsos.mbrc.platform.mediasession
 
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
+import android.app.PendingIntent.FLAG_UPDATE_CURRENT
+import android.app.PendingIntent.getActivity
+import android.app.PendingIntent.getBroadcast
 import android.content.Context
 import android.content.Intent
-import androidx.annotation.IntDef
 import com.kelsos.mbrc.features.player.PlayerActivity
 
 object RemoteViewIntentBuilder {
-  const val REMOTE_PLAY_PRESSED = "com.kelsos.mbrc.notification.play"
-  const val REMOTE_NEXT_PRESSED = "com.kelsos.mbrc.notification.next"
-  const val REMOTE_CLOSE_PRESSED = "com.kelsos.mbrc.notification.close"
-  const val REMOTE_PREVIOUS_PRESSED = "com.kelsos.mbrc.notification.previous"
+  const val PLAY_PRESSED = "com.kelsos.mbrc.notification.play"
+  const val NEXT_PRESSED = "com.kelsos.mbrc.notification.next"
+  const val CLOSE_PRESSED = "com.kelsos.mbrc.notification.close"
+  const val PREVIOUS_PRESSED = "com.kelsos.mbrc.notification.previous"
   const val CANCELLED_NOTIFICATION = "com.kelsos.mbrc.notification.cancel"
-  const val OPEN = 0
-  const val PLAY = 1
-  const val NEXT = 2
-  const val CLOSE = 3
-  const val PREVIOUS = 4
-  const val CANCEL = 5
 
   fun getPendingIntent(
-    @ButtonAction id: Int,
-    mContext: Context,
+    remoteIntentCode: RemoteIntentCode,
+    context: Context,
   ): PendingIntent {
-    when (id) {
-      OPEN -> {
-        val notificationIntent = Intent(mContext, PlayerActivity::class.java)
-        return PendingIntent.getActivity(
-          mContext,
-          0,
-          notificationIntent,
-          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
+    val code = remoteIntentCode.code
+    val flag = FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE
+
+    val intent =
+      when (remoteIntentCode) {
+        RemoteIntentCode.Open -> Intent(context, PlayerActivity::class.java)
+        RemoteIntentCode.Play -> Intent(PLAY_PRESSED)
+        RemoteIntentCode.Next -> Intent(NEXT_PRESSED)
+        RemoteIntentCode.Close -> Intent(CLOSE_PRESSED)
+        RemoteIntentCode.Previous -> Intent(PREVIOUS_PRESSED)
+        RemoteIntentCode.Cancel -> Intent(CANCELLED_NOTIFICATION)
       }
-      PLAY -> {
-        val playPressedIntent = Intent(REMOTE_PLAY_PRESSED)
-        return PendingIntent.getBroadcast(
-          mContext,
-          1,
-          playPressedIntent,
-          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-      }
-      NEXT -> {
-        val mediaNextButtonIntent = Intent(REMOTE_NEXT_PRESSED)
-        return PendingIntent.getBroadcast(
-          mContext,
-          2,
-          mediaNextButtonIntent,
-          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-      }
-      CLOSE -> {
-        val clearNotificationIntent = Intent(REMOTE_CLOSE_PRESSED)
-        return PendingIntent.getBroadcast(
-          mContext,
-          3,
-          clearNotificationIntent,
-          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-      }
-      PREVIOUS -> {
-        val mediaPreviousButtonIntent = Intent(REMOTE_PREVIOUS_PRESSED)
-        return PendingIntent.getBroadcast(
-          mContext,
-          4,
-          mediaPreviousButtonIntent,
-          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-      }
-      CANCEL -> {
-        val cancelIntent = Intent(CANCELLED_NOTIFICATION)
-        return PendingIntent.getBroadcast(
-          mContext,
-          4,
-          cancelIntent,
-          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-      }
-      else -> throw IndexOutOfBoundsException()
+
+    return if (remoteIntentCode == RemoteIntentCode.Open) {
+      getActivity(context, code, intent, flag)
+    } else {
+      getBroadcast(context, code, intent, flag)
     }
   }
-
-  @IntDef(
-    OPEN,
-    PLAY,
-    CLOSE,
-    PREVIOUS,
-    NEXT,
-    CANCEL,
-  )
-  @Retention(AnnotationRetention.SOURCE)
-  annotation class ButtonAction
 }

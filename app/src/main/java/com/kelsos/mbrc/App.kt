@@ -10,6 +10,11 @@ import android.net.wifi.WifiManager
 import androidx.annotation.CallSuper
 import androidx.core.content.getSystemService
 import androidx.preference.PreferenceManager
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.request.crossfade
+import coil3.util.DebugLogger
+import com.kelsos.mbrc.common.utilities.CustomLoggingTree
 import com.raizlabs.android.dbflow.config.FlowConfig
 import com.raizlabs.android.dbflow.config.FlowManager
 import org.koin.android.ext.koin.androidContext
@@ -23,6 +28,13 @@ open class App : Application() {
   @CallSuper
   override fun onCreate() {
     super.onCreate()
+    SingletonImageLoader.setSafe { context ->
+      ImageLoader
+        .Builder(context)
+        .crossfade(true)
+        .logger(DebugLogger())
+        .build()
+    }
     initialize()
   }
 
@@ -60,12 +72,7 @@ open class App : Application() {
 
   private fun initializeTimber() {
     if (BuildConfig.DEBUG) {
-      Timber.plant(
-        object : Timber.DebugTree() {
-          override fun createStackElementTag(element: StackTraceElement): String =
-            "${super.createStackElementTag(element)}:${element.lineNumber} [${Thread.currentThread().name}]"
-        },
-      )
+      Timber.plant(CustomLoggingTree.create())
     }
   }
 }

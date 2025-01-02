@@ -125,6 +125,8 @@ import com.kelsos.mbrc.features.settings.ConnectionRepository
 import com.kelsos.mbrc.features.settings.ConnectionRepositoryImpl
 import com.kelsos.mbrc.features.settings.SettingsManager
 import com.kelsos.mbrc.features.settings.SettingsManagerImpl
+import com.kelsos.mbrc.features.widgets.WidgetUpdater
+import com.kelsos.mbrc.features.widgets.WidgetUpdaterImpl
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.RequestManager
 import com.kelsos.mbrc.networking.RequestManagerImpl
@@ -273,6 +275,8 @@ val appModule =
     factoryOf(::ConnectionStatusChangedCommand)
     factoryOf(::HandleHandshake)
     factoryOf(::TerminateServiceCommand)
+
+    singleOf(::WidgetUpdaterImpl) { bind<WidgetUpdater>() }
 
     single<Scheduler>(named("main")) { AndroidSchedulers.mainThread() }
     single<Scheduler>(named("io")) { Schedulers.io() }

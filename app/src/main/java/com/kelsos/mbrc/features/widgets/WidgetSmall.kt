@@ -1,169 +1,42 @@
 package com.kelsos.mbrc.features.widgets
 
 import android.app.PendingIntent
-import android.appwidget.AppWidgetManager
-import android.appwidget.AppWidgetProvider
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.widget.RemoteViews
-import androidx.core.os.BundleCompat
-import coil3.imageLoader
-import coil3.request.ImageRequest
-import coil3.size.Precision
-import coil3.size.Scale
 import com.kelsos.mbrc.R
-import com.kelsos.mbrc.annotations.PlayerState
-import com.kelsos.mbrc.features.player.PlayerActivity
 import com.kelsos.mbrc.features.player.TrackInfo
-import com.kelsos.mbrc.platform.mediasession.RemoteViewIntentBuilder
-import java.io.File
+import com.kelsos.mbrc.platform.mediasession.RemoteIntentCode.Next
+import com.kelsos.mbrc.platform.mediasession.RemoteIntentCode.Play
+import com.kelsos.mbrc.platform.mediasession.RemoteIntentCode.Previous
+import com.kelsos.mbrc.platform.mediasession.RemoteViewIntentBuilder.getPendingIntent
 
-class WidgetSmall : AppWidgetProvider() {
-  override fun onReceive(
-    context: Context?,
-    intent: Intent?,
-  ) {
-    super.onReceive(context, intent)
-    if (intent == null || intent.action != AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
-      return
-    }
+class WidgetSmall : WidgetBase() {
+  override val type: String = "small"
+  override val config: WidgetConfig =
+    WidgetConfig(
+      layout = R.layout.widget_small,
+      imageSize = R.dimen.widget_small_height,
+      imageId = R.id.widget_small_image,
+      playButtonId = R.id.widget_small_play,
+      widgetClass = WidgetSmall::class,
+    )
 
-    val extras = intent.extras
-    val widgetManager = AppWidgetManager.getInstance(context)
-    if (context == null) {
-      return
-    }
-    val widgets = ComponentName(context.packageName, WidgetSmall::class.java.name)
-    val widgetsIds = widgetManager.getAppWidgetIds(widgets)
-
-    if (extras == null) {
-      return
-    }
-
-    when {
-      extras.getBoolean(WidgetUpdater.COVER, false) -> {
-        val path = extras.getString(WidgetUpdater.COVER_PATH, "")
-        updateCover(context, widgetManager, widgetsIds, path)
-      }
-      extras.getBoolean(WidgetUpdater.INFO, false) -> {
-        val info = BundleCompat.getParcelable<TrackInfo>(extras, WidgetUpdater.TRACK_INFO, TrackInfo::class.java)
-        info?.run {
-          updateInfo(context, widgetManager, widgetsIds, this)
-        }
-      }
-      extras.getBoolean(WidgetUpdater.STATE, false) -> {
-        updatePlayState(
-          context,
-          widgetManager,
-          widgetsIds,
-          extras.getString(WidgetUpdater.PLAYER_STATE, PlayerState.UNDEFINED),
-        )
-      }
-    }
-  }
-
-  override fun onUpdate(
+  override fun setupActionIntents(
+    views: RemoteViews,
+    pendingIntent: PendingIntent,
     context: Context,
-    appWidgetManager: AppWidgetManager,
-    appWidgetIds: IntArray,
   ) {
-    super.onUpdate(context, appWidgetManager, appWidgetIds)
-
-    for (appWidgetId in appWidgetIds) {
-      // Create an Intent to launch ExampleActivity
-      val intent = Intent(context, PlayerActivity::class.java)
-      val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
-      // Get the layout for the App Widget and attach an on-click listener
-      // to the button
-      val views = RemoteViews(context.packageName, R.layout.widget_small)
-
-      views.setOnClickPendingIntent(R.id.widget_small_image, pendingIntent)
-      views.setOnClickPendingIntent(
-        R.id.widget_small_play,
-        RemoteViewIntentBuilder.getPendingIntent(RemoteViewIntentBuilder.PLAY, context),
-      )
-      views.setOnClickPendingIntent(
-        R.id.widget_small_next,
-        RemoteViewIntentBuilder.getPendingIntent(RemoteViewIntentBuilder.NEXT, context),
-      )
-      views.setOnClickPendingIntent(
-        R.id.widget_small_previous,
-        RemoteViewIntentBuilder.getPendingIntent(RemoteViewIntentBuilder.PREVIOUS, context),
-      )
-
-      // Tell the AppWidgetManager to perform an update on the current app widget
-      appWidgetManager.updateAppWidget(appWidgetId, views)
-    }
+    views.setOnClickPendingIntent(R.id.widget_small_image, pendingIntent)
+    views.setOnClickPendingIntent(R.id.widget_small_play, getPendingIntent(Play, context))
+    views.setOnClickPendingIntent(R.id.widget_small_next, getPendingIntent(Next, context))
+    views.setOnClickPendingIntent(R.id.widget_small_previous, getPendingIntent(Previous, context))
   }
 
-  private fun updateInfo(
-    context: Context?,
-    widgetManager: AppWidgetManager,
-    widgetsIds: IntArray,
+  override fun setupTrackInfo(
+    views: RemoteViews,
     info: TrackInfo,
   ) {
-    if (context == null) {
-      return
-    }
-
-    val smallWidget = RemoteViews(context.packageName, R.layout.widget_small)
-    smallWidget.setTextViewText(R.id.widget_small_line_one, info.title)
-    smallWidget.setTextViewText(R.id.widget_small_line_two, info.artist)
-    widgetManager.updateAppWidget(widgetsIds, smallWidget)
-  }
-
-  private fun updateCover(
-    context: Context?,
-    widgetManager: AppWidgetManager,
-    widgetsIds: IntArray,
-    path: String,
-  ) {
-    if (context == null) {
-      return
-    }
-
-    val smallWidget = RemoteViews(context.packageName, R.layout.widget_small)
-    val coverFile = File(path)
-    if (coverFile.exists()) {
-      val request =
-        ImageRequest
-          .Builder(context)
-          .data(coverFile)
-          .size(R.dimen.widget_small_height)
-          .scale(Scale.FILL)
-          .precision(Precision.INEXACT)
-          .target(RemoteViewsTarget(widgetManager, smallWidget, widgetsIds, R.id.widget_small_image))
-          .build()
-
-      context.imageLoader.enqueue(request)
-    } else {
-      smallWidget.setImageViewResource(R.id.widget_small_image, R.drawable.ic_image_no_cover)
-      widgetManager.updateAppWidget(widgetsIds, smallWidget)
-    }
-  }
-
-  private fun updatePlayState(
-    context: Context?,
-    manager: AppWidgetManager,
-    widgetsIds: IntArray,
-    @PlayerState.State state: String,
-  ) {
-    if (context == null) {
-      return
-    }
-
-    val smallWidget = RemoteViews(context.packageName, R.layout.widget_small)
-
-    smallWidget.setImageViewResource(
-      R.id.widget_small_play,
-      if (PlayerState.PLAYING == state) {
-        R.drawable.ic_action_pause
-      } else {
-        R.drawable.ic_action_play
-      },
-    )
-    manager.updateAppWidget(widgetsIds, smallWidget)
+    views.setTextViewText(R.id.widget_small_line_one, info.title)
+    views.setTextViewText(R.id.widget_small_line_two, info.artist)
   }
 }

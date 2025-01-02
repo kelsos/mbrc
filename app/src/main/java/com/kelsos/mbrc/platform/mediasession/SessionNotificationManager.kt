@@ -126,26 +126,26 @@ class SessionNotificationManager(
       builder.setContentTitle(info.title).setContentText(info.artist).setSubText(info.album)
     }
 
-    builder.setContentIntent(RemoteViewIntentBuilder.getPendingIntent(RemoteViewIntentBuilder.OPEN, context))
+    builder.setContentIntent(RemoteViewIntentBuilder.getPendingIntent(RemoteIntentCode.Open, context))
 
     return builder
   }
 
   private val previousAction: NotificationCompat.Action
     get() {
-      val previousIntent = RemoteViewIntentBuilder.getPendingIntent(RemoteViewIntentBuilder.PREVIOUS, context)
+      val previousIntent = RemoteViewIntentBuilder.getPendingIntent(RemoteIntentCode.Previous, context)
       return NotificationCompat.Action.Builder(R.drawable.ic_action_previous, previous, previousIntent).build()
     }
 
   private fun getPlayAction(playStateIcon: Int): NotificationCompat.Action {
-    val playIntent = RemoteViewIntentBuilder.getPendingIntent(RemoteViewIntentBuilder.PLAY, context)
+    val playIntent = RemoteViewIntentBuilder.getPendingIntent(RemoteIntentCode.Play, context)
 
     return NotificationCompat.Action.Builder(playStateIcon, play, playIntent).build()
   }
 
   private val nextAction: NotificationCompat.Action
     get() {
-      val nextIntent = RemoteViewIntentBuilder.getPendingIntent(RemoteViewIntentBuilder.NEXT, context)
+      val nextIntent = RemoteViewIntentBuilder.getPendingIntent(RemoteIntentCode.Next, context)
       return NotificationCompat.Action.Builder(R.drawable.ic_action_next, next, nextIntent).build()
     }
 

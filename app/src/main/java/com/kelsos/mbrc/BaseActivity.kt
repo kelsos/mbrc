@@ -233,11 +233,7 @@ abstract class BaseActivity :
           if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
           } else {
-            if (this@BaseActivity is PlayerActivity) {
-              finish()
-            } else {
-              onBackPressedDispatcher.onBackPressed()
-            }
+            finish()
           }
         }
       },

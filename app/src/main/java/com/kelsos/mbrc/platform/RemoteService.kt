@@ -17,6 +17,7 @@ import com.kelsos.mbrc.events.MessageEvent
 import com.kelsos.mbrc.networking.discovery.RemoteServiceDiscovery
 import com.kelsos.mbrc.networking.protocol.CommandRegistration
 import com.kelsos.mbrc.networking.protocol.RemoteController
+import com.kelsos.mbrc.platform.mediasession.RemoteIntentCode
 import com.kelsos.mbrc.platform.mediasession.RemoteViewIntentBuilder
 import com.kelsos.mbrc.platform.mediasession.SessionNotificationManager
 import org.koin.android.ext.android.getKoin
@@ -40,7 +41,7 @@ class RemoteService : Service() {
       val manager = NotificationManagerCompat.from(this)
       manager.createNotificationChannel(notificationChannel)
     }
-    val cancelIntent = RemoteViewIntentBuilder.getPendingIntent(RemoteViewIntentBuilder.CANCEL, this)
+    val cancelIntent = RemoteViewIntentBuilder.getPendingIntent(RemoteIntentCode.Cancel, this)
     val action =
       NotificationCompat.Action
         .Builder(
@@ -67,7 +68,7 @@ class RemoteService : Service() {
     startForeground(SessionNotificationManager.Companion.NOW_PLAYING_PLACEHOLDER, placeholderNotification())
     handler = Handler(Looper.myLooper()!!)
     serviceRunning = true
-    ContextCompat.registerReceiver(this, receiver, receiver.filter(this), ContextCompat.RECEIVER_NOT_EXPORTED)
+    ContextCompat.registerReceiver(this, receiver, receiver.filter(this), ContextCompat.RECEIVER_EXPORTED)
   }
 
   override fun onStartCommand(

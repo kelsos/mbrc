@@ -8,7 +8,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.telephony.TelephonyManager
 import com.kelsos.mbrc.constants.ProtocolEventType
-import com.kelsos.mbrc.constants.UserInputEventType
 import com.kelsos.mbrc.data.UserAction
 import com.kelsos.mbrc.events.MessageEvent
 import com.kelsos.mbrc.events.bus.RxBus
@@ -35,10 +34,10 @@ class RemoteBroadcastReceiver(
       if (hasPermission && handleCallAction) {
         addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
       }
-      addAction(RemoteViewIntentBuilder.REMOTE_PLAY_PRESSED)
-      addAction(RemoteViewIntentBuilder.REMOTE_NEXT_PRESSED)
-      addAction(RemoteViewIntentBuilder.REMOTE_CLOSE_PRESSED)
-      addAction(RemoteViewIntentBuilder.REMOTE_PREVIOUS_PRESSED)
+      addAction(RemoteViewIntentBuilder.PLAY_PRESSED)
+      addAction(RemoteViewIntentBuilder.NEXT_PRESSED)
+      addAction(RemoteViewIntentBuilder.CLOSE_PRESSED)
+      addAction(RemoteViewIntentBuilder.PREVIOUS_PRESSED)
       addAction(RemoteViewIntentBuilder.CANCELLED_NOTIFICATION)
     }
   }
@@ -47,45 +46,41 @@ class RemoteBroadcastReceiver(
     context: Context,
     intent: Intent,
   ) {
-    Timber.Forest.v("Incoming %s", intent)
+    Timber.v("Incoming %s", intent)
     when (intent.action) {
       TelephonyManager.ACTION_PHONE_STATE_CHANGED -> {
-        Timber.Forest.v("Incoming")
+        Timber.v("Incoming")
         val bundle = intent.extras ?: return
         val state = bundle.getString(TelephonyManager.EXTRA_STATE)
         if (TelephonyManager.EXTRA_STATE_RINGING.equals(state!!, ignoreCase = true)) {
           handleRinging()
         }
       }
-      RemoteViewIntentBuilder.REMOTE_PLAY_PRESSED -> {
-        postAction(UserAction(Protocol.PLAYER_PLAY_PAUSE, true))
-      }
-      RemoteViewIntentBuilder.REMOTE_NEXT_PRESSED -> {
-        postAction(UserAction(Protocol.PLAYER_NEXT, true))
-      }
-      RemoteViewIntentBuilder.REMOTE_CLOSE_PRESSED -> {
-        bus.post(MessageEvent(UserInputEventType.CANCEL_NOTIFICATION))
-      }
-      RemoteViewIntentBuilder.REMOTE_PREVIOUS_PRESSED -> {
-        postAction(UserAction(Protocol.PLAYER_PREVIOUS, true))
-      }
-      RemoteViewIntentBuilder.CANCELLED_NOTIFICATION -> {
-        if (!RemoteService.Companion.serviceStopping) {
-          context.stopService(Intent(context, RemoteService::class.java))
-        }
-      }
+
+      RemoteViewIntentBuilder.PLAY_PRESSED -> performAction(Protocol.PLAYER_PLAY_PAUSE)
+      RemoteViewIntentBuilder.NEXT_PRESSED -> performAction(Protocol.PLAYER_NEXT)
+      RemoteViewIntentBuilder.CLOSE_PRESSED -> stopService(context)
+      RemoteViewIntentBuilder.PREVIOUS_PRESSED -> performAction(Protocol.PLAYER_PREVIOUS)
+      RemoteViewIntentBuilder.CANCELLED_NOTIFICATION -> stopService(context)
+    }
+  }
+
+  private fun stopService(context: Context) {
+    if (!RemoteService.serviceStopping) {
+      context.stopService(Intent(context, RemoteService::class.java))
     }
   }
 
   private fun handleRinging() {
     when (settingsManager.getCallAction()) {
-      SettingsManager.Companion.PAUSE -> postAction(UserAction(Protocol.PLAYER_PAUSE, true))
-      SettingsManager.Companion.STOP -> postAction(UserAction(Protocol.PLAYER_STOP, true))
+      SettingsManager.Companion.PAUSE -> performAction(Protocol.PLAYER_PAUSE)
+      SettingsManager.Companion.STOP -> performAction(Protocol.PLAYER_STOP)
       SettingsManager.Companion.REDUCE -> bus.post(MessageEvent(ProtocolEventType.REDUCE_VOLUME))
     }
   }
 
-  private fun postAction(data: UserAction) {
-    bus.post(MessageEvent(ProtocolEventType.USER_ACTION, data))
+  // TODO move to sealed classes to ensure type safety
+  private fun performAction(protocol: String) {
+    bus.post(MessageEvent(ProtocolEventType.USER_ACTION, UserAction(protocol, true)))
   }
 }

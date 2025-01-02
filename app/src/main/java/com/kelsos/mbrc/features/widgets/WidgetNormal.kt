@@ -8,12 +8,15 @@ import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
 import androidx.core.os.BundleCompat
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.size.Precision
+import coil3.size.Scale
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.annotations.PlayerState
 import com.kelsos.mbrc.features.player.PlayerActivity
 import com.kelsos.mbrc.features.player.TrackInfo
 import com.kelsos.mbrc.platform.mediasession.RemoteViewIntentBuilder
-import com.squareup.picasso.Picasso
 import timber.log.Timber
 import java.io.File
 
@@ -124,13 +127,17 @@ class WidgetNormal : AppWidgetProvider() {
 
     val coverFile = File(path)
     if (coverFile.exists()) {
-      Picasso.get().invalidate(coverFile)
-      Picasso
-        .get()
-        .load(coverFile)
-        .centerCrop()
-        .resizeDimen(R.dimen.widget_normal_height, R.dimen.widget_normal_height)
-        .into(widget, R.id.widget_normal_image, widgetsIds)
+      val request =
+        ImageRequest
+          .Builder(context)
+          .data(coverFile)
+          .size(R.dimen.widget_normal_height)
+          .scale(Scale.FILL)
+          .precision(Precision.INEXACT)
+          .target(RemoteViewsTarget(widgetManager, widget, widgetsIds, R.id.widget_normal_image))
+          .build()
+
+      context.imageLoader.enqueue(request)
     } else {
       widget.setImageViewResource(R.id.widget_normal_image, R.drawable.ic_image_no_cover)
     }

@@ -1,6 +1,5 @@
 package com.kelsos.mbrc.features.library
 
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
@@ -10,13 +9,17 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.os.BundleCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
+import coil3.load
+import coil3.request.crossfade
+import coil3.request.error
+import coil3.request.placeholder
+import coil3.size.Scale
 import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.common.utilities.RemoteUtils.sha1
 import com.kelsos.mbrc.features.queue.PopupActionHandler
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import com.squareup.picasso.Picasso
 import org.koin.android.ext.android.inject
 import org.koin.androidx.scope.ScopeActivity
 import java.io.File
@@ -91,16 +94,15 @@ class AlbumTracksActivity :
   ) {
     val image = findViewById<ImageView>(R.id.album_tracks__cover)
     val cache = File(cacheDir, "covers")
-    Picasso
-      .get()
-      .load(File(cache, sha1("${artist}_$album")))
-      .noFade()
-      .config(Bitmap.Config.RGB_565)
-      .error(R.drawable.ic_image_no_cover)
-      .placeholder(R.drawable.ic_image_no_cover)
-      .resizeDimen(R.dimen.cover_size, R.dimen.cover_size)
-      .centerCrop()
-      .into(image)
+    val coverFile = File(cache, sha1("${artist}_$album"))
+
+    image.load(coverFile) {
+      crossfade(false)
+      placeholder(R.drawable.ic_image_no_cover)
+      error(R.drawable.ic_image_no_cover)
+      size(resources.getDimensionPixelSize(R.dimen.list_album_size))
+      scale(Scale.FILL)
+    }
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {

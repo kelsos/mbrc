@@ -68,6 +68,4 @@ open class App : Application() {
       )
     }
   }
-
-  internal open fun testMode(): Boolean = false
 }

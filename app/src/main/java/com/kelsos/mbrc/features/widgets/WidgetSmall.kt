@@ -8,12 +8,15 @@ import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
 import androidx.core.os.BundleCompat
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.size.Precision
+import coil3.size.Scale
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.annotations.PlayerState
 import com.kelsos.mbrc.features.player.PlayerActivity
 import com.kelsos.mbrc.features.player.TrackInfo
 import com.kelsos.mbrc.platform.mediasession.RemoteViewIntentBuilder
-import com.squareup.picasso.Picasso
 import java.io.File
 
 class WidgetSmall : AppWidgetProvider() {
@@ -124,13 +127,17 @@ class WidgetSmall : AppWidgetProvider() {
     val smallWidget = RemoteViews(context.packageName, R.layout.widget_small)
     val coverFile = File(path)
     if (coverFile.exists()) {
-      Picasso.get().invalidate(coverFile)
-      Picasso
-        .get()
-        .load(coverFile)
-        .centerCrop()
-        .resizeDimen(R.dimen.widget_small_height, R.dimen.widget_small_height)
-        .into(smallWidget, R.id.widget_small_image, widgetsIds)
+      val request =
+        ImageRequest
+          .Builder(context)
+          .data(coverFile)
+          .size(R.dimen.widget_small_height)
+          .scale(Scale.FILL)
+          .precision(Precision.INEXACT)
+          .target(RemoteViewsTarget(widgetManager, smallWidget, widgetsIds, R.id.widget_small_image))
+          .build()
+
+      context.imageLoader.enqueue(request)
     } else {
       smallWidget.setImageViewResource(R.id.widget_small_image, R.drawable.ic_image_no_cover)
       widgetManager.updateAppWidget(widgetsIds, smallWidget)

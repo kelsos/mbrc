@@ -12,6 +12,7 @@ plugins {
   alias(libs.plugins.kotlinAndroid)
   alias(libs.plugins.kotlinParcelize)
   alias(libs.plugins.kapt)
+  alias(libs.plugins.ksp)
   alias(libs.plugins.protobuf)
   alias(libs.plugins.googleServices) apply false
   alias(libs.plugins.crashlytics) apply false
@@ -232,6 +233,7 @@ dependencies {
   implementation(libs.androidx.legacy.support.v4)
   implementation(libs.androidx.legacy.support.v13)
   implementation(libs.bundles.coroutines)
+  implementation(libs.bundles.coil)
   implementation(libs.bundles.koin)
   implementation(libs.google.material)
   implementation(libs.google.protobuf.javalite)
@@ -242,7 +244,6 @@ dependencies {
   implementation(libs.bundles.jackson)
   implementation(libs.kotlin.stdlib)
   implementation(libs.kotlin.reflect)
-  implementation(libs.squareup.picasso)
   implementation(libs.rxandroid)
   implementation(libs.rxjava)
   implementation(libs.rxkotlin)

@@ -42,6 +42,8 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.scope.ScopeActivity
 import timber.log.Timber
 
+private const val NAVIGATION_DELAY = 250L
+
 abstract class BaseActivity :
   ScopeActivity(),
   NavigationView.OnNavigationItemSelectedListener {
@@ -135,25 +137,27 @@ abstract class BaseActivity :
     keyCode: Int,
     event: KeyEvent,
   ): Boolean {
-    when (keyCode) {
-      KeyEvent.KEYCODE_VOLUME_UP -> {
-        bus.post(MessageEvent(UserInputEventType.KEY_VOLUME_UP))
-        return true
-      }
+    val result =
+      when (keyCode) {
+        KeyEvent.KEYCODE_VOLUME_UP -> {
+          bus.post(MessageEvent(UserInputEventType.KEY_VOLUME_UP))
+          true
+        }
 
-      KeyEvent.KEYCODE_VOLUME_DOWN -> {
-        bus.post(MessageEvent(UserInputEventType.KEY_VOLUME_DOWN))
-        return true
-      }
+        KeyEvent.KEYCODE_VOLUME_DOWN -> {
+          bus.post(MessageEvent(UserInputEventType.KEY_VOLUME_DOWN))
+          true
+        }
 
-      else -> return super.onKeyDown(keyCode, event)
-    }
+        else -> super.onKeyDown(keyCode, event)
+      }
+    return result
   }
 
   override fun onNavigationItemSelected(item: MenuItem): Boolean {
     val itemId = item.itemId
     drawer.closeDrawer(GravityCompat.START)
-    drawer.postDelayed({ navigate(itemId) }, 250)
+    drawer.postDelayed({ navigate(itemId) }, NAVIGATION_DELAY)
     return true
   }
 
@@ -229,7 +233,11 @@ abstract class BaseActivity :
           if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
           } else {
-            onBackPressedDispatcher.onBackPressed()
+            if (this@BaseActivity is PlayerActivity) {
+              finish()
+            } else {
+              onBackPressedDispatcher.onBackPressed()
+            }
           }
         }
       },

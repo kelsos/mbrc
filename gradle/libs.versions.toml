@@ -19,6 +19,7 @@ androidx-test-truth = "1.6.0"
 androidx-viewpager2 = "1.1.0"
 androidx-core-splashscreen = "1.0.1"
 dbflow = "4.2.4"
+coil = "3.0.4"
 desugar = "2.1.4"
 firebaseBom = "33.7.0"
 google-material = "1.12.0"
@@ -40,7 +41,6 @@ kotlinCoroutines = "1.10.1"
 kotlinReflect = "2.1.0"
 legacySupportV4 = "1.0.0"
 mockk = "1.13.14"
-picasso = "2.8"
 protobuf = "4.26.1"
 robolectric = "4.14.1"
 rxandroid = "1.2.1"
@@ -80,6 +80,8 @@ androidx-test-runner = { module = "androidx.test:runner", version.ref = "android
 androidx-test-truth = { module = "androidx.test.ext:truth", version.ref = "androidx-test-truth" }
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "androidx-viewpager2" }
 com-android-tools-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar" }
+coilKt-coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
+coilKt-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 dbflow = { module = "com.github.Raizlabs.DBFlow:dbflow", version.ref = "dbflow" }
 dbflow-core = { module = "com.github.Raizlabs.DBFlow:dbflow-core", version.ref = "dbflow" }
 dbflow-kotlinextensions = { module = "com.github.Raizlabs.DBFlow:dbflow-kotlinextensions", version.ref = "dbflow" }
@@ -106,7 +108,6 @@ rxjava = { module = "io.reactivex:rxjava", version.ref = "rxjava" }
 rxandroid = { module = "io.reactivex:rxandroid", version.ref = "rxandroid" }
 rxrelay = { module = "com.jakewharton.rxrelay:rxrelay", version.ref = "rxrelay" }
 rxkotlin = { module = "io.reactivex:rxkotlin", version.ref = "rxkotlin" }
-squareup-picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 squareup-leakcanary = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "squareup-leakcanary" }
 squareup-okio = { module = "com.squareup.okio:okio", version.ref = "squareup-okio" }
@@ -124,6 +125,10 @@ androidx-test-espresso = [
     "androidx-test-espresso-contrib",
     "androidx-test-espresso-core",
     "androidx-test-espresso-intents",
+]
+coil = [
+    "coilKt-coil",
+    "coilKt-network-okhttp"
 ]
 
 coroutines = [

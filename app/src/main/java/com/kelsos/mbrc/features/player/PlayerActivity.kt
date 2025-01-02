@@ -1,7 +1,6 @@
 package com.kelsos.mbrc.features.player
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.Menu
@@ -20,6 +19,11 @@ import androidx.appcompat.widget.ShareActionProvider
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.MenuItemCompat
+import coil3.load
+import coil3.request.crossfade
+import coil3.request.error
+import coil3.request.placeholder
+import coil3.size.Scale
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import com.kelsos.mbrc.BaseActivity
@@ -36,7 +40,6 @@ import com.kelsos.mbrc.events.ui.ShuffleChange.ShuffleState
 import com.kelsos.mbrc.events.ui.UpdateDuration
 import com.kelsos.mbrc.extensions.getDimens
 import com.kelsos.mbrc.features.player.ProgressSeekerHelper.ProgressUpdate
-import com.squareup.picasso.Picasso
 import org.koin.android.ext.android.inject
 import java.io.File
 
@@ -174,14 +177,17 @@ class PlayerActivity :
         presenter.toggleScrobbling()
         true
       }
+
       R.id.menu_rating_dialog -> {
         val ratingDialog = RatingDialogFragment()
         ratingDialog.show(supportFragmentManager, "RatingDialog")
         true
       }
+
       R.id.menu_lastfm_love -> {
         presenter.lfmLove()
       }
+
       else -> false
     }
 
@@ -224,15 +230,13 @@ class PlayerActivity :
     }
 
     val dimens = getDimens()
-    Picasso
-      .get()
-      .load(file)
-      .noFade()
-      .error(R.drawable.ic_image_no_cover)
-      .config(Bitmap.Config.RGB_565)
-      .resize(dimens, dimens)
-      .centerCrop()
-      .into(albumCover)
+    albumCover.load(file) {
+      crossfade(false)
+      placeholder(R.drawable.ic_image_no_cover)
+      error(R.drawable.ic_image_no_cover)
+      size(dimens)
+      scale(Scale.FILL)
+    }
   }
 
   override fun updateShuffleState(
@@ -259,9 +263,11 @@ class PlayerActivity :
       Repeat.ALL.equals(mode, ignoreCase = true) -> {
         // Do nothing already set above
       }
+
       Repeat.ONE.equals(mode, ignoreCase = true) -> {
         resId = R.drawable.ic_repeat_one_black_24dp
       }
+
       else -> {
         colorId = R.color.button_dark
       }
@@ -299,17 +305,20 @@ class PlayerActivity :
           trackProgressAnimation(progressBar.progress, progressBar.max)
           R.drawable.ic_pause_circle_filled_black_24dp
         }
+
         PlayerState.PAUSED -> {
           // Stop the animation if the track is paused
           progressHelper.stop()
           R.drawable.ic_play_circle_filled_black_24dp
         }
+
         PlayerState.STOPPED -> {
           // Stop the animation if the track is paused
           progressHelper.stop()
           activateStoppedState()
           R.drawable.ic_play_circle_filled_black_24dp
         }
+
         else -> {
           R.drawable.ic_play_circle_filled_black_24dp
         }

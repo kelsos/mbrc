@@ -29,7 +29,6 @@ import com.kelsos.mbrc.events.ui.TrackMoved
 import com.kelsos.mbrc.events.ui.TrackRemoval
 import com.kelsos.mbrc.events.ui.UpdateDuration
 import com.kelsos.mbrc.events.ui.VolumeChange
-import com.kelsos.mbrc.extensions.getDimens
 import com.kelsos.mbrc.extensions.md5
 import com.kelsos.mbrc.features.lyrics.LyricsModel
 import com.kelsos.mbrc.features.lyrics.LyricsPayload
@@ -41,19 +40,15 @@ import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.SocketActivityChecker
 import com.kelsos.mbrc.networking.client.SocketMessage
 import com.kelsos.mbrc.networking.client.SocketService
-import com.squareup.picasso.Callback
-import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.coroutines.resumeWithException
 
 class UpdateLastFm(
   private val model: MainDataModel,
@@ -320,8 +315,7 @@ class UpdateCover(
     try {
       val bitmap = getBitmap(cover)
       val file = storeCover(bitmap)
-      val pre = prefetch(file)
-      val path = pre.absolutePath
+      val path = file.absolutePath
       model.coverPath = path
       savePath(path)
       bus.post(CoverChangedEvent(path))
@@ -384,28 +378,6 @@ class UpdateCover(
       throw RuntimeException("unable to store cover")
     }
   }
-
-  private suspend fun prefetch(newFile: File): File =
-    suspendCancellableCoroutine { cont ->
-      val dimens = context.getDimens()
-      Picasso
-        .get()
-        .load(newFile)
-        .config(Bitmap.Config.RGB_565)
-        .resize(dimens, dimens)
-        .centerCrop()
-        .fetch(
-          object : Callback {
-            override fun onSuccess() {
-              cont.resume(newFile) { cause, _, _ -> }
-            }
-
-            override fun onError(e: Exception) {
-              cont.resumeWithException(e)
-            }
-          },
-        )
-    }
 
   private fun checkIfExists() {
     if (!coverDir.exists()) {

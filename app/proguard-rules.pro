@@ -90,8 +90,7 @@
 -keep class com.raizlabs.android.dbflow.config.GeneratedDatabaseHolder
 -keep class * extends com.raizlabs.android.dbflow.config.BaseDatabaseDefinition { *; }
 
-## Square Picasso specific rules ##
-## https://square.github.io/picasso/ ##
+## OKHttp ##
 
 -dontwarn com.squareup.okhttp.**
 

@@ -1,7 +1,6 @@
 package com.kelsos.mbrc.features.library
 
 import android.app.Activity
-import android.graphics.Bitmap
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -11,10 +10,14 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isGone
 import androidx.recyclerview.widget.RecyclerView
+import coil3.load
+import coil3.request.crossfade
+import coil3.request.error
+import coil3.request.placeholder
+import coil3.size.Scale
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.ui.SquareImageView
 import com.raizlabs.android.dbflow.list.FlowCursorList
-import com.squareup.picasso.Picasso
 import java.io.File
 
 class AlbumEntryAdapter(
@@ -59,19 +62,20 @@ class AlbumEntryAdapter(
   ) {
     val data = this.data ?: return
     val item = data.getItem(position.toLong()) ?: return
-    val (artist, album, _, _) = item
+    val (artist, album) = item
     holder.album.text = if (album.isNullOrBlank()) holder.emptyAlbum else album
     holder.artist.text = if (artist.isNullOrBlank()) holder.unknownArtist else artist
-    Picasso
-      .get()
-      .load(File(cache, item.key()))
-      .noFade()
-      .config(Bitmap.Config.RGB_565)
-      .error(R.drawable.ic_image_no_cover)
-      .placeholder(R.drawable.ic_image_no_cover)
-      .resizeDimen(R.dimen.list_album_size, R.dimen.list_album_size)
-      .centerCrop()
-      .into(holder.image)
+
+    holder.image.load(File(cache, item.key())) {
+      crossfade(false)
+      placeholder(R.drawable.ic_image_no_cover)
+      error(R.drawable.ic_image_no_cover)
+      size(
+        holder.itemView.context.resources
+          .getDimensionPixelSize(R.dimen.list_album_size),
+      )
+      scale(Scale.FILL)
+    }
   }
 
   fun refresh() {

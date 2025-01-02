@@ -1,7 +1,6 @@
 package com.kelsos.mbrc.features.minicontrol
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,13 +10,17 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.app.TaskStackBuilder
 import androidx.fragment.app.Fragment
+import coil3.load
+import coil3.request.crossfade
+import coil3.request.error
+import coil3.request.placeholder
+import coil3.size.Scale
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.annotations.PlayerState
 import com.kelsos.mbrc.annotations.PlayerState.State
 import com.kelsos.mbrc.extensions.getDimens
 import com.kelsos.mbrc.features.player.PlayerActivity
 import com.kelsos.mbrc.features.player.TrackInfo
-import com.squareup.picasso.Picasso
 import org.koin.android.ext.android.inject
 import org.koin.android.scope.AndroidScopeComponent
 import org.koin.androidx.scope.fragmentScope
@@ -81,14 +84,13 @@ class MiniControlFragment :
 
     if (file.exists()) {
       val dimens = requireContext().getDimens()
-      Picasso
-        .get()
-        .load(file)
-        .noFade()
-        .config(Bitmap.Config.RGB_565)
-        .resize(dimens, dimens)
-        .centerCrop()
-        .into(trackCover)
+      trackCover.load(file) {
+        crossfade(false)
+        placeholder(R.drawable.ic_image_no_cover)
+        error(R.drawable.ic_image_no_cover)
+        size(dimens)
+        scale(Scale.FILL)
+      }
     } else {
       trackCover.setImageResource(R.drawable.ic_image_no_cover)
     }

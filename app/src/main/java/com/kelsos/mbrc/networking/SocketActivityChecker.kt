@@ -1,52 +1,68 @@
 package com.kelsos.mbrc.networking
 
-import rx.Completable
-import rx.Subscription
+import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 
-class SocketActivityChecker {
-  private var subscription: Subscription? = null
-  private var pingTimeoutListener: PingTimeoutListener? = null
+typealias Listener = () -> Unit
+
+class SocketActivityChecker(
+  dispatchers: AppCoroutineDispatchers,
+) {
+  private var deferred: Deferred<Unit>? = null
+  private var listener: Listener? = null
+  private val job = SupervisorJob()
+  private val scope = CoroutineScope(job + dispatchers.network)
 
   fun start() {
-    Timber.Forest.v("Starting activity checker")
-    subscription = subscribe
-  }
-
-  private val subscribe: Subscription
-    get() =
-      Completable.timer(DELAY.toLong(), TimeUnit.SECONDS).subscribe({
-        Timber.Forest.v("Ping was more than %d seconds ago", DELAY)
-        pingTimeoutListener?.onTimeout()
-      }) { Timber.Forest.v("Subscription failed") }
-
-  fun stop() {
-    Timber.Forest.v("Stopping activity checker")
-    unsubscribe()
-  }
-
-  fun ping() {
-    Timber.Forest.v("Received ping")
-    unsubscribe()
-    subscription = subscribe
-  }
-
-  private fun unsubscribe() {
-    if (subscription != null && !subscription!!.isUnsubscribed) {
-      subscription!!.unsubscribe()
+    scope.launch {
+      Timber.v("Starting activity checker")
+      schedule()
     }
   }
 
-  fun setPingTimeoutListener(pingTimeoutListener: PingTimeoutListener?) {
-    this.pingTimeoutListener = pingTimeoutListener
+  private suspend fun schedule() {
+    cancel()
+    deferred =
+      scope.async {
+        delay(DELAY_MS)
+        Timber.v("Ping was more than %d seconds ago", DELAY_MS)
+        val result = runCatching { listener?.invoke() }
+        if (result.isFailure) {
+          Timber.e(result.exceptionOrNull(), "calling the onTimeout method failed")
+        }
+      }
   }
 
-  interface PingTimeoutListener {
-    fun onTimeout()
+  private suspend fun cancel() {
+    deferred?.run {
+      if (isActive) {
+        cancelAndJoin()
+      }
+    }
+  }
+
+  fun stop() {
+    Timber.v("Stopping activity checker")
+    scope.launch { cancel() }
+  }
+
+  fun ping() {
+    Timber.v("Received ping")
+    scope.launch { schedule() }
+  }
+
+  fun setPingTimeoutListener(listener: Listener?) {
+    this.listener = listener
   }
 
   companion object {
-    private const val DELAY = 40
+    private const val DELAY_MS = 40_000L
   }
 }

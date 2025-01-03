@@ -17,14 +17,12 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.kelsos.mbrc.BuildConfig
 import com.kelsos.mbrc.R
-import com.kelsos.mbrc.common.utilities.RemoteUtils.getVersion
-import com.kelsos.mbrc.events.bus.RxBus
+import com.kelsos.mbrc.common.utilities.RemoteUtils.VERSION
 import com.kelsos.mbrc.logging.FileLoggingTree
 import com.kelsos.mbrc.platform.RemoteService
 import timber.log.Timber
 
 class SettingsFragment : PreferenceFragmentCompat() {
-  private var bus: RxBus? = null
   private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
   override fun onCreatePreferences(
@@ -49,17 +47,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     val reduceOnIncoming =
       findPreference<ListPreference>(getString(R.string.settings_key_incoming_call_action))
-    val mOpenSource = findPreference<Preference>(getString(R.string.preferences_open_source))
-    val mManager =
+    val openSource = findPreference<Preference>(getString(R.string.preferences_open_source))
+    val manager =
       findPreference<Preference>(resources.getString(R.string.preferences_key_connection_manager))
-    val mVersion = findPreference<Preference>(resources.getString(R.string.settings_version))
-    val mBuild = findPreference<Preference>(resources.getString(R.string.pref_key_build_time))
-    val mRevision = findPreference<Preference>(resources.getString(R.string.pref_key_revision))
+    val version = findPreference<Preference>(resources.getString(R.string.settings_version))
+    val build = findPreference<Preference>(resources.getString(R.string.pref_key_build_time))
+    val revision = findPreference<Preference>(resources.getString(R.string.pref_key_revision))
     val debugLogging =
       findPreference<CheckBoxPreference>(resources.getString(R.string.settings_key_debug_logging))
 
     debugLogging?.setOnPreferenceChangeListener { _, newValue ->
-      if (newValue as Boolean) {
+      if (newValue == true) {
         Timber.plant(FileLoggingTree(requireContext().applicationContext))
       } else {
         val fileLoggingTree = Timber.forest().find { it is FileLoggingTree }
@@ -69,7 +67,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
       true
     }
 
-    mOpenSource?.setOnPreferenceClickListener {
+    openSource?.setOnPreferenceClickListener {
       showOpenSourceLicenseDialog()
       false
     }
@@ -81,26 +79,21 @@ class SettingsFragment : PreferenceFragmentCompat() {
       true
     }
 
-    mManager?.setOnPreferenceClickListener {
+    manager?.setOnPreferenceClickListener {
       startActivity(Intent(requireContext(), ConnectionManagerActivity::class.java))
       false
     }
 
-    try {
-      val version = requireContext().getVersion()
-      mVersion?.summary = resources.getString(R.string.settings_version_number, version)
-    } catch (e: PackageManager.NameNotFoundException) {
-      Timber.d(e, "failed")
-    }
+    version?.summary = resources.getString(R.string.settings_version_number, VERSION)
 
-    val mLicense = findPreference<Preference>(resources.getString(R.string.settings_key_license))
-    mLicense?.setOnPreferenceClickListener {
+    val license = findPreference<Preference>(resources.getString(R.string.settings_key_license))
+    license?.setOnPreferenceClickListener {
       showLicenseDialog()
       false
     }
 
-    mBuild?.summary = BuildConfig.BUILD_TIME
-    mRevision?.summary = BuildConfig.GIT_SHA
+    build?.summary = BuildConfig.BUILD_TIME
+    revision?.summary = BuildConfig.GIT_SHA
   }
 
   private fun requestPhoneStatePermission() {
@@ -139,14 +132,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
     dialog.show(requireActivity().supportFragmentManager, "licenses_dialogs")
   }
 
-  fun setBus(bus: RxBus) {
-    this.bus = bus
-  }
-
   private fun restartService() {
     requireActivity().run {
       Timber.v("Restarting service")
-      stopService(Intent(this, RemoteService::class.java))
+      val intent = Intent(requireContext(), RemoteService::class.java)
+      stopService(intent)
       val handler = Handler(Looper.getMainLooper())
       HandlerCompat.postDelayed(handler, {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -154,15 +144,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
         } else {
           startService(Intent(this, RemoteService::class.java))
         }
-      }, null, 600)
+      }, null, RESTART_POST_DELAY)
     }
   }
 
   companion object {
-    fun newInstance(bus: RxBus): SettingsFragment {
-      val fragment = SettingsFragment()
-      fragment.setBus(bus)
-      return fragment
-    }
+    fun newInstance(): SettingsFragment = SettingsFragment()
+
+    private const val RESTART_POST_DELAY = 600L
   }
 }

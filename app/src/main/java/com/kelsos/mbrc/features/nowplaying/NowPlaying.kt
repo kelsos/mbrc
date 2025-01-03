@@ -1,37 +1,52 @@
 package com.kelsos.mbrc.features.nowplaying
 
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import com.kelsos.mbrc.data.Data
-import com.kelsos.mbrc.data.Database
-import com.raizlabs.android.dbflow.annotation.Column
-import com.raizlabs.android.dbflow.annotation.PrimaryKey
-import com.raizlabs.android.dbflow.annotation.Table
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder("artist", "title", "path", "position")
-@Table(database = Database::class, name = "now_playing")
 data class NowPlaying(
-  @JsonProperty("title")
-  @Column(name = "title")
-  var title: String? = null,
-  @JsonProperty("artist")
-  @Column(name = "artist")
-  var artist: String? = null,
-  @JsonProperty("path")
-  @Column(name = "path")
-  var path: String? = null,
-  @JsonProperty("position")
-  @Column(name = "position")
-  var position: Int = 0,
-  @JsonIgnore
-  @Column(name = "date_added")
-  var dateAdded: Long = 0,
-  @JsonIgnore
-  @PrimaryKey(autoincrement = true)
-  var id: Long = 0,
-) : Data
+  val title: String,
+  val artist: String,
+  val path: String,
+  val position: Int,
+  val id: Long,
+)
+
+@JsonClass(generateAdapter = true)
+data class NowPlayingDto(
+  @Json(name = "title")
+  val title: String = "",
+  @Json(name = "artist")
+  val artist: String = "",
+  @Json(name = "path")
+  val path: String = "",
+  @Json(name = "position")
+  val position: Int = 0,
+)
+
+@Entity(
+  tableName = "now_playing",
+  indices = [],
+)
+data class NowPlayingEntity(
+  @ColumnInfo(name = "title")
+  val title: String? = null,
+  @ColumnInfo(name = "artist")
+  val artist: String? = null,
+  @ColumnInfo(name = "path")
+  val path: String? = null,
+  @ColumnInfo(name = "position")
+  val position: Int? = null,
+  @ColumnInfo(name = "date_added")
+  val dateAdded: Long? = null,
+  @PrimaryKey(autoGenerate = true)
+  val id: Long? = null,
+)
+
+data class CachedNowPlaying(
+  val id: Long,
+  val path: String,
+  val position: Int,
+)

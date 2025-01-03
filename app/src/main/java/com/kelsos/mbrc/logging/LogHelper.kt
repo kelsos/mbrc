@@ -1,96 +1,97 @@
 package com.kelsos.mbrc.logging
 
-import android.content.Context
+import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.logging.FileLoggingTree.Companion.LOGS_DIR
-import rx.Single
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
-import java.io.IOException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-object LogHelper {
-  fun logsExist(context: Context): Single<Boolean> {
-    return Single.fromCallable {
-      val filesDir = context.filesDir
-      val logDir = File(filesDir, LOGS_DIR)
-      val files = logDir.listFiles()
-      if (files == null) {
-        return@fromCallable false
-      }
-      val logFiles = files.filter { it.extension != "lck" }
-      return@fromCallable logFiles.isNotEmpty()
-    }
-  }
+interface LogHelper {
+  suspend fun logsExist(filesDir: File): Boolean
 
-  fun zipLogs(context: Context): Single<File> {
-    return Single.fromCallable {
-      val filesDir = context.filesDir
-      val cacheDir = context.externalCacheDir
+  suspend fun zipLogs(
+    filesDir: File,
+    cacheDir: File?,
+  ): File
+}
+
+class LogHelperImpl(
+  private val appCoroutineDispatchers: AppCoroutineDispatchers,
+) : LogHelper {
+  override suspend fun logsExist(filesDir: File): Boolean =
+    withContext(appCoroutineDispatchers.io) {
+      try {
+        val logDir = File(filesDir, LOGS_DIR)
+        logDir.listFiles()?.any { it.extension != "lck" } == true
+      } catch (e: SecurityException) {
+        Timber.e(e, "Log access failed")
+        return@withContext false
+      }
+    }
+
+  override suspend fun zipLogs(
+    filesDir: File,
+    cacheDir: File?,
+  ): File =
+    withContext(appCoroutineDispatchers.io) {
       val logDir = File(filesDir, LOGS_DIR)
       if (!logDir.exists()) {
         throw FileNotFoundException(logDir.canonicalPath)
       }
 
-      val files = logDir.listFiles()
-      if (files == null) {
-        throw RuntimeException("No log files found")
-      }
-
       val logFiles =
-        files.filter {
+        logDir.listFiles()?.filter {
           it.extension != "lck"
         }
 
-      if (logFiles.isEmpty()) {
-        throw RuntimeException("No log files found")
+      if (logFiles.isNullOrEmpty()) {
+        throw FileNotFoundException("No log files found")
       }
 
-      try {
-        val buffer = ByteArray(1024)
-
-        val zipDir = File(cacheDir, LOGS_DIR)
-        if (!zipDir.exists()) {
-          zipDir.mkdir()
-        }
-        val zipFile = File(zipDir, LOG_ZIP)
-
-        if (zipFile.exists()) {
-          zipFile.delete()
-        }
-
-        val fos = FileOutputStream(zipFile)
-        val zos = ZipOutputStream(fos)
-        logFiles.forEach {
-          val ze = ZipEntry(it.name)
-          zos.putNextEntry(ze)
-          val fin = FileInputStream(it)
-
-          var len: Int
-          do {
-            len = fin.read(buffer)
-            if (len <= 0) {
-              break
-            }
-            zos.write(buffer, 0, len)
-          } while (true)
-
-          fin.close()
-          zos.closeEntry()
-        }
-
-        zos.close()
-        fos.flush()
-        fos.close()
-
-        return@fromCallable zipFile
-      } catch (e: IOException) {
-        throw RuntimeException(e)
+      val buffer = ByteArray(size = 1024)
+      val zipDir = File(cacheDir, LOGS_DIR)
+      if (!zipDir.exists()) {
+        zipDir.mkdir()
       }
+      val zipFile = File(zipDir, LOG_ZIP)
+
+      if (zipFile.exists()) {
+        zipFile.delete()
+      }
+
+      val fos = FileOutputStream(zipFile)
+      val zos = ZipOutputStream(fos)
+      logFiles.forEach {
+        val ze = ZipEntry(it.name)
+        zos.putNextEntry(ze)
+        val fin = FileInputStream(it)
+
+        var len: Int
+        do {
+          len = fin.read(buffer)
+          if (len <= 0) {
+            break
+          }
+          zos.write(buffer, 0, len)
+        } while (true)
+
+        fin.close()
+        zos.closeEntry()
+      }
+
+      zos.close()
+      fos.flush()
+      fos.close()
+
+      zipFile
     }
-  }
 
-  const val LOG_ZIP = "mbrc_logs.zip"
+  companion object {
+    private const val LOG_ZIP = "mbrc_logs.zip"
+  }
 }

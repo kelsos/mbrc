@@ -5,12 +5,8 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.appbar.MaterialToolbar
 import com.kelsos.mbrc.R
-import com.kelsos.mbrc.events.bus.RxBus
-import org.koin.android.ext.android.inject
 
 class SettingsActivity : AppCompatActivity() {
-  private val bus: RxBus by inject()
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_settings)
@@ -21,7 +17,7 @@ class SettingsActivity : AppCompatActivity() {
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
     supportActionBar?.setTitle(R.string.nav_settings)
 
-    val fragment = SettingsFragment.newInstance(bus)
+    val fragment = SettingsFragment.newInstance()
     supportFragmentManager.beginTransaction().replace(R.id.container, fragment).commit()
   }
 

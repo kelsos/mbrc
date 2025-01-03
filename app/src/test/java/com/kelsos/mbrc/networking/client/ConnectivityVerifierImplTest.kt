@@ -1,17 +1,22 @@
 package com.kelsos.mbrc.networking.client
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.truth.Truth.assertThat
-import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
-import com.kelsos.mbrc.constants.Const
+import com.kelsos.mbrc.data.DeserializationAdapter
+import com.kelsos.mbrc.data.DeserializationAdapterImpl
+import com.kelsos.mbrc.data.SerializationAdapter
+import com.kelsos.mbrc.data.SerializationAdapterImpl
+import com.kelsos.mbrc.features.settings.ClientInformationStore
 import com.kelsos.mbrc.features.settings.ConnectionRepository
 import com.kelsos.mbrc.features.settings.ConnectionSettings
 import com.kelsos.mbrc.networking.RequestManager
 import com.kelsos.mbrc.networking.RequestManagerImpl
 import com.kelsos.mbrc.networking.protocol.Protocol
+import com.kelsos.mbrc.utils.parserModule
+import com.kelsos.mbrc.utils.testDispatcher
+import com.kelsos.mbrc.utils.testDispatcherModule
+import com.squareup.moshi.Moshi
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -23,40 +28,40 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
+import timber.log.Timber
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.net.ServerSocket
-import java.util.Random
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
+private const val EXCEPTION_MESSAGE = "Test should throw"
 
 class ConnectivityVerifierImplTest : KoinTest {
   private var server: ServerSocket? = null
   private val connectionRepository: ConnectionRepository by inject()
-  private val testDispatcher = StandardTestDispatcher()
   private val verifier: ConnectivityVerifier by inject()
+  private val moshi: Moshi by inject()
 
-  private val mapper = ObjectMapper()
-  private val port: Int = 36000
+  private val basePort: Int = 36000
 
   private lateinit var executor: ExecutorService
 
   private val testModule =
     module {
-      single { mapper }
+      includes(testDispatcherModule, parserModule)
       single { mockk<ConnectionRepository>() }
       singleOf(::RequestManagerImpl) { bind<RequestManager>() }
       singleOf(::ConnectivityVerifierImpl) { bind<ConnectivityVerifier>() }
+      singleOf(::DeserializationAdapterImpl) { bind<DeserializationAdapter>() }
+      singleOf(::SerializationAdapterImpl) { bind<SerializationAdapter>() }
       single {
-        AppCoroutineDispatchers(
-          testDispatcher,
-          testDispatcher,
-          testDispatcher,
-          testDispatcher,
-        )
+        val store = mockk<ClientInformationStore>()
+        coEvery { store.getClientId() } coAnswers { "1234" }
+        store
       }
     }
 
@@ -74,43 +79,60 @@ class ConnectivityVerifierImplTest : KoinTest {
     stopKoin()
   }
 
+  private fun getServer(): ServerSocket {
+    val maxPort = basePort + 1000
+    for (port in basePort until maxPort) {
+      val server = runCatching { ServerSocket(port) }
+
+      if (server.isSuccess) {
+        return server.getOrThrow()
+      }
+    }
+    error("could not bind any port from $basePort to $maxPort")
+  }
+
   private fun startMockServer(
     prematureDisconnect: Boolean = false,
-    responseContext: String = Protocol.VERIFY_CONNECTION,
+    responseContext: Protocol = Protocol.VerifyConnection,
     json: Boolean = true,
-  ) {
-    val random = Random()
+  ): ServerSocket {
+    val executor: ExecutorService = Executors.newSingleThreadExecutor()
+    val server = getServer()
+    val adapter = moshi.adapter(SocketMessage::class.java)
     val mockSocket =
       Runnable {
-        server = ServerSocket(port + random.nextInt(1000))
+        server.soTimeout = 3000
 
         while (true) {
-          val connection = server?.accept()
+          Timber.v("Listening on ${server.inetAddress.hostAddress}:${server.localPort}")
+          val connection = server.accept()
           val input = InputStreamReader(connection!!.inputStream)
           val inputReader = BufferedReader(input)
           val line = inputReader.readLine()
-          val value = mapper.readValue(line, SocketMessage::class.java)
+          Timber.v("Received a message $line")
 
-          if (value.context != Protocol.VERIFY_CONNECTION) {
+          val value = adapter.fromJson(line)
+
+          if (Protocol.fromString(value?.context.orEmpty()) != Protocol.VerifyConnection) {
             connection.close()
-            server?.close()
+            server.close()
             return@Runnable
           }
 
           if (prematureDisconnect) {
             connection.close()
-            server?.close()
+            server.close()
             return@Runnable
           }
 
-          val out = OutputStreamWriter(connection.outputStream, Const.UTF_8)
+          val out = OutputStreamWriter(connection.outputStream, "UTF-8")
           val output = PrintWriter(BufferedWriter(out), true)
+          val newLine = "\r\n"
           if (json) {
-            val response = SocketMessage()
-            response.context = responseContext
-            output.write(mapper.writeValueAsString(response) + "\n\r")
+            val response = SocketMessage(context = responseContext.context)
+            output.write(adapter.toJson(response) + newLine + newLine)
           } else {
-            output.write(responseContext + "\n\r")
+            output.write(responseContext.context + newLine + newLine)
           }
           output.flush()
           input.close()
@@ -118,71 +140,75 @@ class ConnectivityVerifierImplTest : KoinTest {
           out.close()
           output.close()
           connection.close()
-          server?.close()
+          server.close()
           return@Runnable
         }
       }
 
     executor.execute(mockSocket)
+    return server
   }
 
+  private fun ServerSocket.toConnection(): ConnectionSettings =
+    ConnectionSettings(
+      address = checkNotNull(this.inetAddress.hostAddress),
+      port = this.localPort,
+      name = "Test",
+      isDefault = true,
+      id = 1,
+    )
+
   @Test
-  fun testSuccessfulVerification() =
+  fun testSuccessfulVerification() {
     runTest(testDispatcher) {
-      startMockServer()
+      server = startMockServer()
 
       coEvery { connectionRepository.getDefault() } answers {
-        val settings = ConnectionSettings()
-        settings.address = server!!.inetAddress.hostAddress
-        settings.port = server!!.localPort
-        settings
+        checkNotNull(server).toConnection()
       }
 
       assertThat(verifier.verify()).isTrue()
     }
+  }
 
   @Test
-  fun testPrematureDisconnectDuringVerification() =
+  fun testPrematureDisconnectDuringVerification() {
     runTest(testDispatcher) {
-      startMockServer(true)
+      server = startMockServer(true)
       coEvery { connectionRepository.getDefault() } answers {
-        val settings = ConnectionSettings()
-        settings.address = server!!.inetAddress.hostAddress
-        settings.port = server!!.localPort
-        settings
+        checkNotNull(server).toConnection()
       }
 
       try {
         verifier.verify()
-        error("Test should throw")
+        error(EXCEPTION_MESSAGE)
       } catch (e: Exception) {
         assertThat(e).isInstanceOf(RuntimeException::class.java)
       }
     }
+  }
 
   @Test
-  fun testInvalidPluginResponseVerification() =
+  fun testInvalidPluginResponseVerification() {
     runTest(testDispatcher) {
-      startMockServer(false, Protocol.CLIENT_NOT_ALLOWED)
+      server = startMockServer(false, Protocol.ClientNotAllowed)
       coEvery { connectionRepository.getDefault() } answers {
-        val settings = ConnectionSettings()
-        settings.address = server!!.inetAddress.hostAddress
-        settings.port = server!!.localPort
-        settings
+        checkNotNull(server).toConnection()
       }
 
       try {
         println(verifier.verify())
-        error("Test should throw")
+        error(EXCEPTION_MESSAGE)
       } catch (e: Exception) {
         assertThat(e).isInstanceOf(ConnectivityVerifierImpl.NoValidPluginConnection::class.java)
       }
     }
+  }
 
   @Test
-  fun testVerificationNoConnection() =
+  fun testVerificationNoConnection() {
     runTest(testDispatcher) {
-      startMockServer(true)
+      server = startMockServer(true)
 
       coEvery { connectionRepository.getDefault() } answers {
         null
@@ -190,16 +216,17 @@ class ConnectivityVerifierImplTest : KoinTest {
 
       try {
         verifier.verify()
-        error("Test should throw")
+        error(EXCEPTION_MESSAGE)
       } catch (e: Exception) {
         assertThat(e).isInstanceOf(RuntimeException::class.java)
       }
     }
+  }
 
   @Test
-  fun testVerificationNoJsonPayload() =
+  fun testVerificationNoJsonPayload() {
     runTest(testDispatcher) {
-      startMockServer(false, "payload", false)
+      server = startMockServer(false, Protocol.fromString("a"), false)
 
       coEvery { connectionRepository.getDefault() } answers {
         null
@@ -207,9 +234,10 @@ class ConnectivityVerifierImplTest : KoinTest {
 
       try {
         verifier.verify()
-        error("Test should throw")
+        error(EXCEPTION_MESSAGE)
       } catch (e: Exception) {
         assertThat(e).isInstanceOf(RuntimeException::class.java)
       }
     }
+  }
 }

@@ -1,6 +1,5 @@
 package com.kelsos.mbrc.features.nowplaying
 
-import android.app.Activity
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.MotionEvent.ACTION_DOWN
@@ -9,30 +8,42 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.features.dragsort.ItemTouchHelperAdapter
 import com.kelsos.mbrc.features.dragsort.OnStartDragListener
 import com.kelsos.mbrc.features.dragsort.TouchHelperViewHolder
-import com.raizlabs.android.dbflow.kotlinextensions.delete
-import com.raizlabs.android.dbflow.kotlinextensions.save
-import com.raizlabs.android.dbflow.list.FlowCursorList
-import com.raizlabs.android.dbflow.list.FlowCursorList.OnCursorRefreshListener
-import timber.log.Timber
 
-class NowPlayingAdapter(
-  context: Activity,
-) : RecyclerView.Adapter<NowPlayingAdapter.TrackHolder>(),
-  ItemTouchHelperAdapter,
-  OnCursorRefreshListener<NowPlaying> {
-  private val dragStartListener: OnStartDragListener = context as OnStartDragListener
+interface NowPlayingListener {
+  fun onPress(position: Int)
 
-  private var data: FlowCursorList<NowPlaying>? = null
-  private var playingTrackIndex: Int = 0
+  fun onMove(
+    from: Int,
+    to: Int,
+  )
+
+  fun onDismiss(position: Int)
+}
+
+class NowPlayingAdapter :
+  PagingDataAdapter<NowPlaying, NowPlayingAdapter.TrackHolder>(DIFF_CALLBACK),
+  ItemTouchHelperAdapter {
+  private var playingTrackIndex: Int = -1
   private var currentTrack: String = ""
-  private val inflater: LayoutInflater = LayoutInflater.from(context)
+  private var nowPlayingListener: NowPlayingListener? = null
+  private var visibleRangeGetter: VisibleRangeGetter? = null
+  private var dragStartListener: OnStartDragListener? = null
 
-  private var listener: NowPlayingListener? = null
+  private val listener: NowPlayingListener
+    get() = checkNotNull(nowPlayingListener) { "NowPlayingListener is not set" }
+
+  private val rangeGetter: VisibleRangeGetter
+    get() = checkNotNull(visibleRangeGetter) { "VisibleRangeGetter is not set" }
+
+  private val dragListener: OnStartDragListener
+    get() = checkNotNull(dragStartListener) { "DragStartListener is not set" }
 
   private fun setPlayingTrack(index: Int) {
     notifyItemChanged(playingTrackIndex)
@@ -40,31 +51,46 @@ class NowPlayingAdapter(
     notifyItemChanged(index)
   }
 
+  fun setNowPlayingListener(nowPlayingListener: NowPlayingListener) {
+    this.nowPlayingListener = nowPlayingListener
+  }
+
+  fun setVisibleRangeGetter(visibleRangeGetter: VisibleRangeGetter) {
+    this.visibleRangeGetter = visibleRangeGetter
+  }
+
+  fun setDragStartListener(dragStartListener: OnStartDragListener) {
+    this.dragStartListener = dragStartListener
+  }
+
   fun getPlayingTrackIndex(): Int = this.playingTrackIndex
 
   fun setPlayingTrack(path: String) {
-    val data = this.data ?: return
-
     this.currentTrack = path
-    data.forEachIndexed { index, (_, _, itemPath) ->
-      if (itemPath.equals(path)) {
-        setPlayingTrack(index)
-      }
-    }
+    val range = rangeGetter.visibleRange()
+    notifyItemRangeChanged(
+      range.firstItem,
+      range.itemCount,
+      PLAYING_CHANGED,
+    )
   }
 
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int,
   ): TrackHolder {
+    val inflater = LayoutInflater.from(parent.context)
     val inflatedView = inflater.inflate(R.layout.ui_list_track_item, parent, false)
-    val holder = TrackHolder(inflatedView)
+    val holder =
+      TrackHolder(inflatedView) {
+        dragListener.onDragComplete()
+      }
     holder.itemView.setOnClickListener { onClick(holder) }
     holder.container.setOnClickListener { onClick(holder) }
     holder.dragHandle.setOnTouchListener { view, motionEvent ->
       view.performClick()
       if (motionEvent.action == ACTION_DOWN) {
-        dragStartListener.onStartDrag(holder)
+        dragListener.onStartDrag(holder)
       }
       return@setOnTouchListener false
     }
@@ -72,36 +98,45 @@ class NowPlayingAdapter(
   }
 
   private fun onClick(holder: TrackHolder) {
-    val listener = this.listener ?: return
+    val listener = this.nowPlayingListener ?: return
     val position = holder.bindingAdapterPosition
     setPlayingTrack(position)
-    listener.onPress(position)
+    listener.onPress(position + 1)
+  }
+
+  override fun onBindViewHolder(
+    holder: TrackHolder,
+    position: Int,
+    payloads: MutableList<Any>,
+  ) {
+    val track = getItem(position)
+    val isCurrentlyPlaying = track?.path == currentTrack
+    if (isCurrentlyPlaying) {
+      playingTrackIndex = holder.bindingAdapterPosition
+    }
+
+    if (payloads.contains(PLAYING_CHANGED)) {
+      holder.setPlaying(isCurrentlyPlaying)
+      return
+    }
+    holder.title.text = track?.title.orEmpty()
+    holder.artist.text = track?.artist.orEmpty()
+    holder.setPlaying(isCurrentlyPlaying)
   }
 
   override fun onBindViewHolder(
     holder: TrackHolder,
     position: Int,
   ) {
-    val (title, artist) = data?.getItem(position.toLong()) ?: return
-
-    holder.title.text = title
-    holder.artist.text = artist
-    if (position == playingTrackIndex) {
-      holder.trackPlaying.setImageResource(R.drawable.ic_media_now_playing)
-    } else {
-      holder.trackPlaying.setImageResource(android.R.color.transparent)
-    }
+    onBindViewHolder(holder, position, mutableListOf())
   }
-
-  override fun getItemCount(): Int = data?.count?.toInt() ?: 0
 
   override fun onItemMove(
     from: Int,
     to: Int,
   ): Boolean {
-    swapPositions(from, to)
-    listener?.onMove(from, to)
     notifyItemMoved(from, to)
+    listener.onMove(from, to)
 
     if (currentTrack.isNotBlank()) {
       setPlayingTrack(currentTrack)
@@ -110,76 +145,13 @@ class NowPlayingAdapter(
     return true
   }
 
-  private fun swapPositions(
-    from: Int,
-    to: Int,
-  ) {
-    val data = this.data ?: return
-
-    Timber.v("Swapping %d => %d", from, to)
-    val fromTrack = data.getItem(from.toLong()) ?: return
-    val toTrack = data.getItem(to.toLong()) ?: return
-    Timber.v("from => %s to => %s", fromTrack, toTrack)
-    val position = toTrack.position
-    toTrack.position = fromTrack.position
-    fromTrack.position = position
-    toTrack.save()
-    fromTrack.save()
-
-    // Before saving remove the listener to avoid interrupting the swapping functionality
-    data.removeOnCursorRefreshListener(this)
-    data.refresh()
-    data.addOnCursorRefreshListener(this)
-
-    Timber.v("after swap => from => %s to => %s", fromTrack, toTrack)
-  }
-
   override fun onItemDismiss(position: Int) {
-    val nowPlaying = data?.getItem(position.toLong())
-
-    nowPlaying?.let {
-      it.delete()
-      refresh()
-      notifyItemRemoved(position)
-      listener?.onDismiss(position)
-    }
-  }
-
-  fun refresh() {
-    data?.refresh()
-  }
-
-  fun update(cursor: FlowCursorList<NowPlaying>) {
-    this.data = cursor
-    notifyDataSetChanged()
-  }
-
-  fun setListener(listener: NowPlayingListener) {
-    this.listener = listener
-  }
-
-  /**
-   * Callback when data refreshes.
-
-   * @param cursorList The object that changed.
-   */
-  override fun onCursorRefreshed(cursorList: FlowCursorList<NowPlaying>) {
-    notifyDataSetChanged()
-  }
-
-  interface NowPlayingListener {
-    fun onPress(position: Int)
-
-    fun onMove(
-      from: Int,
-      to: Int,
-    )
-
-    fun onDismiss(position: Int)
+    listener.onDismiss(position)
   }
 
   class TrackHolder(
     itemView: View,
+    private val onDragEnd: () -> Unit,
   ) : RecyclerView.ViewHolder(itemView),
     TouchHelperViewHolder {
     val title: TextView = itemView.findViewById(R.id.track_title)
@@ -194,6 +166,31 @@ class NowPlayingAdapter(
 
     override fun onItemClear() {
       this.itemView.setBackgroundColor(0)
+      onDragEnd()
     }
+
+    fun setPlaying(playing: Boolean) {
+      if (playing) {
+        trackPlaying.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+      } else {
+        trackPlaying.setImageResource(android.R.color.transparent)
+      }
+    }
+  }
+
+  companion object {
+    const val PLAYING_CHANGED = "playing_changed"
+    private val DIFF_CALLBACK =
+      object : DiffUtil.ItemCallback<NowPlaying>() {
+        override fun areItemsTheSame(
+          oldItem: NowPlaying,
+          newItem: NowPlaying,
+        ): Boolean = oldItem.id == newItem.id
+
+        override fun areContentsTheSame(
+          oldItem: NowPlaying,
+          newItem: NowPlaying,
+        ): Boolean = oldItem == newItem
+      }
   }
 }

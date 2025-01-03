@@ -10,22 +10,28 @@
 
   <ImageView
     android:id="@+id/track_indicator_view"
-    android:layout_width="@dimen/normal_margin"
+    android:layout_width="24dp"
     android:layout_height="match_parent"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="8dp"
     android:clickable="false"
     android:contentDescription="@string/now_playing_indicator"
     android:scaleType="fitCenter"
+    android:src="@drawable/ic_baseline_play_arrow_24"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
+    app:layout_constraintTop_toTopOf="parent"
+    app:tint="@color/white"
+    tools:visibility="visible" />
 
   <LinearLayout
     android:id="@+id/drag_handle"
-    android:layout_width="42dp"
+    android:layout_width="48dp"
     android:layout_height="match_parent"
-    android:gravity="center_vertical"
-    android:paddingLeft="@dimen/normal_margin"
-    android:paddingRight="@dimen/normal_margin"
+    android:gravity="center"
+    android:paddingLeft="@dimen/small_margin"
+    android:paddingRight="@dimen/small_margin"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent">
@@ -33,8 +39,9 @@
     <ImageView
       android:layout_width="@dimen/mbrc_list_drag_icon"
       android:layout_height="@dimen/mbrc_list_drag_icon"
-      android:background="@drawable/ic_list_drag_icon"
-      android:contentDescription="@string/drag_n_drop_description" />
+      android:contentDescription="@string/drag_n_drop_description"
+      android:src="@drawable/ic_baseline_drag_handle_24"
+      app:tint="@color/white" />
   </LinearLayout>
 
   <TextView

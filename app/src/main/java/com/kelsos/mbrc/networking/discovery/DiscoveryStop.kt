@@ -1,7 +1,13 @@
 package com.kelsos.mbrc.networking.discovery
 
-enum class DiscoveryStop {
-  NO_WIFI,
-  NOT_FOUND,
-  COMPLETE,
+import com.kelsos.mbrc.features.settings.ConnectionSettings
+
+sealed class DiscoveryStop {
+  object NoWifi : DiscoveryStop()
+
+  object NotFound : DiscoveryStop()
+
+  class Complete(
+    val settings: ConnectionSettings,
+  ) : DiscoveryStop()
 }

@@ -1,10 +1,14 @@
 package com.kelsos.mbrc.features.player
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class CoverPayload(
-  @JsonProperty("status") val status: Int = NOT_FOUND,
-  @JsonProperty("cover") val cover: String = "",
+  @Json(name = "status")
+  val status: Int = NOT_FOUND,
+  @Json(name = "cover")
+  val cover: String = "",
 ) {
   companion object {
     const val READY = 1

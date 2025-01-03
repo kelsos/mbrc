@@ -1,18 +1,20 @@
 package com.kelsos.mbrc.common.data
 
-import com.kelsos.mbrc.data.Data
-import com.raizlabs.android.dbflow.list.FlowCursorList
+import androidx.paging.PagingData
+import kotlinx.coroutines.flow.Flow
 
-interface Repository<T : Data> {
-  suspend fun getAllCursor(): FlowCursorList<T>
+typealias Progress = suspend (current: Int, total: Int) -> Unit
 
-  suspend fun getAndSaveRemote(): FlowCursorList<T>
+interface Repository<T : Any> {
+  fun getAll(): Flow<PagingData<T>>
 
-  suspend fun getRemote()
+  suspend fun getRemote(progress: Progress? = null)
 
-  suspend fun search(term: String): FlowCursorList<T>
-
-  suspend fun cacheIsEmpty(): Boolean
+  fun search(term: String): Flow<PagingData<T>>
 
   suspend fun count(): Long
+
+  suspend fun getById(id: Long): T?
 }
+
+suspend fun <T : Any> Repository<T>.cacheIsEmpty(): Boolean = count() == 0L

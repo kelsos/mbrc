@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto">
+  xmlns:app="http://schemas.android.com/apk/res-auto">
   <item
     android:id="@+id/library_search_clear"
     android:icon="@drawable/ic_baseline_clear_24"
     android:title="@string/now_playing_search"
     android:visible="false"
-    app:showAsAction="always"/>
+    app:showAsAction="always" />
 
   <item
     android:id="@+id/library_search_item"
     android:icon="@drawable/ic_search_black_24dp"
     android:title="@string/now_playing_search"
     app:actionViewClass="androidx.appcompat.widget.SearchView"
-    app:showAsAction="ifRoom|collapseActionView"/>
+    app:showAsAction="ifRoom|collapseActionView" />
 
   <item
     android:id="@+id/library_refresh_item"
     android:icon="@drawable/ic_refresh_black_24dp"
     android:title="@string/library_actionbar_refresh"
-    app:showAsAction="always"/>
+    app:showAsAction="always" />
 
   <item
     android:id="@+id/library_album_artist"
     android:checkable="true"
     android:checked="false"
     android:title="@string/library_album_artists_only"
-    app:showAsAction="never"/>
+    app:showAsAction="never" />
 
   <item
     android:id="@+id/library_sync_state"
     android:title="@string/library_menu__sync_state"
-    app:showAsAction="never"/>
+    app:showAsAction="never" />
 
 </menu>

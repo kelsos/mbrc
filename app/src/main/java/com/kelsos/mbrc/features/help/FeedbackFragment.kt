@@ -11,20 +11,41 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import androidx.core.content.FileProvider
-import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.kelsos.mbrc.BuildConfig.APPLICATION_ID
 import com.kelsos.mbrc.R
-import com.kelsos.mbrc.common.utilities.RemoteUtils.getVersion
-import com.kelsos.mbrc.logging.LogHelper
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
+import com.kelsos.mbrc.common.utilities.RemoteUtils
+import kotlinx.coroutines.launch
+import org.koin.androidx.scope.ScopeFragment
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.File
 
-class FeedbackFragment : Fragment() {
+class FeedbackFragment : ScopeFragment() {
   private lateinit var feedbackEditText: EditText
   private lateinit var deviceInfo: CheckBox
   private lateinit var logInfo: CheckBox
   private lateinit var feedbackButton: Button
+
+  private val viewModel: FeedbackViewModel by viewModel()
+
+  private val feedbackText: String
+    get() {
+      var feedbackText = feedbackEditText.text.toString().trim()
+      if (deviceInfo.isChecked) {
+
+        feedbackText +=
+          getString(
+            R.string.feedback_version_info,
+            Build.MANUFACTURER,
+            Build.DEVICE,
+            Build.VERSION.RELEASE,
+            RemoteUtils.VERSION,
+          )
+      }
+      return feedbackText
+    }
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -39,55 +60,37 @@ class FeedbackFragment : Fragment() {
 
     feedbackButton.setOnClickListener { onFeedbackButtonClicked() }
 
-    LogHelper
-      .logsExist(requireContext())
-      .subscribeOn(Schedulers.io())
-      .observeOn(AndroidSchedulers.mainThread())
-      .subscribe({
-        logInfo.isEnabled = true
-      }) {
+    lifecycleScope.launch {
+      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.events.collect { event ->
+          when (event) {
+            is FeedbackUiMessage.UpdateLogsExist -> logInfo.isChecked = event.logsExist
+            is FeedbackUiMessage.ZipFailed -> openChooser(feedbackText)
+            is FeedbackUiMessage.ZipSuccess -> openChooser(feedbackText, event.zipFile)
+          }
+        }
       }
+    }
+    viewModel.checkIfLogsExist(requireContext().filesDir)
     return view
   }
 
   private fun onFeedbackButtonClicked() {
-    var feedbackText = feedbackEditText.text.toString().trim { it <= ' ' }
     if (TextUtils.isEmpty(feedbackText)) {
       return
     }
 
     feedbackButton.isEnabled = false
 
-    if (deviceInfo.isChecked) {
-      val device = Build.DEVICE
-      val manufacturer = Build.MANUFACTURER
-      val appVersion = requireContext().getVersion()
-      val androidVersion = Build.VERSION.RELEASE
-
-      feedbackText +=
-        getString(
-          R.string.feedback_version_info,
-          manufacturer,
-          device,
-          androidVersion,
-          appVersion,
-        )
-    }
-
     if (!logInfo.isChecked) {
       openChooser(feedbackText)
       return
     }
 
-    LogHelper
-      .zipLogs(requireContext())
-      .subscribeOn(Schedulers.io())
-      .observeOn(AndroidSchedulers.mainThread())
-      .subscribe({
-        openChooser(feedbackText, it)
-      }) {
-        openChooser(feedbackText)
-      }
+    lifecycleScope.launch {
+      val ctx = requireContext()
+      viewModel.createZip(ctx.filesDir, ctx.externalCacheDir ?: ctx.cacheDir)
+    }
   }
 
   private fun openChooser(

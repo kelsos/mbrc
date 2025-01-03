@@ -1,6 +1,5 @@
 package com.kelsos.mbrc.features.help
 
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,23 +9,14 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
 import com.kelsos.mbrc.R
-import com.kelsos.mbrc.common.utilities.RemoteUtils.getVersion
-import timber.log.Timber
+import com.kelsos.mbrc.common.utilities.RemoteUtils
 
 class HelpFragment : Fragment() {
   private lateinit var helpView: WebView
 
   override fun onStart() {
     super.onStart()
-    val url: String =
-      try {
-        String.format("https://mbrc.kelsos.net/help?version=%s", requireContext().getVersion())
-      } catch (e: PackageManager.NameNotFoundException) {
-        Timber.v(e, "Failed to get version")
-        "https://mbrc.kelsos.net/help"
-      }
-
-    helpView.loadUrl(url)
+    helpView.loadUrl("https://mbrc.kelsos.net/help?version=${RemoteUtils.VERSION}")
   }
 
   override fun onCreateView(

@@ -1,5 +1,6 @@
 package com.kelsos.mbrc.features.library
 
-import com.kelsos.mbrc.common.utilities.RemoteUtils
+import com.kelsos.mbrc.features.library.albums.AlbumCover
+import okio.ByteString.Companion.encodeUtf8
 
-fun CoverInfo.key(): String = RemoteUtils.sha1("${artist}_$album")
+fun AlbumCover.key(): String = "${artist}_$album".encodeUtf8().sha1().hex().uppercase()

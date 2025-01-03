@@ -14,7 +14,7 @@ class SettingsDialogFragment : DialogFragment() {
   lateinit var nameEdit: EditText
   lateinit var portEdit: EditText
 
-  private var mListener: SettingsSaveListener? = null
+  private var saveListener: SettingsSaveListener? = null
   private lateinit var settings: ConnectionSettings
   private var edit: Boolean = false
 
@@ -24,19 +24,18 @@ class SettingsDialogFragment : DialogFragment() {
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
-    try {
-      mListener = context as SettingsSaveListener?
-    } catch (e: ClassCastException) {
-      throw ClassCastException("$context must implement SettingsDialogListener")
+    require(context is SettingsSaveListener) {
+      "Activity must implement fragment's listener."
     }
+    saveListener = context
   }
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val dialog =
       MaterialAlertDialogBuilder(requireActivity())
         .setView(R.layout.ui_dialog_settings)
-        .setTitle(if (edit) R.string.settings_dialog_edit else R.string.settings_dialog_add)
-        .setPositiveButton(if (edit) R.string.settings_dialog_save else R.string.settings_dialog_add) { dialog, _ ->
+        .setTitle(if (edit) R.string.common_edit else R.string.common_add)
+        .setPositiveButton(if (edit) R.string.settings_dialog_save else R.string.common_add) { dialog, _ ->
           var shouldIClose = true
           val hostname = hostEdit.text.toString()
           val computerName = nameEdit.text.toString()
@@ -49,18 +48,21 @@ class SettingsDialogFragment : DialogFragment() {
 
           val portNum = if (TextUtils.isEmpty(portText)) 0 else Integer.parseInt(portText)
           if (isValid(portNum) && shouldIClose) {
-            settings.name = computerName
-            settings.address = hostname
-            settings.port = portNum
-            mListener?.onSave(settings)
+            saveListener?.onSave(
+              settings.copy(
+                name = computerName,
+                address = hostname,
+                port = portNum,
+              ),
+            )
             dialog.dismiss()
           }
         }.setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
         .show()
 
-    hostEdit = dialog.findViewById(R.id.settings_dialog_host) ?: error("not found")
-    nameEdit = dialog.findViewById(R.id.settings_dialog_name) ?: error("not found")
-    portEdit = dialog.findViewById(R.id.settings_dialog_port) ?: error("not found")
+    hostEdit = requireNotNull(dialog.findViewById(R.id.settings_dialog_host))
+    nameEdit = requireNotNull(dialog.findViewById(R.id.settings_dialog_name))
+    portEdit = requireNotNull(dialog.findViewById(R.id.settings_dialog_port))
     return dialog
   }
 
@@ -70,7 +72,7 @@ class SettingsDialogFragment : DialogFragment() {
     hostEdit.setText(settings.address)
 
     if (settings.port > 0) {
-      portEdit.setText(settings.port.toString())
+      portEdit.setText(getString(R.string.common_number, settings.port))
     }
   }
 
@@ -85,11 +87,11 @@ class SettingsDialogFragment : DialogFragment() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     if (!edit) {
-      settings = ConnectionSettings()
+      settings = ConnectionSettings.default()
     }
   }
 
-  interface SettingsSaveListener {
+  fun interface SettingsSaveListener {
     fun onSave(settings: ConnectionSettings)
   }
 

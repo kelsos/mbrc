@@ -1,12 +1,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="@dimen/widget_normal_height"
-  android:background="@color/background_dark"
+  android:background="?android:attr/colorBackground"
   android:gravity="top"
   android:orientation="horizontal"
   android:padding="0dp"
-  tools:ignore="NestedWeights">
+  android:theme="@style/WidgetTheme"
+  tools:ignore="NestedWeights,Overdraw">
 
   <ImageView
     android:id="@+id/widget_normal_image"
@@ -85,7 +87,8 @@
         android:focusable="true"
         android:padding="0dp"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_action_previous" />
+        android:src="@drawable/ic_baseline_skip_previous_24"
+        app:tint="@color/white" />
 
       <ImageButton
         android:id="@+id/widget_normal_play"
@@ -97,7 +100,8 @@
         android:focusable="true"
         android:padding="0dp"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_action_play" />
+        android:src="@drawable/ic_baseline_play_arrow_24"
+        app:tint="@color/white" />
 
       <ImageButton
         android:id="@+id/widget_normal_next"
@@ -109,7 +113,8 @@
         android:focusable="true"
         android:padding="0dp"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_action_next" />
+        android:src="@drawable/ic_baseline_skip_next_24"
+        app:tint="@color/white" />
 
     </LinearLayout>
 

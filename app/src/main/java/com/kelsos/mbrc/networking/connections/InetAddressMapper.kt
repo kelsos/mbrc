@@ -5,6 +5,8 @@ import com.kelsos.mbrc.features.settings.ConnectionSettings
 import java.net.InetSocketAddress
 import java.net.SocketAddress
 
-class InetAddressMapper : Mapper<ConnectionSettings, SocketAddress> {
+object InetAddressMapper : Mapper<ConnectionSettings, SocketAddress> {
   override fun map(from: ConnectionSettings): SocketAddress = InetSocketAddress(from.address, from.port)
 }
+
+fun ConnectionSettings.toSocketAddress(): SocketAddress = InetAddressMapper.map(this)

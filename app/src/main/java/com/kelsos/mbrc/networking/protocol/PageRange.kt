@@ -1,15 +1,13 @@
 package com.kelsos.mbrc.networking.protocol
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder("offset", "limit")
+@JsonClass(generateAdapter = true)
 class PageRange {
-  @JsonProperty("offset")
+  @Json(name = "offset")
   var offset: Int = 0
 
-  @JsonProperty("limit")
+  @Json(name = "limit")
   var limit: Int = 0
 }

@@ -23,5 +23,5 @@
   <include
     layout="@layout/list_empty_view_button"
     android:visibility="gone"
-    tools:visibility="visible"/>
+    tools:visibility="visible" />
 </FrameLayout>

@@ -10,15 +10,15 @@ import android.os.Bundle
 import android.widget.RemoteViews
 import coil3.imageLoader
 import coil3.request.ImageRequest
+import coil3.request.error
 import coil3.size.Precision
 import coil3.size.Scale
 import com.kelsos.mbrc.R
-import com.kelsos.mbrc.annotations.PlayerState
+import com.kelsos.mbrc.common.state.PlayerState
+import com.kelsos.mbrc.common.state.PlayingTrack
 import com.kelsos.mbrc.common.utilities.whenNotNull
 import com.kelsos.mbrc.features.player.PlayerActivity
-import com.kelsos.mbrc.features.player.TrackInfo
 import timber.log.Timber
-import java.io.File
 
 abstract class WidgetBase : AppWidgetProvider() {
   abstract val config: WidgetConfig
@@ -106,14 +106,14 @@ abstract class WidgetBase : AppWidgetProvider() {
 
   abstract fun setupTrackInfo(
     views: RemoteViews,
-    info: TrackInfo,
+    info: PlayingTrack,
   )
 
   private fun updateInfo(
     context: Context,
     widgetManager: AppWidgetManager,
     widgetsIds: IntArray,
-    info: TrackInfo,
+    info: PlayingTrack,
   ) {
     val views = RemoteViews(context.packageName, config.layout)
     setupTrackInfo(views, info)
@@ -127,23 +127,18 @@ abstract class WidgetBase : AppWidgetProvider() {
     path: String,
   ) {
     val widget = RemoteViews(context.packageName, config.layout)
-    val coverFile = File(path)
-    if (coverFile.exists()) {
-      val request =
-        ImageRequest
-          .Builder(context)
-          .data(coverFile)
-          .size(R.dimen.widget_small_height)
-          .scale(Scale.FILL)
-          .precision(Precision.INEXACT)
-          .target(RemoteViewsTarget(widgetManager, widget, widgetsIds, config.imageId))
-          .build()
+    val request =
+      ImageRequest
+        .Builder(context)
+        .data(path)
+        .size(R.dimen.widget_small_height)
+        .scale(Scale.FILL)
+        .error(R.drawable.ic_image_no_cover)
+        .precision(Precision.INEXACT)
+        .target(RemoteViewsTarget(widgetManager, widget, widgetsIds, config.imageId))
+        .build()
 
-      context.imageLoader.enqueue(request)
-    } else {
-      widget.setImageViewResource(config.imageId, R.drawable.ic_image_no_cover)
-      widgetManager.updateAppWidget(widgetsIds, widget)
-    }
+    context.imageLoader.enqueue(request)
   }
 
   private fun updatePlayState(
@@ -157,9 +152,9 @@ abstract class WidgetBase : AppWidgetProvider() {
     widget.setImageViewResource(
       config.playButtonId,
       if (PlayerState.PLAYING == state) {
-        R.drawable.ic_action_pause
+        R.drawable.ic_baseline_pause_24
       } else {
-        R.drawable.ic_action_play
+        R.drawable.ic_baseline_play_arrow_24
       },
     )
     manager.updateAppWidget(widgetsIds, widget)

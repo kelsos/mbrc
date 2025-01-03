@@ -22,7 +22,7 @@ import android.view.View
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 /**
- * A descendant of [android.support.v4.widget.SwipeRefreshLayout] which supports multiple
+ * A descendant of [androidx.swiperefreshlayout.widget.SwipeRefreshLayout] which supports multiple
  * child views triggering a refresh gesture. You set the views which can trigger the gesture via
  * [.setSwipeableChildren], providing it the child ids.
  */
@@ -54,7 +54,7 @@ class MultiSwipeRefreshLayout : SwipeRefreshLayout {
    * we are signifying that the view is in a state where a refresh gesture can start.
 
    *
-   * As [android.support.v4.widget.SwipeRefreshLayout] only supports one direct child by
+   * As [androidx.swiperefreshlayout.widget.SwipeRefreshLayout] only supports one direct child by
    * default, we need to manually iterate through our swipeable children to see if any are in a
    * state to trigger the gesture. If so we return false to start the gesture.
    */

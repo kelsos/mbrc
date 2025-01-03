@@ -4,404 +4,345 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.BooleanNode
-import com.fasterxml.jackson.databind.node.IntNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.node.TextNode
-import com.kelsos.mbrc.annotations.PlayerState
-import com.kelsos.mbrc.common.state.MainDataModel
+import androidx.core.net.toUri
+import com.kelsos.mbrc.common.state.AppStatePublisher
+import com.kelsos.mbrc.common.state.LfmRating
+import com.kelsos.mbrc.common.state.NowPlayingTrack
+import com.kelsos.mbrc.common.state.PlayerState
+import com.kelsos.mbrc.common.state.PlayerStatus
+import com.kelsos.mbrc.common.state.PlayerStatusModel
+import com.kelsos.mbrc.common.state.PlayingPosition
+import com.kelsos.mbrc.common.state.PlayingTrack
+import com.kelsos.mbrc.common.state.PlayingTrackCache
+import com.kelsos.mbrc.common.state.Repeat
+import com.kelsos.mbrc.common.state.ShuffleMode
+import com.kelsos.mbrc.common.state.TrackRating
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
-import com.kelsos.mbrc.constants.ProtocolEventType
-import com.kelsos.mbrc.events.MessageEvent
-import com.kelsos.mbrc.events.bus.RxBus
-import com.kelsos.mbrc.events.ui.CoverChangedEvent
-import com.kelsos.mbrc.events.ui.LfmRatingChanged
-import com.kelsos.mbrc.events.ui.PlayStateChange
-import com.kelsos.mbrc.events.ui.RatingChanged
-import com.kelsos.mbrc.events.ui.RemoteClientMetaData
-import com.kelsos.mbrc.events.ui.RepeatChange
-import com.kelsos.mbrc.events.ui.ScrobbleChange
-import com.kelsos.mbrc.events.ui.ShuffleChange
-import com.kelsos.mbrc.events.ui.TrackInfoChangeEvent
-import com.kelsos.mbrc.events.ui.TrackMoved
-import com.kelsos.mbrc.events.ui.TrackRemoval
-import com.kelsos.mbrc.events.ui.UpdateDuration
-import com.kelsos.mbrc.events.ui.VolumeChange
-import com.kelsos.mbrc.extensions.md5
-import com.kelsos.mbrc.features.lyrics.LyricsModel
 import com.kelsos.mbrc.features.lyrics.LyricsPayload
+import com.kelsos.mbrc.features.nowplaying.NowPlayingRepository
 import com.kelsos.mbrc.features.player.CoverPayload
-import com.kelsos.mbrc.features.player.ModelCache
-import com.kelsos.mbrc.features.player.TrackInfo
 import com.kelsos.mbrc.features.widgets.WidgetUpdater
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.SocketActivityChecker
+import com.kelsos.mbrc.networking.client.MessageQueue
+import com.kelsos.mbrc.networking.client.PluginUpdateCheckUseCase
 import com.kelsos.mbrc.networking.client.SocketMessage
-import com.kelsos.mbrc.networking.client.SocketService
+import com.squareup.moshi.Moshi
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okio.HashingSink
+import okio.blackholeSink
+import okio.buffer
+import okio.source
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 
 class UpdateLastFm(
-  private val model: MainDataModel,
-  private val bus: RxBus,
+  private val appState: AppStatePublisher,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    val newScrobbleState = (message.data as BooleanNode).asBoolean()
-    if (newScrobbleState != model.isScrobblingEnabled) {
-      model.isScrobblingEnabled = newScrobbleState
-      bus.post(ScrobbleChange(newScrobbleState))
-    }
+  override suspend fun execute(message: ProtocolMessage) {
+    val previousState = appState.playerStatus.firstOrNull() ?: PlayerStatusModel()
+    appState.updatePlayerStatus(previousState.copy(scrobbling = message.asBoolean()))
   }
 }
 
 class UpdateLfmRating(
-  private val model: MainDataModel,
-  private val bus: RxBus,
+  private val appState: AppStatePublisher,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    model.setLfmRating(message.dataString)
-    bus.post(LfmRatingChanged(model.lfmStatus))
+  override suspend fun execute(message: ProtocolMessage) {
+    val previousState = appState.playingTrackRating.firstOrNull() ?: TrackRating()
+    val lfmRating = LfmRating.fromString(message.data as? String)
+    appState.updateTrackRating(previousState.copy(lfmRating = lfmRating))
   }
 }
 
 class UpdateLyrics(
-  private val model: LyricsModel,
-  private val mapper: ObjectMapper,
+  private val mapper: Moshi,
+  private val appState: AppStatePublisher,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    val payload = mapper.treeToValue((message.data as JsonNode), LyricsPayload::class.java)
+  override suspend fun execute(message: ProtocolMessage) {
+    val adapter = mapper.adapter(LyricsPayload::class.java)
+    val payload = adapter.fromJsonValue(message.data) ?: return
 
-    model.status = payload.status
-    if (payload.status == LyricsPayload.Companion.SUCCESS) {
-      model.lyrics = payload.lyrics
-    } else {
-      model.lyrics = ""
-    }
+    val lyrics =
+      if (payload.status == LyricsPayload.SUCCESS) {
+        payload.lyrics
+          .replace("<p>", "\r\n")
+          .replace("<br>", "\n")
+          .replace("&lt;", "<")
+          .replace("&gt;", ">")
+          .replace("&quot;", "\"")
+          .replace("&apos;", "'")
+          .replace("&amp;", "&")
+          .trim()
+          .split(LYRICS_NEWLINE.toRegex())
+          .dropLastWhile(String::isEmpty)
+      } else {
+        emptyList()
+      }
+
+    appState.updateLyrics(lyrics)
+  }
+
+  companion object {
+    private const val LYRICS_NEWLINE = "\r\n|\n"
   }
 }
 
 class UpdateMute(
-  private val model: MainDataModel,
-  private val bus: RxBus,
+  private val appState: AppStatePublisher,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    val newMute = (message.data as BooleanNode).asBoolean()
-    if (newMute != model.isMute) {
-      model.isMute = newMute
-      bus.post(if (newMute) VolumeChange() else VolumeChange(model.volume))
-    }
+  override suspend fun execute(message: ProtocolMessage) {
+    val previousState = appState.playerStatus.firstOrNull() ?: PlayerStatusModel()
+    appState.updatePlayerStatus(previousState.copy(mute = message.asBoolean()))
   }
 }
 
 class UpdateNowPlayingTrack(
-  private val model: MainDataModel,
-  private val bus: RxBus,
-  private val cache: ModelCache,
-  private val widgetUpdater: WidgetUpdater,
-  dispatchers: AppCoroutineDispatchers,
+  private val appState: AppStatePublisher,
+  private val updater: WidgetUpdater,
+  private val mapper: Moshi,
+  private val cache: PlayingTrackCache,
 ) : ProtocolAction {
-  private val job = SupervisorJob()
-  private val scope = CoroutineScope(job + dispatchers.io)
-
-  override fun execute(message: ProtocolMessage) {
-    val node = message.data as ObjectNode
-    val artist = node.path("artist").textValue()
-    val album = node.path("album").textValue()
-    val title = node.path("title").textValue()
-    val year = node.path("year").textValue()
-    val path = node.path("path").textValue()
-    model.trackInfo = TrackInfo(artist, title, album, year, path)
-    save(model.trackInfo)
-    bus.post(RemoteClientMetaData(model.trackInfo, model.coverPath, model.duration))
-    bus.post(TrackInfoChangeEvent(model.trackInfo))
-    widgetUpdater.updatePlayingTrack(model.trackInfo)
-  }
-
-  private fun save(info: TrackInfo) {
-    scope.launch {
-      try {
-        cache.persistInfo(info)
-        Timber.Forest.v("Playing track info successfully persisted")
-      } catch (e: Exception) {
-        Timber.Forest.v(e, "Failed to persist the playing track info")
-      }
-    }
+  override suspend fun execute(message: ProtocolMessage) {
+    val adapter = mapper.adapter(NowPlayingTrack::class.java)
+    val track = adapter.fromJsonValue(message.data) ?: return
+    val previousState = appState.playingTrack.firstOrNull() ?: PlayingTrack()
+    val newState =
+      previousState.copy(
+        artist = track.artist,
+        title = track.title,
+        album = track.album,
+        year = track.year,
+        path = track.path,
+      )
+    appState.updatePlayingTrack(newState)
+    updater.updatePlayingTrack(newState)
+    cache.persistInfo(newState)
   }
 }
 
 class UpdatePlayerStatus(
-  private val model: MainDataModel,
-  private val bus: RxBus,
+  private val appState: AppStatePublisher,
+  private val moshi: Moshi,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    val node = message.data as ObjectNode
-    model.playState = node.path(Protocol.PLAYER_STATE).asText()
-
-    val newMute = node.path(Protocol.PLAYER_MUTE).asBoolean()
-    if (newMute != model.isMute) {
-      model.isMute = newMute
-      bus.post(if (newMute) VolumeChange() else VolumeChange(model.volume))
-    }
-
-    model.setRepeatState(node.path(Protocol.PLAYER_REPEAT).asText())
-    bus.post(RepeatChange(model.repeat))
-
-    val newShuffle = node.path(Protocol.PLAYER_SHUFFLE).asText()
-    if (newShuffle != model.shuffle) {
-      //noinspection ResourceType
-      model.shuffle = newShuffle
-      bus.post(ShuffleChange(newShuffle))
-    }
-
-    val newScrobbleState = node.path(Protocol.PLAYER_SCROBBLE).asBoolean()
-    if (newScrobbleState != model.isScrobblingEnabled) {
-      model.isScrobblingEnabled = newScrobbleState
-      bus.post(ScrobbleChange(newScrobbleState))
-    }
-
-    val newVolume = Integer.parseInt(node.path(Protocol.PLAYER_VOLUME).asText())
-    if (newVolume != model.volume) {
-      model.volume = newVolume
-      bus.post(VolumeChange(model.volume))
-    }
+  override suspend fun execute(message: ProtocolMessage) {
+    val adapter = moshi.adapter(PlayerStatus::class.java)
+    val status = adapter.fromJsonValue(message.data) ?: return
+    val previousState = appState.playerStatus.firstOrNull() ?: PlayerStatusModel()
+    appState.updatePlayerStatus(
+      previousState.copy(
+        mute = status.mute,
+        state = PlayerState.fromString(status.playState),
+        repeat = Repeat.fromString(status.repeat),
+        shuffle = ShuffleMode.fromString(status.shuffle),
+        scrobbling = status.scrobbling,
+        volume = status.volume,
+      ),
+    )
   }
 }
 
 class UpdatePlayState(
-  private val model: MainDataModel,
-  private val bus: RxBus,
-  private val widgetUpdater: WidgetUpdater,
-  dispatchers: AppCoroutineDispatchers,
+  private val appState: AppStatePublisher,
+  private val updater: WidgetUpdater,
 ) : ProtocolAction {
-  private val job = SupervisorJob()
-  private val scope = CoroutineScope(job + dispatchers.io)
-  private var action: Deferred<Unit>? = null
-
-  override fun execute(message: ProtocolMessage) {
-    model.playState = message.dataString
-    if (model.playState != PlayerState.STOPPED) {
-      bus.post(PlayStateChange(model.playState, model.position))
-    } else {
-      stop()
-    }
-
-    widgetUpdater.updatePlayState(message.dataString)
-  }
-
-  private fun stop() {
-    action?.cancel()
-    action =
-      scope.async {
-        delay(800)
-        bus.post(PlayStateChange(model.playState, model.position))
-      }
+  override suspend fun execute(message: ProtocolMessage) {
+    val playState = PlayerState.fromString(message.data as? String)
+    val previousState = appState.playerStatus.firstOrNull() ?: PlayerStatusModel()
+    appState.updatePlayerStatus(previousState.copy(state = playState))
+    updater.updatePlayState(playState)
   }
 }
 
 class UpdatePluginVersionCommand(
-  private val model: MainDataModel,
-  private val bus: RxBus,
+  private val pluginUpdateCheck: PluginUpdateCheckUseCase,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    if (message.dataString.isEmpty()) {
-      return
+  override suspend fun execute(message: ProtocolMessage) {
+    val pluginVersion = message.data as? String
+    Timber.v("plugin reports $pluginVersion")
+    pluginVersion?.let { version ->
+      pluginUpdateCheck.checkIfUpdateNeeded(version)
     }
-    model.pluginVersion = message.dataString
-    bus.post(MessageEvent(ProtocolEventType.PLUGIN_VERSION_CHECK))
   }
 }
 
 class UpdateRating(
-  private val model: MainDataModel,
-  private val bus: RxBus,
+  private val appState: AppStatePublisher,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    model.rating = (message.data as TextNode).asDouble(0.0).toFloat()
-    bus.post(RatingChanged(model.rating))
+  override suspend fun execute(message: ProtocolMessage) {
+    val rating = message.data.toString().toFloatOrNull()
+    val previousState = appState.playingTrackRating.firstOrNull() ?: TrackRating()
+    appState.updateTrackRating(previousState.copy(rating = rating ?: 0.0f))
   }
 }
 
 class UpdateRepeat(
-  private val model: MainDataModel,
-  private val bus: RxBus,
+  private val appState: AppStatePublisher,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    model.setRepeatState(message.dataString)
-    bus.post(RepeatChange(model.repeat))
+  override suspend fun execute(message: ProtocolMessage) {
+    val repeat = Repeat.fromString(message.data as? String)
+    val previousState = appState.playerStatus.firstOrNull() ?: PlayerStatusModel()
+    appState.updatePlayerStatus(previousState.copy(repeat = repeat))
   }
 }
 
 class UpdateShuffle(
-  private val model: MainDataModel,
-  private val bus: RxBus,
+  private val appState: AppStatePublisher,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    var data: String? = message.dataString
-
-    // Older plugin support, where the shuffle had boolean value.
-    if (data == null) {
-      data = if ((message.data as JsonNode).asBoolean()) ShuffleChange.SHUFFLE else ShuffleChange.OFF
-    }
-
-    if (data != model.shuffle) {
-      //noinspection ResourceType
-      model.shuffle = data
-      bus.post(ShuffleChange(data))
-    }
+  override suspend fun execute(message: ProtocolMessage) {
+    val data = ShuffleMode.fromString(message.data as? String)
+    val previousState = appState.playerStatus.firstOrNull() ?: PlayerStatusModel()
+    appState.updatePlayerStatus(previousState.copy(shuffle = data))
   }
 }
 
 class UpdateVolume(
-  private val model: MainDataModel,
-  private val bus: RxBus,
+  private val appState: AppStatePublisher,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    val newVolume = (message.data as IntNode).asInt()
-    if (newVolume != model.volume) {
-      model.volume = newVolume
-      bus.post(VolumeChange(model.volume))
-    }
+  override suspend fun execute(message: ProtocolMessage) {
+    val volume = message.data as Number
+    val previousState = appState.playerStatus.firstOrNull() ?: PlayerStatusModel()
+    appState.updatePlayerStatus(previousState.copy(volume = volume.toInt()))
   }
 }
 
 class UpdateCover(
-  private val bus: RxBus,
-  private val context: Application,
-  private val mapper: ObjectMapper,
-  private val coverService: ApiBase,
-  private val model: MainDataModel,
-  private val cache: ModelCache,
-  private val widgetUpdater: WidgetUpdater,
-  appCoroutineDispatchers: AppCoroutineDispatchers,
+  private val app: Application,
+  private val updater: WidgetUpdater,
+  private val moshi: Moshi,
+  private val api: ApiBase,
+  private val dispatchers: AppCoroutineDispatchers,
+  private val appState: AppStatePublisher,
 ) : ProtocolAction {
-  private val coverDir: File = File(context.filesDir, COVER_DIR)
-  private val job = SupervisorJob()
-  private val scope = CoroutineScope(job + appCoroutineDispatchers.io)
+  private val coverDir: File = File(app.filesDir, COVER_DIR)
 
-  override fun execute(message: ProtocolMessage) {
-    val payload = mapper.treeToValue((message.data as JsonNode), CoverPayload::class.java)
-
-    if (payload.status == CoverPayload.Companion.NOT_FOUND) {
-      bus.post(CoverChangedEvent())
-      widgetUpdater.updateCover()
-    } else if (payload.status == CoverPayload.Companion.READY) {
-      scope.launch {
-        retrieveCover()
-      }
+  override suspend fun execute(message: ProtocolMessage) {
+    val adapter = moshi.adapter(CoverPayload::class.java)
+    val payload = adapter.fromJsonValue(message.data) ?: return
+    val previousState = appState.playingTrack.firstOrNull() ?: PlayingTrack()
+    if (payload.status == CoverPayload.NOT_FOUND) {
+      update(previousState)
+    } else if (payload.status == CoverPayload.READY) {
+      retrieveCover(previousState)
     }
   }
 
-  private suspend fun retrieveCover() {
-    val (status, cover) =
-      try {
-        coverService.getItem(Protocol.NOW_PLAYING_COVER, CoverPayload::class)
-      } catch (e: Exception) {
-        return
+  private suspend fun retrieveCover(previousState: PlayingTrack) {
+    withContext(dispatchers.network) {
+      val result =
+        runCatching {
+          val response = api.getItem(Protocol.NowPlayingCover, CoverPayload::class)
+          val bitmap = getBitmap(response.cover)
+          val file = storeCover(bitmap)
+
+          val coverUri = file.toUri().toString()
+          update(previousState, coverUri)
+        }
+
+      if (result.isFailure) {
+        removeCover(result.exceptionOrNull(), previousState)
       }
-
-    if (status != CoverPayload.Companion.SUCCESS) {
-      removeCover()
-      return
-    }
-
-    try {
-      val bitmap = getBitmap(cover)
-      val file = storeCover(bitmap)
-      val path = file.absolutePath
-      model.coverPath = path
-      savePath(path)
-      bus.post(CoverChangedEvent(path))
-      bus.post(RemoteClientMetaData(model.trackInfo, model.coverPath, model.duration))
-      widgetUpdater.updateCover(path)
-    } catch (e: Exception) {
-      removeCover(e)
     }
 
     Timber.v("Message received for available cover")
     return
   }
 
-  private fun savePath(path: String) {
-    scope.launch {
-      try {
-        cache.persistCover(path)
-        Timber.v("Playing track cover $path successfully persisted")
-      } catch (e: Exception) {
-        Timber.v(e, "Failed to persist the playing track cover")
-      }
-    }
+  private suspend fun update(
+    previousState: PlayingTrack,
+    coverUri: String = "",
+  ) {
+    val newState = previousState.copy(coverUrl = coverUri)
+    appState.updatePlayingTrack(newState)
+    updater.updateCover(coverUri)
   }
 
   private fun getBitmap(base64: String): Bitmap {
     val decodedImage = Base64.decode(base64, Base64.DEFAULT)
     val bitmap = BitmapFactory.decodeByteArray(decodedImage, 0, decodedImage.size)
-    if (bitmap != null) {
-      return bitmap
-    } else {
-      throw RuntimeException("Base64 was not an image")
-    }
+    return checkNotNull(bitmap) { "Base64 was not an image" }
   }
 
-  private fun removeCover(it: Throwable? = null) {
+  private suspend fun removeCover(
+    it: Throwable? = null,
+    previousState: PlayingTrack,
+  ) {
     clearPreviousCovers(0)
 
     it?.let {
       Timber.v(it, "Failed to store path")
     }
 
-    bus.post(CoverChangedEvent())
+    update(previousState)
   }
 
   private fun storeCover(bitmap: Bitmap): File {
     checkIfExists()
     clearPreviousCovers()
+
     val file = temporaryCover()
     val fileStream = FileOutputStream(file)
-    val success = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileStream)
+    val success = bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, fileStream)
     fileStream.close()
-    if (success) {
-      val md5 = file.md5()
-      val extension = file.extension
-      val newFile = File(coverDir, "$md5.$extension")
-      file.renameTo(newFile)
-      Timber.v("file was renamed to %s", newFile.absolutePath)
+
+    val md5 =
+      HashingSink.md5(blackholeSink()).use { hashingSink ->
+        file.source().buffer().use { source ->
+          source.readAll(hashingSink)
+          hashingSink.hash.md5().hex()
+        }
+      }
+
+    val extension = file.extension
+    val newFile = File(app.filesDir, "$md5.$extension")
+    if (newFile.exists()) {
+      val isDeleted = file.delete()
+      if (!isDeleted) {
+        Timber.v("unable to delete temporary cover ${file.absolutePath}")
+      }
       return newFile
-    } else {
-      throw RuntimeException("unable to store cover")
     }
+
+    check(success) { "unable to store cover" }
+    val isRenamed = file.renameTo(newFile)
+    Timber.v("file was renamed $isRenamed to ${newFile.absolutePath}")
+    return newFile
   }
 
   private fun checkIfExists() {
     if (!coverDir.exists()) {
-      coverDir.mkdir()
+      val isSuccessful = coverDir.mkdir()
+      Timber.v("cover directory ${coverDir.absolutePath} creation is successful $isSuccessful")
     }
   }
 
-  private fun clearPreviousCovers(keep: Int = 2) {
-    coverDir.listFiles()?.run {
-      sortByDescending(File::lastModified)
-      Timber.v(size.toString())
-      val toDelete = if (size - keep < 0) 0 else size - keep
-      Timber.v("deleting last $toDelete items")
-      takeLast(toDelete).forEach {
-        it.delete()
+  private fun clearPreviousCovers(keep: Int = 1) {
+    if (!coverDir.exists()) {
+      return
+    }
+    val storedCovers = coverDir.listFiles() ?: return
+    storedCovers.sortByDescending(File::lastModified)
+    val elementsToKeep = if (storedCovers.size - keep < 0) 0 else storedCovers.size - keep
+    storedCovers.takeLast(elementsToKeep).forEach {
+      val isSuccessful = it.delete()
+      if (!isSuccessful) {
+        Timber.v("unable to cover delete ${it.absolutePath}")
       }
     }
   }
 
   private fun temporaryCover(): File {
-    val file = File(context.cacheDir, TEMP_COVER)
+    val file = File(app.cacheDir, TEMP_COVER)
     if (file.exists()) {
-      file.delete()
+      val isSuccessful = file.delete()
+      if (!isSuccessful) {
+        Timber.v("unable to delete temporary cover ${file.absolutePath}")
+      }
     }
     return file
   }
@@ -409,59 +350,95 @@ class UpdateCover(
   companion object {
     const val COVER_DIR = "cover"
     const val TEMP_COVER = "temp_cover.jpg"
+    const val JPEG_QUALITY = 100
   }
 }
 
 class ProtocolPingHandle(
-  private val service: SocketService,
-  private val activityChecker: SocketActivityChecker,
+  private val messageQueue: MessageQueue,
+  private var activityChecker: SocketActivityChecker,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
+  override suspend fun execute(message: ProtocolMessage) {
     activityChecker.ping()
-    service.sendData(SocketMessage.Companion.create(Protocol.PONG, ""))
+    messageQueue.queue(SocketMessage.create(Protocol.Pong))
   }
 }
 
 class SimpleLogCommand : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
+  override suspend fun execute(message: ProtocolMessage) {
     Timber.d("handled message ${message.type}: ${message.data}")
   }
 }
 
 class UpdateNowPlayingTrackMoved(
-  private val bus: RxBus,
+  moshi: Moshi,
+  dispatchers: AppCoroutineDispatchers,
+  private val nowPlayingRepository: NowPlayingRepository,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    bus.post(TrackMoved(message.data as ObjectNode))
+  private val scope = CoroutineScope(dispatchers.network)
+  private val adapter = moshi.adapter(NowPlayingMoveResponse::class.java)
+
+  override suspend fun execute(message: ProtocolMessage) {
+    scope.launch {
+      val response = adapter.fromJsonValue(message.data)
+      if (response != null && response.success) {
+        nowPlayingRepository.move(from = response.from + 1, to = response.to + 1)
+      }
+    }
   }
 }
 
 class UpdateNowPlayingTrackRemoval(
-  private val bus: RxBus,
+  moshi: Moshi,
+  dispatchers: AppCoroutineDispatchers,
+  private val nowPlayingRepository: NowPlayingRepository,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    message.data
-    bus.post(TrackRemoval(message.data as ObjectNode))
+  private val scope = CoroutineScope(dispatchers.network)
+  private val adapter = moshi.adapter(NowPlayingTrackRemoveResponse::class.java)
+
+  override suspend fun execute(message: ProtocolMessage) {
+    scope.launch {
+      val response = adapter.fromJsonValue(message.data)
+      if (response != null && response.success) {
+        nowPlayingRepository.remove(response.index + 1)
+      }
+    }
   }
 }
 
 class UpdatePlaybackPositionCommand(
-  private val bus: RxBus,
-  private val model: MainDataModel,
+  private val moshi: Moshi,
+  private val appState: AppStatePublisher,
 ) : ProtocolAction {
-  override fun execute(message: ProtocolMessage) {
-    val data = message.data as ObjectNode
-    val duration = data.path("total").asLong()
-    val position = data.path("current").asLong()
-    bus.post(UpdateDuration(position.toInt(), duration.toInt()))
+  override suspend fun execute(message: ProtocolMessage) {
+    val adapter = moshi.adapter(Position::class.java)
+    val response = adapter.fromJsonValue(message.data) ?: return
 
-    bus.post(RemoteClientMetaData(model.trackInfo, model.coverPath, duration))
-
-    if (position != model.position) {
-      bus.post(PlayStateChange(model.playState, position))
+    appState.updatePlayingPosition(
+      PlayingPosition(
+        response.current,
+        response.total.coerceAtLeast(0),
+      ),
+    )
+    val track = appState.playingTrack.first()
+    if (track.duration != response.total) {
+      appState.updatePlayingTrack(track.copy(duration = response.total))
     }
-
-    model.duration = duration
-    model.position = position
   }
 }
+
+class UpdateNowPlayingList(
+  private val nowPlayingRepository: NowPlayingRepository,
+) : ProtocolAction {
+  override suspend fun execute(message: ProtocolMessage) {
+    nowPlayingRepository.getRemote()
+  }
+}
+
+class ProtocolVersionUpdate : ProtocolAction {
+  override suspend fun execute(message: ProtocolMessage) {
+    Timber.v(message.data.toString())
+  }
+}
+
+fun ProtocolMessage.asBoolean(): Boolean = data as? Boolean == true

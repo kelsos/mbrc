@@ -105,9 +105,7 @@ class ChangelogParser(
 
   @Throws(XmlPullParserException::class, IOException::class)
   private fun skip(parser: XmlPullParser) {
-    if (parser.eventType != XmlPullParser.START_TAG) {
-      throw IllegalStateException()
-    }
+    check(parser.eventType == XmlPullParser.START_TAG)
     var depth = 1
     while (depth != 0) {
       when (parser.next()) {

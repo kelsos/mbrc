@@ -1,97 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/mini_control"
   android:layout_width="match_parent"
   android:layout_height="@dimen/mini_control_height">
 
-  <ImageView
-    android:id="@+id/mc_track_cover"
-    android:layout_width="@dimen/mini_control_height"
-    android:layout_height="match_parent"
-    android:contentDescription="@string/description_album_cover"
-    android:scaleType="fitCenter"
-    android:src="@drawable/ic_image_no_cover" />
-
-  <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_gravity="start"
-    android:layout_toStartOf="@+id/button_layout"
-    android:layout_toEndOf="@+id/mc_track_cover"
-    android:gravity="center_vertical"
-    android:orientation="vertical"
-    android:paddingLeft="@dimen/small_margin"
-    android:paddingRight="@dimen/small_margin">
-
-    <TextView
-      android:id="@+id/mc_track_title"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_gravity="start|center_vertical"
-      android:ellipsize="end"
-      android:fontFamily="sans-serif-medium"
-      android:maxLines="1"
-      android:textColor="@color/primary_text"
-      android:textSize="@dimen/mini_control_title_text_size"
-      tools:ignore="MissingPrefix,UnusedAttribute"
-      tools:text="All night" />
-
-    <TextView
-      android:id="@+id/mc_track_artist"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_gravity="start|center_vertical"
-      android:ellipsize="end"
-      android:fontFamily="sans-serif"
-      android:maxLines="1"
-      android:textColor="@color/secondary_text"
-      android:textSize="@dimen/mini_control_subtitle_text_size"
-      tools:ignore="UnusedAttribute"
-      tools:text="Parov Stelar" />
-
-  </LinearLayout>
-
-  <LinearLayout
-    android:id="@+id/button_layout"
+  <com.google.android.material.progressindicator.LinearProgressIndicator
+    android:id="@+id/mini_control_track_progress"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_alignParentEnd="true"
-    android:layout_gravity="center_vertical|end"
-    android:baselineAligned="false">
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageButton
-      android:id="@+id/mc_prev_track"
-      android:layout_width="@dimen/mini_control_height"
-      android:layout_height="@dimen/mini_control_height"
-      android:background="?attr/selectableItemBackground"
-      android:baselineAlignBottom="false"
-      android:contentDescription="@string/main_button_previous_description"
-      android:src="@drawable/ic_skip_previous_black_24dp"
-      app:tint="@color/white" />
+  <ImageView
+    android:id="@+id/mc_track_cover"
+    android:layout_width="48dp"
+    android:layout_height="wrap_content"
+    android:contentDescription="@string/description_album_cover"
+    android:scaleType="fitCenter"
+    android:src="@drawable/ic_image_no_cover"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/mini_control_track_progress" />
 
-    <ImageButton
-      android:id="@+id/mc_play_pause"
-      android:layout_width="@dimen/mini_control_height"
-      android:layout_height="@dimen/mini_control_height"
-      android:background="?attr/selectableItemBackground"
-      android:baselineAlignBottom="false"
-      android:contentDescription="@string/main_button_play_pause_description"
-      android:src="@drawable/ic_play_arrow_black_36dp"
-      app:tint="@color/white" />
+  <TextView
+    android:id="@+id/mc_track_title"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/small_margin"
+    android:layout_marginEnd="@dimen/small_margin"
+    android:ellipsize="end"
+    android:fontFamily="sans-serif-medium"
+    android:maxLines="1"
+    android:textColor="@color/primary_text"
+    android:textSize="@dimen/mini_control_title_text_size"
+    app:layout_constraintEnd_toStartOf="@+id/mc_prev_track"
+    app:layout_constraintStart_toEndOf="@id/mc_track_cover"
+    app:layout_constraintTop_toBottomOf="@id/mini_control_track_progress"
+    tools:ignore="MissingPrefix,UnusedAttribute"
+    tools:text="All night" />
 
-    <ImageButton
-      android:id="@+id/mc_next_track"
-      android:layout_width="@dimen/mini_control_height"
-      android:layout_height="@dimen/mini_control_height"
-      android:background="?attr/selectableItemBackground"
-      android:baselineAlignBottom="false"
-      android:contentDescription="@string/main_button_next_description"
-      android:src="@drawable/ic_skip_next_black_24dp"
-      app:tint="@color/white" />
+  <TextView
+    android:id="@+id/mc_track_artist"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/small_margin"
+    android:layout_marginEnd="@dimen/small_margin"
+    android:ellipsize="end"
+    android:fontFamily="sans-serif"
+    android:maxLines="1"
+    android:textColor="@color/secondary_text"
+    android:textSize="@dimen/mini_control_subtitle_text_size"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toStartOf="@+id/mc_prev_track"
+    app:layout_constraintStart_toEndOf="@id/mc_track_cover"
+    app:layout_constraintTop_toBottomOf="@id/mc_track_title"
+    tools:ignore="UnusedAttribute"
+    tools:text="Parov Stelar" />
 
-  </LinearLayout>
 
-</RelativeLayout>
+  <ImageButton
+    android:id="@+id/mc_prev_track"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_marginEnd="@dimen/small_margin"
+    android:background="?attr/selectableItemBackground"
+    android:baselineAlignBottom="false"
+    android:contentDescription="@string/main_button_previous_description"
+    android:src="@drawable/ic_skip_previous_black_24dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toStartOf="@id/mc_play_pause"
+    app:layout_constraintTop_toBottomOf="@id/mini_control_track_progress"
+    app:tint="@color/white" />
+
+  <ImageButton
+    android:id="@+id/mc_play_pause"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_marginStart="@dimen/small_margin"
+    android:layout_marginEnd="@dimen/small_margin"
+    android:background="?attr/selectableItemBackground"
+    android:baselineAlignBottom="false"
+    android:contentDescription="@string/main_button_play_pause_description"
+    android:src="@drawable/ic_play_arrow_black_36dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toStartOf="@id/mc_next_track"
+    app:layout_constraintTop_toBottomOf="@id/mini_control_track_progress"
+    app:tint="@color/white" />
+
+  <ImageButton
+    android:id="@+id/mc_next_track"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:background="?attr/selectableItemBackground"
+    android:baselineAlignBottom="false"
+    android:contentDescription="@string/main_button_next_description"
+    android:src="@drawable/ic_skip_next_black_24dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/mini_control_track_progress"
+    app:tint="@color/white" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -64,10 +64,8 @@ class SimpleItemTouchHelper(
     viewHolder: RecyclerView.ViewHolder?,
     actionState: Int,
   ) {
-    if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
-      if (viewHolder is TouchHelperViewHolder) {
-        viewHolder.onItemSelected()
-      }
+    if (actionState != ItemTouchHelper.ACTION_STATE_IDLE && viewHolder is TouchHelperViewHolder) {
+      viewHolder.onItemSelected()
     }
 
     super.onSelectedChanged(viewHolder, actionState)

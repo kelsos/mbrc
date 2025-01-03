@@ -9,8 +9,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class WebViewDialog : DialogFragment() {
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-    val title = arguments?.getInt(ARG_TITLE) ?: throw Exception("argument null")
-    val url = arguments?.getString(ARG_URL) ?: throw Exception("argument null")
+    val args = checkNotNull(arguments) { "argument is null" }
+    val title = checkNotNull(args.getInt(ARG_TITLE))
+    val url = checkNotNull(args.getString(ARG_URL))
 
     return MaterialAlertDialogBuilder(requireActivity())
       .setTitle(title)

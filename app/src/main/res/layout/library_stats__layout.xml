@@ -6,8 +6,8 @@
   android:layout_height="match_parent">
 
   <TextView
-    style="@style/TextAppearance.MaterialComponents.Caption"
     android:id="@+id/library_stats__description"
+    style="@style/TextAppearance.MaterialComponents.Caption"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_marginStart="16dp"

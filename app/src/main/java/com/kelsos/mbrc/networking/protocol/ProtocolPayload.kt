@@ -1,14 +1,14 @@
 package com.kelsos.mbrc.networking.protocol
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder("no_broadcast", "protocol_version")
+@JsonClass(generateAdapter = true)
 data class ProtocolPayload(
-  @JsonProperty("no_broadcast")
-  var noBroadcast: Boolean = false,
-  @JsonProperty("protocol_version")
-  var protocolVersion: Int = 3,
+  @Json(name = "client_id")
+  val clientId: String,
+  @Json(name = "no_broadcast")
+  val noBroadcast: Boolean = false,
+  @Json(name = "protocol_version")
+  val protocolVersion: Int = 3,
 )

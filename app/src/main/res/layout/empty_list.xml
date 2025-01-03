@@ -12,9 +12,10 @@
   tools:visibility="visible">
 
   <ImageView
-    android:id="@+id/imageView2"
+    android:id="@+id/empty_view_warning"
     android:layout_width="86dp"
     android:layout_height="86dp"
+    android:contentDescription="@string/content_description__empty_warning"
     android:src="@drawable/ic_error_outline_black_24dp"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
@@ -36,7 +37,7 @@
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/imageView2"
+    app:layout_constraintTop_toBottomOf="@+id/empty_view_warning"
     app:layout_constraintVertical_bias="0"
     tools:ignore="UnusedAttribute" />
 </androidx.constraintlayout.widget.ConstraintLayout>

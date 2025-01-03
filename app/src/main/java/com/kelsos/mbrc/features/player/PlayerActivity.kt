@@ -2,7 +2,6 @@ package com.kelsos.mbrc.features.player
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -12,43 +11,39 @@ import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
-import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.ShareActionProvider
+import androidx.core.app.ShareCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.MenuItemCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import coil3.load
 import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
 import coil3.size.Scale
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import com.kelsos.mbrc.BaseActivity
 import com.kelsos.mbrc.R
-import com.kelsos.mbrc.UpdateRequiredActivity
-import com.kelsos.mbrc.annotations.Connection
-import com.kelsos.mbrc.annotations.PlayerState
-import com.kelsos.mbrc.annotations.PlayerState.State
-import com.kelsos.mbrc.annotations.Repeat
-import com.kelsos.mbrc.annotations.Repeat.Mode
 import com.kelsos.mbrc.changelog.ChangelogDialog
-import com.kelsos.mbrc.events.ui.ShuffleChange
-import com.kelsos.mbrc.events.ui.ShuffleChange.ShuffleState
-import com.kelsos.mbrc.events.ui.UpdateDuration
+import com.kelsos.mbrc.common.state.LfmRating
+import com.kelsos.mbrc.common.state.PlayerState
+import com.kelsos.mbrc.common.state.PlayerStatusModel
+import com.kelsos.mbrc.common.state.PlayingPosition
+import com.kelsos.mbrc.common.state.PlayingTrack
+import com.kelsos.mbrc.common.state.Repeat
+import com.kelsos.mbrc.common.state.ShuffleMode
+import com.kelsos.mbrc.common.state.TrackRating
 import com.kelsos.mbrc.extensions.getDimens
-import com.kelsos.mbrc.features.player.ProgressSeekerHelper.ProgressUpdate
-import org.koin.android.ext.android.inject
-import java.io.File
+import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class PlayerActivity :
-  BaseActivity(),
-  PlayerView,
-  ProgressUpdate {
-  private val presenter: PlayerViewPresenter by inject()
-  private val progressHelper: ProgressSeekerHelper by inject()
+class PlayerActivity : BaseActivity(R.layout.activity_main) {
+  private val viewModel: PlayerViewModel by viewModel()
 
   private lateinit var artistLabel: TextView
   private lateinit var titleLabel: TextView
@@ -63,14 +58,16 @@ class PlayerActivity :
   private lateinit var repeatButton: ImageButton
   private lateinit var albumCover: ImageView
 
-  private var mShareActionProvider: ShareActionProvider? = null
+  override fun active(): Int = R.id.nav_home
+
+  private var shareActionProvider: ShareActionProvider? = null
 
   private var changeLogDialog: AlertDialog? = null
-  private var outOfDateDialog: AlertDialog? = null
 
   private var menu: Menu? = null
-  private var volumeChangeListener: SeekBarThrottler? = null
-  private var positionChangeListener: SeekBarThrottler? = null
+
+  private val activeColor by lazy { ContextCompat.getColor(this, R.color.accent) }
+  private val inactiveColor by lazy { ContextCompat.getColor(this, R.color.button_dark) }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     installSplashScreen()
@@ -78,7 +75,6 @@ class PlayerActivity :
     setExitSharedElementCallback(MaterialContainerTransformSharedElementCallback())
     window.sharedElementsUseOverlay = false
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_main)
 
     onBackPressedDispatcher.addCallback(
       this,
@@ -89,6 +85,58 @@ class PlayerActivity :
       },
     )
 
+    initViews()
+    initListeners()
+    observeViewModel()
+  }
+
+  private fun observeViewModel() {
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.events.collect { event ->
+          processEvent(event)
+        }
+      }
+    }
+
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.state.collect { playerState ->
+          updatePlayerTrack(playerState.playingTrack)
+          updatePlayerStatus(playerState.playerStatus)
+          updateTrackRating(playerState.trackRating)
+          updatePlayingPosition(playerState.playingPosition)
+        }
+      }
+    }
+  }
+
+  private fun processEvent(event: PlayerUiMessage) {
+    when (event) {
+      PlayerUiMessage.ShowChangelog -> {
+        changeLogDialog = ChangelogDialog.show(this@PlayerActivity, R.raw.changelog)
+      }
+    }
+  }
+
+  private fun initListeners() {
+    muteButton.setOnClickListener { viewModel.interact(PlayerAction.ToggleMute) }
+    shuffleButton.setOnClickListener { viewModel.interact(PlayerAction.ToggleShuffle) }
+    repeatButton.setOnClickListener { viewModel.interact(PlayerAction.ToggleRepeat) }
+
+    playPauseButton.setOnClickListener { viewModel.interact(PlayerAction.ResumePlayOrPause) }
+    playPauseButton.setOnLongClickListener {
+      viewModel.interact(PlayerAction.Stop)
+      true
+    }
+    findViewById<ImageButton>(R.id.main_button_previous).setOnClickListener {
+      viewModel.interact(PlayerAction.PlayPrevious)
+    }
+    findViewById<ImageButton>(R.id.main_button_next).setOnClickListener { viewModel.interact(PlayerAction.PlayNext) }
+    findViewById<View>(R.id.track_info_area).setOnClickListener { navigate(R.id.nav_now_playing) }
+  }
+
+  private fun initViews() {
     artistLabel = findViewById(R.id.main_artist_label)
     titleLabel = findViewById(R.id.main_title_label)
     albumLabel = findViewById(R.id.main_label_album)
@@ -101,19 +149,6 @@ class PlayerActivity :
     shuffleButton = findViewById(R.id.main_shuffle_button)
     repeatButton = findViewById(R.id.main_repeat_button)
     albumCover = findViewById(R.id.main_album_cover_image_view)
-
-    muteButton.setOnClickListener { presenter.mute() }
-    shuffleButton.setOnClickListener { presenter.shuffle() }
-    repeatButton.setOnClickListener { presenter.repeat() }
-
-    playPauseButton.setOnClickListener { presenter.play() }
-    playPauseButton.setOnLongClickListener { presenter.stop() }
-    findViewById<ImageButton>(R.id.main_button_previous).setOnClickListener { presenter.previous() }
-    findViewById<ImageButton>(R.id.main_button_next).setOnClickListener { presenter.next() }
-    findViewById<View>(R.id.track_info_area).setOnClickListener { navigate(R.id.nav_now_playing) }
-
-    super.setup()
-    presenter.attach(this)
   }
 
   override fun onNewIntent(intent: Intent) {
@@ -124,57 +159,19 @@ class PlayerActivity :
     }
   }
 
-  override fun showChangeLog() {
-    changeLogDialog = ChangelogDialog.show(this, R.raw.changelog)
-  }
-
-  override fun notifyPluginOutOfDate() {
-    val snackBar =
-      Snackbar.make(
-        navigationView,
-        R.string.main__dialog_plugin_outdated_message,
-        Snackbar.LENGTH_INDEFINITE,
-      )
-    snackBar.setAction(android.R.string.ok) { snackBar.dismiss() }
-    snackBar.show()
-  }
-
-  override fun showPluginUpdateRequired(minimumRequired: String) {
-    val intent = Intent(this, UpdateRequiredActivity::class.java)
-    intent.putExtra(UpdateRequiredActivity.VERSION, minimumRequired)
-    startActivity(intent)
-  }
-
   override fun onStart() {
     super.onStart()
-
-    if (!presenter.isAttached) {
-      presenter.attach(this)
-    }
-
-    progressHelper.setProgressListener(this)
-    volumeChangeListener = SeekBarThrottler { presenter.changeVolume(it) }
-    positionChangeListener = SeekBarThrottler { presenter.seek(it) }
-    volumeBar.setOnSeekBarChangeListener(volumeChangeListener)
-    progressBar.setOnSeekBarChangeListener(positionChangeListener)
+    volumeBar.listen { viewModel.interact(PlayerAction.ChangeVolume(it)) }
+    progressBar.listen { viewModel.interact(PlayerAction.Seek(it)) }
     artistLabel.isSelected = true
     titleLabel.isSelected = true
     albumLabel.isSelected = true
-
-    if (!isConnected) {
-      onConnectClick()
-    }
-  }
-
-  override fun onResume() {
-    super.onResume()
-    presenter.requestNowPlayingPosition()
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean =
     when (item.itemId) {
       R.id.menu_lastfm_scrobble -> {
-        presenter.toggleScrobbling()
+        viewModel.interact(PlayerAction.ToggleScrobbling)
         true
       }
 
@@ -185,7 +182,8 @@ class PlayerActivity :
       }
 
       R.id.menu_lastfm_love -> {
-        presenter.lfmLove()
+        viewModel.interact(PlayerAction.ToggleFavorite)
+        true
       }
 
       else -> false
@@ -193,44 +191,47 @@ class PlayerActivity :
 
   override fun onStop() {
     super.onStop()
-    presenter.detach()
-    progressHelper.setProgressListener(null)
-    volumeChangeListener?.terminate()
-    volumeChangeListener = null
-    positionChangeListener?.terminate()
-    positionChangeListener = null
-    volumeBar.setOnSeekBarChangeListener(null)
-    progressBar.setOnSeekBarChangeListener(null)
+    volumeBar.removeListener()
+    progressBar.removeListener()
   }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
     menuInflater.inflate(R.menu.menu, menu)
     this.menu = menu
     val shareItem = menu.findItem(R.id.actionbar_share)
-    mShareActionProvider = MenuItemCompat.getActionProvider(shareItem) as ShareActionProvider
-    mShareActionProvider!!.setShareIntent(shareIntent)
+    val shareActionProvider = ShareActionProvider(this)
+    MenuItemCompat.setActionProvider(shareItem, shareActionProvider)
+    shareItem.setOnMenuItemClickListener {
+      startActivity(Intent.createChooser(shareIntent, "Share via"))
+      true
+    }
+    this.shareActionProvider = shareActionProvider
     return super.onCreateOptionsMenu(menu)
   }
 
   private val shareIntent: Intent
-    get() {
-      val shareIntent = Intent(Intent.ACTION_SEND)
-      shareIntent.type = "text/plain"
-      val payload = String.format("Now Playing: %s - %s", artistLabel.text, titleLabel.text)
-      shareIntent.putExtra(Intent.EXTRA_TEXT, payload)
-      return shareIntent
-    }
+    get() =
+      ShareCompat
+        .IntentBuilder(this)
+        .setType("text/plain")
+        .setChooserTitle("Share via")
+        .setText("Now Playing: ${artistLabel.text} - ${titleLabel.text}")
+        .intent
 
-  override fun updateCover(path: String) {
-    val file = File(path)
+  fun updatePlayerTrack(track: PlayingTrack) {
+    artistLabel.text = track.artist
+    titleLabel.text = track.title
+    albumLabel.text =
+      if (track.year.isEmpty()) {
+        track.album
+      } else {
+        "${track.album} [${track.year}]"
+      }
 
-    if (!file.exists()) {
-      albumCover.setImageResource(R.drawable.ic_image_no_cover)
-      return
-    }
+    shareActionProvider?.setShareIntent(shareIntent)
 
     val dimens = getDimens()
-    albumCover.load(file) {
+    albumCover.load(track.coverUrl) {
       crossfade(false)
       placeholder(R.drawable.ic_image_no_cover)
       error(R.drawable.ic_image_no_cover)
@@ -239,89 +240,55 @@ class PlayerActivity :
     }
   }
 
-  override fun updateShuffleState(
-    @ShuffleState shuffleState: String,
-  ) {
-    val shuffle = ShuffleChange.OFF != shuffleState
-    val autoDj = ShuffleChange.AUTODJ == shuffleState
+  private fun updatePlayerStatus(status: PlayerStatusModel) {
+    updateShuffleState(status.shuffle)
+    updateRepeat(status.repeat)
+    updateVolume(status.volume, status.mute)
+    updatePlayState(status.state)
+    updateScrobbleStatus(status.scrobbling)
+  }
 
-    val color = ContextCompat.getColor(this, if (shuffle) R.color.accent else R.color.button_dark)
-    shuffleButton.setColorFilter(color)
-
+  private fun updateShuffleState(shuffleModel: ShuffleMode) {
+    val shuffle = ShuffleMode.Off != shuffleModel
+    val autoDj = ShuffleMode.AutoDJ == shuffleModel
+    shuffleButton.setColorFilter(if (shuffle) activeColor else inactiveColor)
     shuffleButton.setImageResource(if (autoDj) R.drawable.ic_headset_black_24dp else R.drawable.ic_shuffle_black_24dp)
   }
 
-  override fun updateRepeat(
-    @Mode mode: String,
-  ) {
-    @ColorRes var colorId = R.color.accent
+  private fun updateRepeat(mode: Repeat) {
+    var color = activeColor
 
     @DrawableRes var resId = R.drawable.ic_repeat_black_24dp
 
-    //noinspection StatementWithEmptyBody
-    when {
-      Repeat.ALL.equals(mode, ignoreCase = true) -> {
-        // Do nothing already set above
-      }
-
-      Repeat.ONE.equals(mode, ignoreCase = true) -> {
-        resId = R.drawable.ic_repeat_one_black_24dp
-      }
-
-      else -> {
-        colorId = R.color.button_dark
-      }
+    when (mode) {
+      Repeat.One -> resId = R.drawable.ic_repeat_one_black_24dp
+      else -> color = inactiveColor
     }
 
-    val color = ContextCompat.getColor(this, colorId)
     repeatButton.setImageResource(resId)
     repeatButton.setColorFilter(color)
   }
 
-  override fun updateVolume(
+  private fun updateVolume(
     volume: Int,
     mute: Boolean,
   ) {
-    volumeBar.progress = volume
-    val color = ContextCompat.getColor(this, R.color.button_dark)
-    muteButton.setColorFilter(color)
+    volumeBar.progress = if (mute) 0 else volume
+    muteButton.setColorFilter(inactiveColor)
     muteButton.setImageResource(if (mute) R.drawable.ic_volume_off_black_24dp else R.drawable.ic_volume_up_black_24dp)
   }
 
-  override fun updatePlayState(
-    @State state: String,
-  ) {
-    val accentColor = ContextCompat.getColor(this, R.color.accent)
-    val tag = tag(state)
+  private fun updatePlayState(state: PlayerState) {
+    val accentColor = activeColor
+    val tag = state.state
 
     if (playPauseButton.tag == tag) {
       return
     }
     @DrawableRes val resId: Int =
       when (state) {
-        PlayerState.PLAYING -> {
-          // Start the animation if the track is playing
-          presenter.requestNowPlayingPosition()
-          trackProgressAnimation(progressBar.progress, progressBar.max)
-          R.drawable.ic_pause_circle_filled_black_24dp
-        }
-
-        PlayerState.PAUSED -> {
-          // Stop the animation if the track is paused
-          progressHelper.stop()
-          R.drawable.ic_play_circle_filled_black_24dp
-        }
-
-        PlayerState.STOPPED -> {
-          // Stop the animation if the track is paused
-          progressHelper.stop()
-          activateStoppedState()
-          R.drawable.ic_play_circle_filled_black_24dp
-        }
-
-        else -> {
-          R.drawable.ic_play_circle_filled_black_24dp
-        }
+        PlayerState.Playing -> R.drawable.ic_pause_circle_filled_black_24dp
+        else -> R.drawable.ic_play_circle_filled_black_24dp
       }
 
     playPauseButton.setColorFilter(accentColor)
@@ -329,154 +296,36 @@ class PlayerActivity :
     playPauseButton.tag = tag
   }
 
-  /**
-   * Starts the progress animation when called. If It was previously running then it restarts it.
-   */
-  private fun trackProgressAnimation(
-    current: Int,
-    total: Int,
-  ) {
-    progressHelper.stop()
+  private fun updateTrackRating(rating: TrackRating) {
+    updateLfmRating(rating.lfmRating)
+  }
 
-    val tag = playPauseButton.tag
-    if (STOPPED == tag || PAUSED == tag) {
+  private fun updatePlayingPosition(position: PlayingPosition) {
+    if (progressBar.max == position.total.toInt() && progressBar.progress == position.current.toInt()) {
       return
     }
-
-    progressHelper.update(current, total)
+    progressBar.max = position.total.toInt()
+    progressBar.progress = position.current.toInt()
+    trackDuration.text = position.totalMinutes
+    trackProgressCurrent.text = position.currentMinutes
   }
 
-  private fun activateStoppedState() {
-    progressBar.progress = 0
-    trackProgressCurrent.text = getString(R.string.playback_progress, 0, 0)
+  fun updateScrobbleStatus(active: Boolean) {
+    menu?.findItem(R.id.menu_lastfm_scrobble)?.isChecked = active
   }
 
-  override fun updateTrackInfo(info: TrackInfo) {
-    artistLabel.text = info.artist
-    titleLabel.text = info.title
-    albumLabel.text =
-      if (TextUtils.isEmpty(info.year)) {
-        info.album
-      } else {
-        String.format("%s [%s]", info.album, info.year)
-      }
+  fun updateLfmRating(rating: LfmRating) {
+    val menu = menu ?: return
+    val favoriteMenuItem = menu.findItem(R.id.menu_lastfm_love) ?: return
 
-    if (mShareActionProvider != null) {
-      mShareActionProvider!!.setShareIntent(shareIntent)
-    }
-  }
-
-  override fun updateConnection(status: Int) {
-    if (status == Connection.OFF) {
-      progressHelper.stop()
-      activateStoppedState()
-    }
-  }
-
-  /**
-   * Responsible for updating the displays and seekbar responsible for the display of the track
-   * duration and the
-   * current progress of playback
-   */
-
-  override fun updateProgress(duration: UpdateDuration) {
-    updateProgress(duration.position, duration.duration)
-  }
-
-  private fun updateProgress(
-    current: Int,
-    total: Int,
-  ) {
-    var currentSeconds = current / 1000
-    var totalSeconds = total / 1000
-
-    val currentMinutes = currentSeconds / 60
-    val totalMinutes = totalSeconds / 60
-
-    currentSeconds %= 60
-    totalSeconds %= 60
-    val finalTotalSeconds = totalSeconds
-    val finalCurrentSeconds = currentSeconds
-
-    trackDuration.text = getString(R.string.playback_progress, totalMinutes, finalTotalSeconds)
-    trackProgressCurrent.text =
-      getString(
-        R.string.playback_progress,
-        currentMinutes,
-        finalCurrentSeconds,
-      )
-
-    progressBar.max = total
-    progressBar.progress = current
-
-    trackProgressAnimation(current, total)
-  }
-
-  override fun updateDuration(
-    position: Int,
-    duration: Int,
-  ) {
-    updateProgress(position, duration)
-  }
-
-  override fun updateScrobbleStatus(active: Boolean) {
-    if (menu == null) {
-      return
-    }
-    val scrobbleMenuItem = menu!!.findItem(R.id.menu_lastfm_scrobble) ?: return
-
-    scrobbleMenuItem.isChecked = active
-  }
-
-  override fun updateLfmStatus(status: LfmStatus) {
-    if (menu == null) {
-      return
-    }
-    val favoriteMenuItem = menu!!.findItem(R.id.menu_lastfm_love) ?: return
-
-    when (status) {
-      LfmStatus.LOVED -> favoriteMenuItem.setIcon(R.drawable.ic_favorite_black_24dp)
+    when (rating) {
+      LfmRating.Loved -> favoriteMenuItem.setIcon(R.drawable.ic_favorite_black_24dp)
       else -> favoriteMenuItem.setIcon(R.drawable.ic_favorite_border_black_24dp)
     }
   }
 
-  override fun active(): Int = R.id.nav_home
-
-  override fun progress(
-    position: Int,
-    duration: Int,
-  ) {
-    val currentProgress = progressBar.progress / 1000
-    val currentMinutes = currentProgress / 60
-    val currentSeconds = currentProgress % 60
-
-    progressBar.progress = progressBar.progress + 1000
-    trackProgressCurrent.text =
-      getString(
-        R.string.playback_progress,
-        currentMinutes,
-        currentSeconds,
-      )
-  }
-
   override fun onDestroy() {
-    outOfDateDialog?.dismiss()
     changeLogDialog?.dismiss()
     super.onDestroy()
-  }
-
-  companion object {
-    private const val PAUSED = "Paused"
-    private const val STOPPED = "Stopped"
-    private const val PLAYING = "Playing"
-
-    fun tag(
-      @State state: String,
-    ): String =
-      when (state) {
-        PlayerState.PLAYING -> PLAYING
-        PlayerState.PAUSED -> PAUSED
-        else -> STOPPED
-      }
   }
 }

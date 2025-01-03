@@ -1,147 +1,128 @@
 package com.kelsos.mbrc
 
 import androidx.core.app.NotificationManagerCompat
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.kelsos.mbrc.commands.CancelNotificationCommand
-import com.kelsos.mbrc.commands.ConnectionStatusChangedCommand
-import com.kelsos.mbrc.commands.HandleHandshake
-import com.kelsos.mbrc.commands.InitiateConnectionCommand
-import com.kelsos.mbrc.commands.KeyVolumeDownCommand
-import com.kelsos.mbrc.commands.KeyVolumeUpCommand
-import com.kelsos.mbrc.commands.ProcessUserAction
-import com.kelsos.mbrc.commands.ProtocolRequest
-import com.kelsos.mbrc.commands.ReduceVolumeOnRingCommand
-import com.kelsos.mbrc.commands.RestartConnectionCommand
-import com.kelsos.mbrc.commands.SocketDataAvailableCommand
-import com.kelsos.mbrc.commands.StartDiscoveryCommand
-import com.kelsos.mbrc.commands.TerminateConnectionCommand
-import com.kelsos.mbrc.commands.TerminateServiceCommand
-import com.kelsos.mbrc.commands.VersionCheckCommand
-import com.kelsos.mbrc.commands.visual.HandshakeCompletionActions
-import com.kelsos.mbrc.commands.visual.NotifyNotAllowedCommand
-import com.kelsos.mbrc.common.state.ConnectionModel
-import com.kelsos.mbrc.common.state.MainDataModel
+import androidx.room.Room
+import com.kelsos.mbrc.common.state.AppState
+import com.kelsos.mbrc.common.state.AppStateFlow
+import com.kelsos.mbrc.common.state.AppStateManager
+import com.kelsos.mbrc.common.state.AppStatePublisher
+import com.kelsos.mbrc.common.state.ConnectionState
+import com.kelsos.mbrc.common.state.ConnectionStateFlow
+import com.kelsos.mbrc.common.state.ConnectionStatePublisher
+import com.kelsos.mbrc.common.state.PlayingTrackCache
+import com.kelsos.mbrc.common.state.PlayingTrackCacheImpl
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
-import com.kelsos.mbrc.events.bus.RxBus
-import com.kelsos.mbrc.events.bus.RxBusImpl
-import com.kelsos.mbrc.features.library.AlbumEntryAdapter
-import com.kelsos.mbrc.features.library.AlbumRepository
-import com.kelsos.mbrc.features.library.AlbumRepositoryImpl
-import com.kelsos.mbrc.features.library.AlbumTracksActivity
-import com.kelsos.mbrc.features.library.AlbumTracksPresenter
-import com.kelsos.mbrc.features.library.AlbumTracksPresenterImpl
-import com.kelsos.mbrc.features.library.ArtistAlbumsActivity
-import com.kelsos.mbrc.features.library.ArtistAlbumsPresenter
-import com.kelsos.mbrc.features.library.ArtistAlbumsPresenterImpl
-import com.kelsos.mbrc.features.library.ArtistEntryAdapter
-import com.kelsos.mbrc.features.library.ArtistRepository
-import com.kelsos.mbrc.features.library.ArtistRepositoryImpl
-import com.kelsos.mbrc.features.library.BrowseAlbumFragment
-import com.kelsos.mbrc.features.library.BrowseAlbumPresenter
-import com.kelsos.mbrc.features.library.BrowseAlbumPresenterImpl
-import com.kelsos.mbrc.features.library.BrowseArtistFragment
-import com.kelsos.mbrc.features.library.BrowseArtistPresenter
-import com.kelsos.mbrc.features.library.BrowseArtistPresenterImpl
-import com.kelsos.mbrc.features.library.BrowseGenreFragment
-import com.kelsos.mbrc.features.library.BrowseGenrePresenter
-import com.kelsos.mbrc.features.library.BrowseGenrePresenterImpl
-import com.kelsos.mbrc.features.library.BrowseTrackFragment
-import com.kelsos.mbrc.features.library.BrowseTrackPresenter
-import com.kelsos.mbrc.features.library.BrowseTrackPresenterImpl
+import com.kelsos.mbrc.data.Database
+import com.kelsos.mbrc.data.DeserializationAdapter
+import com.kelsos.mbrc.data.DeserializationAdapterImpl
+import com.kelsos.mbrc.data.SerializationAdapter
+import com.kelsos.mbrc.data.SerializationAdapterImpl
+import com.kelsos.mbrc.features.help.FeedbackFragment
+import com.kelsos.mbrc.features.help.FeedbackViewModel
 import com.kelsos.mbrc.features.library.CoverCache
-import com.kelsos.mbrc.features.library.GenreArtistsActivity
-import com.kelsos.mbrc.features.library.GenreArtistsPresenter
-import com.kelsos.mbrc.features.library.GenreArtistsPresenterImpl
-import com.kelsos.mbrc.features.library.GenreEntryAdapter
-import com.kelsos.mbrc.features.library.GenreRepository
-import com.kelsos.mbrc.features.library.GenreRepositoryImpl
 import com.kelsos.mbrc.features.library.LibraryActivity
-import com.kelsos.mbrc.features.library.LibraryPresenter
-import com.kelsos.mbrc.features.library.LibraryPresenterImpl
 import com.kelsos.mbrc.features.library.LibrarySearchModel
 import com.kelsos.mbrc.features.library.LibrarySyncUseCase
 import com.kelsos.mbrc.features.library.LibrarySyncUseCaseImpl
-import com.kelsos.mbrc.features.library.LocalAlbumDataSource
-import com.kelsos.mbrc.features.library.LocalArtistDataSource
-import com.kelsos.mbrc.features.library.LocalArtistDataSourceImpl
-import com.kelsos.mbrc.features.library.LocalGenreDataSource
-import com.kelsos.mbrc.features.library.LocalTrackDataSource
-import com.kelsos.mbrc.features.library.RemoteAlbumDataSource
-import com.kelsos.mbrc.features.library.RemoteArtistDataSource
-import com.kelsos.mbrc.features.library.RemoteGenreDataSource
-import com.kelsos.mbrc.features.library.RemoteTrackDataSource
-import com.kelsos.mbrc.features.library.TrackEntryAdapter
-import com.kelsos.mbrc.features.library.TrackRepository
-import com.kelsos.mbrc.features.library.TrackRepositoryImpl
+import com.kelsos.mbrc.features.library.LibraryViewModel
+import com.kelsos.mbrc.features.library.albums.AlbumEntryAdapter
+import com.kelsos.mbrc.features.library.albums.AlbumRepository
+import com.kelsos.mbrc.features.library.albums.AlbumRepositoryImpl
+import com.kelsos.mbrc.features.library.albums.ArtistAlbumsActivity
+import com.kelsos.mbrc.features.library.albums.ArtistAlbumsViewModel
+import com.kelsos.mbrc.features.library.albums.BrowseAlbumFragment
+import com.kelsos.mbrc.features.library.albums.BrowseAlbumViewModel
+import com.kelsos.mbrc.features.library.artists.ArtistEntryAdapter
+import com.kelsos.mbrc.features.library.artists.ArtistRepository
+import com.kelsos.mbrc.features.library.artists.ArtistRepositoryImpl
+import com.kelsos.mbrc.features.library.artists.BrowseArtistFragment
+import com.kelsos.mbrc.features.library.artists.BrowseArtistViewModel
+import com.kelsos.mbrc.features.library.artists.GenreArtistsActivity
+import com.kelsos.mbrc.features.library.artists.GenreArtistsViewModel
+import com.kelsos.mbrc.features.library.genres.BrowseGenreFragment
+import com.kelsos.mbrc.features.library.genres.BrowseGenreViewModel
+import com.kelsos.mbrc.features.library.genres.GenreEntryAdapter
+import com.kelsos.mbrc.features.library.genres.GenreRepository
+import com.kelsos.mbrc.features.library.genres.GenreRepositoryImpl
+import com.kelsos.mbrc.features.library.tracks.AlbumTracksActivity
+import com.kelsos.mbrc.features.library.tracks.AlbumTracksViewModel
+import com.kelsos.mbrc.features.library.tracks.BrowseTrackFragment
+import com.kelsos.mbrc.features.library.tracks.BrowseTrackViewModel
+import com.kelsos.mbrc.features.library.tracks.TrackEntryAdapter
+import com.kelsos.mbrc.features.library.tracks.TrackRepository
+import com.kelsos.mbrc.features.library.tracks.TrackRepositoryImpl
 import com.kelsos.mbrc.features.lyrics.LyricsActivity
-import com.kelsos.mbrc.features.lyrics.LyricsModel
-import com.kelsos.mbrc.features.lyrics.LyricsPresenter
-import com.kelsos.mbrc.features.lyrics.LyricsPresenterImpl
+import com.kelsos.mbrc.features.lyrics.LyricsViewModel
 import com.kelsos.mbrc.features.minicontrol.MiniControlFragment
-import com.kelsos.mbrc.features.minicontrol.MiniControlPresenter
-import com.kelsos.mbrc.features.minicontrol.MiniControlPresenterImpl
-import com.kelsos.mbrc.features.nowplaying.LocalNowPlayingDataSource
+import com.kelsos.mbrc.features.minicontrol.MiniControlViewModel
+import com.kelsos.mbrc.features.nowplaying.MoveManager
+import com.kelsos.mbrc.features.nowplaying.MoveManagerImpl
 import com.kelsos.mbrc.features.nowplaying.NowPlayingActivity
 import com.kelsos.mbrc.features.nowplaying.NowPlayingAdapter
-import com.kelsos.mbrc.features.nowplaying.NowPlayingPresenter
-import com.kelsos.mbrc.features.nowplaying.NowPlayingPresenterImpl
 import com.kelsos.mbrc.features.nowplaying.NowPlayingRepository
 import com.kelsos.mbrc.features.nowplaying.NowPlayingRepositoryImpl
-import com.kelsos.mbrc.features.nowplaying.RemoteNowPlayingDataSource
+import com.kelsos.mbrc.features.nowplaying.NowPlayingViewModel
 import com.kelsos.mbrc.features.output.OutputApi
 import com.kelsos.mbrc.features.output.OutputApiImpl
+import com.kelsos.mbrc.features.output.OutputSelectionDialog
 import com.kelsos.mbrc.features.output.OutputSelectionViewModel
-import com.kelsos.mbrc.features.player.ModelCache
-import com.kelsos.mbrc.features.player.ModelCacheImpl
-import com.kelsos.mbrc.features.player.ModelInitializer
 import com.kelsos.mbrc.features.player.PlayerActivity
-import com.kelsos.mbrc.features.player.PlayerViewPresenter
-import com.kelsos.mbrc.features.player.PlayerViewPresenterImpl
-import com.kelsos.mbrc.features.player.ProgressSeekerHelper
-import com.kelsos.mbrc.features.playlists.LocalPlaylistDataSource
+import com.kelsos.mbrc.features.player.PlayerViewModel
+import com.kelsos.mbrc.features.player.RatingDialogFragment
+import com.kelsos.mbrc.features.player.RatingDialogViewModel
 import com.kelsos.mbrc.features.playlists.PlaylistActivity
 import com.kelsos.mbrc.features.playlists.PlaylistAdapter
-import com.kelsos.mbrc.features.playlists.PlaylistPresenter
-import com.kelsos.mbrc.features.playlists.PlaylistPresenterImpl
 import com.kelsos.mbrc.features.playlists.PlaylistRepository
 import com.kelsos.mbrc.features.playlists.PlaylistRepositoryImpl
-import com.kelsos.mbrc.features.playlists.RemotePlaylistDataSource
-import com.kelsos.mbrc.features.queue.PopupActionHandler
+import com.kelsos.mbrc.features.playlists.PlaylistViewModel
 import com.kelsos.mbrc.features.queue.QueueHandler
-import com.kelsos.mbrc.features.radio.LocalRadioDataSource
 import com.kelsos.mbrc.features.radio.RadioActivity
 import com.kelsos.mbrc.features.radio.RadioAdapter
-import com.kelsos.mbrc.features.radio.RadioPresenter
-import com.kelsos.mbrc.features.radio.RadioPresenterImpl
 import com.kelsos.mbrc.features.radio.RadioRepository
 import com.kelsos.mbrc.features.radio.RadioRepositoryImpl
-import com.kelsos.mbrc.features.radio.RemoteRadioDataSource
+import com.kelsos.mbrc.features.radio.RadioViewModel
 import com.kelsos.mbrc.features.settings.BasicSettingsHelper
+import com.kelsos.mbrc.features.settings.ClientInformationStore
+import com.kelsos.mbrc.features.settings.ClientInformationStoreImpl
 import com.kelsos.mbrc.features.settings.ConnectionManagerActivity
-import com.kelsos.mbrc.features.settings.ConnectionManagerPresenter
-import com.kelsos.mbrc.features.settings.ConnectionManagerPresenterImpl
+import com.kelsos.mbrc.features.settings.ConnectionManagerViewModel
 import com.kelsos.mbrc.features.settings.ConnectionRepository
 import com.kelsos.mbrc.features.settings.ConnectionRepositoryImpl
 import com.kelsos.mbrc.features.settings.SettingsManager
 import com.kelsos.mbrc.features.settings.SettingsManagerImpl
 import com.kelsos.mbrc.features.widgets.WidgetUpdater
 import com.kelsos.mbrc.features.widgets.WidgetUpdaterImpl
+import com.kelsos.mbrc.logging.LogHelper
+import com.kelsos.mbrc.logging.LogHelperImpl
 import com.kelsos.mbrc.networking.ApiBase
+import com.kelsos.mbrc.networking.ClientConnectionUseCase
+import com.kelsos.mbrc.networking.ClientConnectionUseCaseImpl
 import com.kelsos.mbrc.networking.RequestManager
 import com.kelsos.mbrc.networking.RequestManagerImpl
 import com.kelsos.mbrc.networking.SocketActivityChecker
-import com.kelsos.mbrc.networking.client.SocketService
+import com.kelsos.mbrc.networking.client.ClientConnectionManager
+import com.kelsos.mbrc.networking.client.ClientConnectionManagerImpl
+import com.kelsos.mbrc.networking.client.MessageHandler
+import com.kelsos.mbrc.networking.client.MessageHandlerImpl
+import com.kelsos.mbrc.networking.client.MessageQueue
+import com.kelsos.mbrc.networking.client.MessageQueueImpl
+import com.kelsos.mbrc.networking.client.PluginUpdateCheckUseCase
+import com.kelsos.mbrc.networking.client.PluginUpdateCheckUseCaseImpl
+import com.kelsos.mbrc.networking.client.UiMessageQueue
+import com.kelsos.mbrc.networking.client.UiMessageQueueImpl
 import com.kelsos.mbrc.networking.discovery.RemoteServiceDiscovery
-import com.kelsos.mbrc.networking.protocol.ProtocolHandler
+import com.kelsos.mbrc.networking.discovery.RemoteServiceDiscoveryImpl
+import com.kelsos.mbrc.networking.protocol.CommandFactory
+import com.kelsos.mbrc.networking.protocol.CommandFactoryImpl
 import com.kelsos.mbrc.networking.protocol.ProtocolPingHandle
-import com.kelsos.mbrc.networking.protocol.RemoteController
+import com.kelsos.mbrc.networking.protocol.ProtocolVersionUpdate
 import com.kelsos.mbrc.networking.protocol.SimpleLogCommand
 import com.kelsos.mbrc.networking.protocol.UpdateCover
 import com.kelsos.mbrc.networking.protocol.UpdateLastFm
 import com.kelsos.mbrc.networking.protocol.UpdateLfmRating
 import com.kelsos.mbrc.networking.protocol.UpdateLyrics
 import com.kelsos.mbrc.networking.protocol.UpdateMute
+import com.kelsos.mbrc.networking.protocol.UpdateNowPlayingList
 import com.kelsos.mbrc.networking.protocol.UpdateNowPlayingTrack
 import com.kelsos.mbrc.networking.protocol.UpdateNowPlayingTrackMoved
 import com.kelsos.mbrc.networking.protocol.UpdateNowPlayingTrackRemoval
@@ -153,32 +134,48 @@ import com.kelsos.mbrc.networking.protocol.UpdateRating
 import com.kelsos.mbrc.networking.protocol.UpdateRepeat
 import com.kelsos.mbrc.networking.protocol.UpdateShuffle
 import com.kelsos.mbrc.networking.protocol.UpdateVolume
+import com.kelsos.mbrc.networking.protocol.UserActionUseCase
+import com.kelsos.mbrc.networking.protocol.UserActionUseCaseImpl
+import com.kelsos.mbrc.networking.protocol.VolumeModifyUseCase
+import com.kelsos.mbrc.networking.protocol.VolumeModifyUseCaseImpl
 import com.kelsos.mbrc.platform.RemoteBroadcastReceiver
 import com.kelsos.mbrc.platform.ServiceChecker
 import com.kelsos.mbrc.platform.ServiceCheckerImpl
-import com.kelsos.mbrc.platform.mediasession.NotificationModel
-import com.kelsos.mbrc.platform.mediasession.RemoteSessionManager
-import com.kelsos.mbrc.platform.mediasession.RemoteVolumeProvider
-import com.kelsos.mbrc.platform.mediasession.SessionNotificationManager
+import com.kelsos.mbrc.platform.mediasession.AppNotificationManager
+import com.kelsos.mbrc.platform.mediasession.AppNotificationManagerImpl
+import com.kelsos.mbrc.platform.mediasession.MediaSessionManager
+import com.kelsos.mbrc.platform.mediasession.NotificationActionManager
+import com.kelsos.mbrc.platform.mediasession.NotificationBuilder
+import com.kelsos.mbrc.platform.mediasession.NotificationChannelManager
+import com.squareup.moshi.Moshi
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import rx.Scheduler
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import java.util.concurrent.Executors
+
+private fun createDispatcher(
+  name: String,
+  threads: Int = 1,
+): ExecutorCoroutineDispatcher {
+  var threadId = 1
+
+  return Executors
+    .newFixedThreadPool(threads) { runnable ->
+      val threadName = if (threads == 1) "${name}Dispatcher" else "${name}Dispatcher-worker-${threadId++}"
+      Thread(runnable, threadName)
+    }.asCoroutineDispatcher()
+}
 
 val appModule =
   module {
-    singleOf(::RxBusImpl) { bind<RxBus>() }
-    single { ObjectMapper().registerKotlinModule() }
-
+    single { Moshi.Builder().build() }
     singleOf(::LibrarySyncUseCaseImpl) { bind<LibrarySyncUseCase>() }
     singleOf(::ApiBase)
     singleOf(::RequestManagerImpl) { bind<RequestManager>() }
@@ -186,7 +183,6 @@ val appModule =
 
     singleOf(::GenreRepositoryImpl) { bind<GenreRepository>() }
     singleOf(::ArtistRepositoryImpl) { bind<ArtistRepository>() }
-    singleOf(::LocalArtistDataSourceImpl) { bind<LocalArtistDataSource>() }
     singleOf(::AlbumRepositoryImpl) { bind<AlbumRepository>() }
     singleOf(::TrackRepositoryImpl) { bind<TrackRepository>() }
 
@@ -194,21 +190,6 @@ val appModule =
     singleOf(::PlaylistRepositoryImpl) { bind<PlaylistRepository>() }
     singleOf(::RadioRepositoryImpl) { bind<RadioRepository>() }
     singleOf(::ConnectionRepositoryImpl) { bind<ConnectionRepository>() }
-
-    singleOf(::LocalGenreDataSource)
-    singleOf(::RemoteGenreDataSource)
-    singleOf(::LocalArtistDataSourceImpl) { bind<LocalArtistDataSource>() }
-    singleOf(::RemoteArtistDataSource)
-    singleOf(::LocalAlbumDataSource)
-    singleOf(::RemoteAlbumDataSource)
-    singleOf(::LocalTrackDataSource)
-    singleOf(::RemoteTrackDataSource)
-    singleOf(::LocalPlaylistDataSource)
-    singleOf(::RemotePlaylistDataSource)
-    singleOf(::LocalNowPlayingDataSource)
-    singleOf(::RemoteNowPlayingDataSource)
-    singleOf(::LocalRadioDataSource)
-    singleOf(::RemoteRadioDataSource)
 
     singleOf(::GenreEntryAdapter)
     singleOf(::ArtistEntryAdapter)
@@ -222,26 +203,38 @@ val appModule =
     singleOf(::RemoteBroadcastReceiver)
     singleOf(::SettingsManagerImpl) { bind<SettingsManager>() }
     singleOf(::ServiceCheckerImpl) { bind<ServiceChecker>() }
-    singleOf(::ModelCacheImpl) { bind<ModelCache>() }
-    singleOf(::MainDataModel)
-    singleOf(::ModelInitializer)
-    singleOf(::ConnectionModel)
-    singleOf(::LyricsModel)
-    singleOf(::RemoteController)
-    singleOf(::SocketService)
+    singleOf(::PlayingTrackCacheImpl) { bind<PlayingTrackCache>() }
     singleOf(::SocketActivityChecker)
     singleOf(::CoverCache)
-    singleOf(::ProtocolHandler)
-    singleOf(::NotificationModel)
+    singleOf(::AppNotificationManagerImpl) { bind<AppNotificationManager>() }
+    singleOf(::MediaSessionManager)
+    singleOf(::NotificationActionManager)
+    singleOf(::NotificationBuilder)
+    singleOf(::NotificationChannelManager)
+    singleOf(::CommandFactoryImpl) { bind<CommandFactory>() }
+    singleOf(::UserActionUseCaseImpl) { bind<UserActionUseCase>() }
+    singleOf(::VolumeModifyUseCaseImpl) { bind<VolumeModifyUseCase>() }
+    singleOf(::AppStateManager)
+    singleOf(::AppState) {
+      bind<AppStateFlow>()
+      bind<AppStatePublisher>()
+    }
+    singleOf(::ClientConnectionManagerImpl) { bind<ClientConnectionManager>() }
+    singleOf(::ClientInformationStoreImpl) { bind<ClientInformationStore>() }
+    singleOf(::ClientConnectionUseCaseImpl) { bind<ClientConnectionUseCase>() }
+    singleOf(::MessageHandlerImpl) { bind<MessageHandler>() }
+    singleOf(::MessageQueueImpl) { bind<MessageQueue>() }
+    singleOf(::UiMessageQueueImpl) { bind<UiMessageQueue>() }
+    singleOf(::ConnectionState) {
+      bind<ConnectionStateFlow>()
+      bind<ConnectionStatePublisher>()
+    }
+    singleOf(::SerializationAdapterImpl) { bind<SerializationAdapter>() }
+    singleOf(::DeserializationAdapterImpl) { bind<DeserializationAdapter>() }
+    singleOf(::PluginUpdateCheckUseCaseImpl) { bind<PluginUpdateCheckUseCase>() }
 
     factoryOf(::BasicSettingsHelper)
 
-    factoryOf(::ReduceVolumeOnRingCommand)
-    factoryOf(::HandshakeCompletionActions)
-    factoryOf(::NotifyNotAllowedCommand)
-    factoryOf(::ProtocolRequest)
-    factoryOf(::VersionCheckCommand)
-    factoryOf(::ProcessUserAction)
     factoryOf(::UpdateNowPlayingTrack)
     factoryOf(::UpdateCover)
     factoryOf(::UpdateRating)
@@ -256,131 +249,125 @@ val appModule =
     factoryOf(::UpdateLyrics)
     factoryOf(::UpdateNowPlayingTrackMoved)
     factoryOf(::UpdateNowPlayingTrackRemoval)
+    factoryOf(::UpdateNowPlayingList)
     factoryOf(::UpdatePlaybackPositionCommand)
     factoryOf(::UpdatePluginVersionCommand)
     factoryOf(::ProtocolPingHandle)
     factoryOf(::SimpleLogCommand)
-    factoryOf(::RestartConnectionCommand)
-    factoryOf(::CancelNotificationCommand)
-    factoryOf(::SessionNotificationManager)
-    factoryOf(::RemoteSessionManager)
-    factoryOf(::RemoteVolumeProvider)
-    factoryOf(::InitiateConnectionCommand)
-    factoryOf(::TerminateConnectionCommand)
-    factoryOf(::StartDiscoveryCommand)
-    factoryOf(::RemoteServiceDiscovery)
-    factoryOf(::KeyVolumeUpCommand)
-    factoryOf(::KeyVolumeDownCommand)
-    factoryOf(::SocketDataAvailableCommand)
-    factoryOf(::ConnectionStatusChangedCommand)
-    factoryOf(::HandleHandshake)
-    factoryOf(::TerminateServiceCommand)
+    factoryOf(::ProtocolVersionUpdate)
 
+    singleOf(::RemoteServiceDiscoveryImpl) { bind<RemoteServiceDiscovery>() }
     singleOf(::WidgetUpdaterImpl) { bind<WidgetUpdater>() }
 
-    single<Scheduler>(named("main")) { AndroidSchedulers.mainThread() }
-    single<Scheduler>(named("io")) { Schedulers.io() }
+    val network = createDispatcher(name = "Network", threads = 2)
+    val database = createDispatcher(name = "Database")
 
-    single {
-      val database =
-        Executors
-          .newSingleThreadExecutor { runnable ->
-            Thread(runnable, "DatabaseDispatcher")
-          }.asCoroutineDispatcher()
-
-      var threadId = 1
-
-      val network =
-        Executors
-          .newFixedThreadPool(2) { runnable ->
-            Thread(runnable, "NetworkDispatcher-worker-${threadId++}")
-          }.asCoroutineDispatcher()
-
-      AppCoroutineDispatchers(
-        main = Dispatchers.Main,
-        io = Dispatchers.IO,
-        database = database,
-        network = network,
-      )
+    single<AppCoroutineDispatchers> {
+      @Suppress("InjectDispatcher")
+      object : AppCoroutineDispatchers {
+        override val main: CoroutineDispatcher = Dispatchers.Main
+        override val io: CoroutineDispatcher = Dispatchers.IO
+        override val database: CoroutineDispatcher = database
+        override val network: CoroutineDispatcher = network
+      }
     }
 
-    singleOf(::ArtistAlbumsPresenterImpl) { bind<ArtistAlbumsPresenter>() }
+    single {
+      Room
+        .databaseBuilder(get(), Database::class.java, Database.NAME)
+        .build()
+    }
+    single { get<Database>().genreDao() }
+    single { get<Database>().artistDao() }
+    single { get<Database>().albumDao() }
+    single { get<Database>().trackDao() }
+    single { get<Database>().nowPlayingDao() }
+    single { get<Database>().playlistDao() }
+    single { get<Database>().radioStationDao() }
+    single { get<Database>().connectionDao() }
 
     scope<MiniControlFragment> {
-      scopedOf(::MiniControlPresenterImpl) { bind<MiniControlPresenter>() }
+      viewModelOf(::MiniControlViewModel)
     }
 
     scope<PlayerActivity> {
-      scopedOf(::PlayerViewPresenterImpl) { bind<PlayerViewPresenter>() }
-      scoped<ProgressSeekerHelper> { ProgressSeekerHelper(get(named("main"))) }
+      viewModelOf(::PlayerViewModel)
     }
 
     scope<LyricsActivity> {
-      scopedOf(::LyricsPresenterImpl) { bind<LyricsPresenter>() }
+      viewModelOf(::LyricsViewModel)
     }
 
     scope<LibraryActivity> {
-      scopedOf(::LibraryPresenterImpl) { bind<LibraryPresenter>() }
+      viewModelOf(::LibraryViewModel)
       scopedOf(::LibrarySearchModel)
-      scopedOf(::PopupActionHandler)
     }
 
     scope<BrowseGenreFragment> {
-      scopedOf(::BrowseGenrePresenterImpl) { bind<BrowseGenrePresenter>() }
+      viewModelOf(::BrowseGenreViewModel)
       scopedOf(::GenreEntryAdapter)
     }
 
     scope<BrowseArtistFragment> {
-      scopedOf(::BrowseArtistPresenterImpl) { bind<BrowseArtistPresenter>() }
+      viewModelOf(::BrowseArtistViewModel)
       scopedOf(::ArtistEntryAdapter)
     }
 
     scope<BrowseAlbumFragment> {
-      scopedOf(::BrowseAlbumPresenterImpl) { bind<BrowseAlbumPresenter>() }
+      viewModelOf(::BrowseAlbumViewModel)
       scopedOf(::AlbumEntryAdapter)
     }
 
     scope<BrowseTrackFragment> {
-      scopedOf(::BrowseTrackPresenterImpl) { bind<BrowseTrackPresenter>() }
+      viewModelOf(::BrowseTrackViewModel)
       scopedOf(::TrackEntryAdapter)
     }
 
     scope<GenreArtistsActivity> {
-      scopedOf(::GenreArtistsPresenterImpl) { bind<GenreArtistsPresenter>() }
+      viewModelOf(::GenreArtistsViewModel)
       scopedOf(::ArtistEntryAdapter)
-      scopedOf(::PopupActionHandler)
     }
 
     scope<ArtistAlbumsActivity> {
-      scopedOf(::ArtistAlbumsPresenterImpl) { bind<ArtistAlbumsPresenter>() }
+      viewModelOf(::ArtistAlbumsViewModel)
       scopedOf(::AlbumEntryAdapter)
-      scopedOf(::PopupActionHandler)
     }
 
     scope<AlbumTracksActivity> {
-      scopedOf(::AlbumTracksPresenterImpl) { bind<AlbumTracksPresenter>() }
+      viewModelOf(::AlbumTracksViewModel)
       scopedOf(::TrackEntryAdapter)
-      scopedOf(::PopupActionHandler)
     }
 
     scope<NowPlayingActivity> {
-      scopedOf(::NowPlayingPresenterImpl) { bind<NowPlayingPresenter>() }
+      viewModelOf(::NowPlayingViewModel)
       scopedOf(::NowPlayingAdapter)
+      scopedOf(::MoveManagerImpl) { bind<MoveManager>() }
     }
 
     scope<PlaylistActivity> {
-      scopedOf(::PlaylistPresenterImpl) { bind<PlaylistPresenter>() }
+      viewModelOf(::PlaylistViewModel)
       scopedOf(::PlaylistAdapter)
     }
 
     scope<ConnectionManagerActivity> {
-      scopedOf(::ConnectionManagerPresenterImpl) { bind<ConnectionManagerPresenter>() }
+      viewModelOf(::ConnectionManagerViewModel)
     }
 
     scope<RadioActivity> {
-      scopedOf(::RadioPresenterImpl) { bind<RadioPresenter>() }
+      viewModelOf(::RadioViewModel)
       scopedOf(::RadioAdapter)
     }
 
-    viewModelOf(::OutputSelectionViewModel)
+    scope<RatingDialogFragment> {
+      viewModelOf(::RatingDialogViewModel)
+    }
+
+    scope<OutputSelectionDialog> {
+      viewModelOf(::OutputSelectionViewModel)
+    }
+
+    scope<FeedbackFragment> {
+      viewModelOf(::FeedbackViewModel)
+      scopedOf(::LogHelperImpl) { bind<LogHelper>() }
+    }
   }

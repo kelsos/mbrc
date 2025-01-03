@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/empty_view"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:visibility="visible">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/empty_view"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:gravity="center"
+  android:visibility="visible">
 
   <ProgressBar
-      android:id="@+id/empty_view_progress_bar"
-      style="@style/Widget.AppCompat.ProgressBar"
-      android:layout_width="60dp"
-      android:layout_height="60dp"
-      android:layout_marginBottom="16dp"
-      android:layout_marginTop="16dp"
-      android:visibility="visible"
-      tools:visibility="visible"/>
+    android:id="@+id/empty_view_progress_bar"
+    style="@style/Widget.AppCompat.ProgressBar"
+    android:layout_width="60dp"
+    android:layout_height="60dp"
+    android:layout_marginTop="16dp"
+    android:layout_marginBottom="16dp"
+    android:visibility="visible"
+    tools:visibility="visible" />
 
   <TextView
-      android:id="@+id/list_empty_title"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_centerHorizontal="true"
-      android:fontFamily="sans-serif-medium"
-      android:maxLines="1"
-      android:text="@string/now_playing_list_empty"
-      android:textSize="22sp"
-      android:visibility="gone"
-      tools:ignore="MissingPrefix"/>
+    android:id="@+id/list_empty_title"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:fontFamily="sans-serif-medium"
+    android:maxLines="1"
+    android:text="@string/common_empty_no_tracks"
+    android:textSize="22sp"
+    android:visibility="gone"
+    tools:ignore="MissingPrefix" />
 
   <ImageView
-      android:id="@+id/list_empty_icon"
-      style="@style/empty_view_image"
-      android:layout_below="@+id/list_empty_title"
-      android:src="@drawable/ic_music_note_black_80dp"
-      android:visibility="gone"/>
+    android:id="@+id/list_empty_icon"
+    style="@style/empty_view_image"
+    android:layout_below="@+id/list_empty_title"
+    android:contentDescription="@string/content_description__empty_warning"
+    android:src="@drawable/ic_music_note_black_80dp"
+    android:visibility="gone" />
 
   <TextView
-      android:id="@+id/list_empty_subtitle"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_below="@+id/list_empty_icon"
-      android:layout_centerHorizontal="true"
-      android:fontFamily="sans-serif-light"
-      android:text="@string/swipe_to_refresh"
-      android:textSize="14sp"
-      android:visibility="gone"
-      tools:ignore="MissingPrefix"/>
+    android:id="@+id/list_empty_subtitle"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/list_empty_icon"
+    android:layout_centerHorizontal="true"
+    android:fontFamily="sans-serif-light"
+    android:text="@string/swipe_to_refresh"
+    android:textSize="14sp"
+    android:visibility="gone"
+    tools:ignore="MissingPrefix" />
 
 </RelativeLayout>

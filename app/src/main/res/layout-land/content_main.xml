@@ -57,13 +57,13 @@
 
     <TextView
       android:id="@+id/main_label_album"
-      android:fontFamily="sans-serif-medium"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_marginTop="8dp"
       android:ellipsize="end"
       android:focusable="true"
       android:focusableInTouchMode="true"
+      android:fontFamily="sans-serif-medium"
       android:gravity="center_horizontal"
       android:lines="1"
       android:maxLines="1"
@@ -119,10 +119,10 @@
 
   <TextView
     android:id="@+id/main_track_progress_current"
-    android:fontFamily="sans-serif-medium"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginStart="16dp"
+    android:fontFamily="sans-serif-medium"
     android:paddingLeft="@dimen/small_margin"
     android:paddingEnd="@dimen/small_margin"
     android:paddingRight="@dimen/small_margin"
@@ -144,10 +144,10 @@
 
   <TextView
     android:id="@+id/main_track_duration_total"
-    android:fontFamily="sans-serif-medium"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginEnd="8dp"
+    android:fontFamily="sans-serif-medium"
     android:paddingLeft="@dimen/small_margin"
     android:paddingEnd="@dimen/small_margin"
     android:paddingRight="@dimen/small_margin"
@@ -169,19 +169,19 @@
 
   <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_mute_button"
-    android:layout_width="23dp"
-    android:layout_height="23dp"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
     android:layout_centerVertical="true"
     android:layout_marginBottom="8dp"
     android:background="?attr/selectableItemBackgroundBorderless"
     android:contentDescription="@string/main_button_mute_description"
     android:scaleType="centerInside"
     android:src="@drawable/ic_volume_off_black_24dp"
-    app:tint="@color/button_dark"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="@+id/main_repeat_button"
     app:layout_constraintTop_toTopOf="@+id/main_volume_seeker"
-    app:layout_constraintVertical_bias="0.0" />
+    app:layout_constraintVertical_bias="0.0"
+    app:tint="@color/button_dark" />
 
   <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_repeat_button"
@@ -192,14 +192,14 @@
     android:contentDescription="@string/main_button_repeat_description"
     android:scaleType="centerInside"
     android:src="@drawable/ic_repeat_black_24dp"
-    app:tint="@color/button_dark"
     app:layout_constraintBottom_toBottomOf="@+id/main_button_play_pause"
     app:layout_constraintHorizontal_bias="0.0"
     app:layout_constraintHorizontal_weight="1"
     app:layout_constraintLeft_toLeftOf="@+id/main_track_progress_current"
     app:layout_constraintRight_toLeftOf="@+id/main_button_previous"
     app:layout_constraintTop_toTopOf="@+id/main_button_play_pause"
-    app:layout_constraintVertical_bias="0.0" />
+    app:layout_constraintVertical_bias="0.0"
+    app:tint="@color/button_dark" />
 
 
   <com.kelsos.mbrc.common.ui.SquareImageButton
@@ -214,12 +214,12 @@
     android:contentDescription="@string/main_button_previous_description"
     android:scaleType="centerInside"
     android:src="@drawable/ic_skip_previous_black_24dp"
-    app:tint="@color/button_dark"
     app:layout_constraintBottom_toBottomOf="@+id/main_button_play_pause"
     app:layout_constraintHorizontal_weight="1"
     app:layout_constraintLeft_toRightOf="@+id/main_repeat_button"
     app:layout_constraintRight_toLeftOf="@+id/main_button_play_pause"
-    app:layout_constraintTop_toTopOf="@+id/main_button_play_pause" />
+    app:layout_constraintTop_toTopOf="@+id/main_button_play_pause"
+    app:tint="@color/button_dark" />
 
   <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_button_play_pause"
@@ -232,12 +232,12 @@
     android:contentDescription="@string/main_button_play_pause_description"
     android:scaleType="fitCenter"
     android:src="@drawable/ic_play_circle_filled_black_24dp"
-    app:tint="@color/accent"
     app:layout_constraintBottom_toTopOf="@+id/main_volume_seeker"
     app:layout_constraintHorizontal_weight="1"
     app:layout_constraintLeft_toRightOf="@+id/main_button_previous"
     app:layout_constraintRight_toLeftOf="@+id/main_button_next"
-    app:layout_constraintTop_toBottomOf="@+id/main_track_progress_seeker" />
+    app:layout_constraintTop_toBottomOf="@+id/main_track_progress_seeker"
+    app:tint="@color/accent" />
 
   <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_button_next"
@@ -248,12 +248,12 @@
     android:contentDescription="@string/main_button_next_description"
     android:scaleType="centerInside"
     android:src="@drawable/ic_skip_next_black_24dp"
-    app:tint="@color/button_dark"
     app:layout_constraintBottom_toBottomOf="@+id/main_button_play_pause"
     app:layout_constraintHorizontal_weight="1"
     app:layout_constraintLeft_toRightOf="@+id/main_button_play_pause"
     app:layout_constraintRight_toLeftOf="@+id/main_shuffle_button"
-    app:layout_constraintTop_toTopOf="@+id/main_button_play_pause" />
+    app:layout_constraintTop_toTopOf="@+id/main_button_play_pause"
+    app:tint="@color/button_dark" />
 
   <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_shuffle_button"
@@ -264,14 +264,14 @@
     android:contentDescription="@string/main_button_shuffle_description"
     android:scaleType="centerInside"
     android:src="@drawable/ic_shuffle_black_24dp"
-    app:tint="@color/button_dark"
     app:layout_constraintBottom_toBottomOf="@+id/main_button_play_pause"
     app:layout_constraintHorizontal_bias="1.0"
     app:layout_constraintHorizontal_weight="1"
     app:layout_constraintLeft_toRightOf="@+id/main_button_next"
     app:layout_constraintRight_toRightOf="@+id/main_track_duration_total"
     app:layout_constraintTop_toTopOf="@+id/main_button_play_pause"
-    app:layout_constraintVertical_bias="1.0" />
+    app:layout_constraintVertical_bias="1.0"
+    app:tint="@color/button_dark" />
 
 
   <com.kelsos.mbrc.common.ui.SquareImageView

@@ -3,6 +3,7 @@ package com.kelsos.mbrc.common.ui
 import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageButton
+import androidx.core.content.withStyledAttributes
 import com.kelsos.mbrc.R
 
 class SquareImageButton : AppCompatImageButton {
@@ -11,9 +12,9 @@ class SquareImageButton : AppCompatImageButton {
   constructor(context: Context) : super(context)
 
   constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-    val attributes = context.obtainStyledAttributes(attrs, R.styleable.SquareImageButton)
-    useHeight = attrs.getAttributeBooleanValue(R.styleable.SquareImageButton_sib_use_height, false)
-    attributes.recycle()
+    context.withStyledAttributes(attrs, R.styleable.SquareImageButton) {
+      useHeight = attrs.getAttributeBooleanValue(R.styleable.SquareImageButton_sib_use_height, false)
+    }
   }
 
   override fun onMeasure(

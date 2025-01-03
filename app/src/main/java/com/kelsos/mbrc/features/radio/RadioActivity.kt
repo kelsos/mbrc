@@ -5,6 +5,12 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.snackbar.Snackbar
@@ -12,12 +18,15 @@ import com.kelsos.mbrc.BaseActivity
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.common.ui.MultiSwipeRefreshLayout
-import com.raizlabs.android.dbflow.list.FlowCursorList
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class RadioActivity :
-  BaseActivity(),
-  RadioView,
+  BaseActivity(R.layout.activity_radio),
   SwipeRefreshLayout.OnRefreshListener,
   RadioAdapter.OnRadioPressedListener {
   private lateinit var swipeLayout: MultiSwipeRefreshLayout
@@ -28,14 +37,13 @@ class RadioActivity :
   private lateinit var emptyViewSubTitle: TextView
   private lateinit var emptyViewProgress: ProgressBar
 
-  private val presenter: RadioPresenter by inject()
   private val adapter: RadioAdapter by inject()
+  private val viewModel: RadioViewModel by viewModel()
 
   override fun active(): Int = R.id.nav_radio
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_radio)
 
     swipeLayout = findViewById(R.id.swipe_layout)
     radioView = findViewById(R.id.radio_list)
@@ -45,7 +53,6 @@ class RadioActivity :
     emptyViewSubTitle = findViewById(R.id.list_empty_subtitle)
     emptyViewProgress = findViewById(R.id.empty_view_progress_bar)
 
-    super.setup()
     swipeLayout.setOnRefreshListener(this)
     swipeLayout.setSwipeableChildren(R.id.radio_list, R.id.empty_view)
     emptyViewTitle.setText(R.string.radio__no_radio_stations)
@@ -53,57 +60,73 @@ class RadioActivity :
     radioView.adapter = adapter
     radioView.emptyView = emptyView
     radioView.layoutManager = LinearLayoutManager(this)
+
+    lifecycleScope.launch {
+      adapter.loadStateFlow.map { it.refresh }.distinctUntilChanged().collectLatest { loadState ->
+        updateEmptyViewState(loadState is LoadState.Loading)
+        emptyView.isGone = loadState is LoadState.NotLoading || adapter.itemCount > 0
+      }
+    }
+
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.radios.collect {
+          adapter.submitData(it)
+        }
+      }
+    }
+
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.events.collect {
+          val resId =
+            when (it) {
+              RadioUiMessages.QueueFailed -> R.string.radio__play_failed
+              RadioUiMessages.QueueSuccess -> R.string.radio__play_successful
+              RadioUiMessages.RefreshFailed -> {
+                swipeLayout.isRefreshing = false
+                R.string.radio__loading_failed
+              }
+              RadioUiMessages.RefreshSuccess -> {
+                swipeLayout.isRefreshing = false
+                R.string.radio__loading_success
+              }
+            }
+          Snackbar.make(radioView, resId, Snackbar.LENGTH_SHORT).show()
+        }
+      }
+    }
   }
 
   override fun onStart() {
     super.onStart()
-    presenter.attach(this)
-    presenter.load()
     adapter.setOnRadioPressedListener(this)
   }
 
   override fun onStop() {
     super.onStop()
-    presenter.detach()
     adapter.setOnRadioPressedListener(null)
   }
 
-  override fun update(data: FlowCursorList<RadioStation>) {
-    adapter.update(data)
-  }
-
-  override fun error(error: Throwable) {
-    Snackbar.make(radioView, R.string.radio__loading_failed, Snackbar.LENGTH_SHORT).show()
-  }
-
   override fun onRadioPressed(path: String) {
-    presenter.play(path)
+    viewModel.actions.play(path)
   }
 
   override fun onRefresh() {
-    presenter.refresh()
+    if (!swipeLayout.isRefreshing) {
+      swipeLayout.isRefreshing = true
+    }
+    viewModel.actions.reload()
   }
 
-  override fun radioPlayFailed() {
-    Snackbar.make(radioView, R.string.radio__play_failed, Snackbar.LENGTH_SHORT).show()
-  }
+  fun updateEmptyViewState(showLoading: Boolean) {
+    emptyViewProgress.isVisible = showLoading
+    emptyViewIcon.isGone = showLoading
+    emptyViewTitle.isGone = showLoading
+    emptyViewSubTitle.isGone = showLoading
 
-  override fun radioPlaySuccessful() {
-    Snackbar.make(radioView, R.string.radio__play_successful, Snackbar.LENGTH_SHORT).show()
-  }
-
-  override fun showLoading() {
-    emptyViewProgress.visibility = View.VISIBLE
-    emptyViewIcon.visibility = View.GONE
-    emptyViewTitle.visibility = View.GONE
-    emptyViewSubTitle.visibility = View.GONE
-  }
-
-  override fun hideLoading() {
-    emptyViewProgress.visibility = View.GONE
-    emptyViewIcon.visibility = View.VISIBLE
-    emptyViewTitle.visibility = View.VISIBLE
-    emptyViewSubTitle.visibility = View.VISIBLE
-    swipeLayout.isRefreshing = false
+    if (!showLoading) {
+      swipeLayout.isRefreshing = false
+    }
   }
 }

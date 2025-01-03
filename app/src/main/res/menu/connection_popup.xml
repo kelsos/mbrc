@@ -6,7 +6,7 @@
 
   <item
     android:id="@+id/connection_edit"
-    android:title="@string/connectivity_manager_edit" />
+    android:title="@string/common_edit" />
 
   <item
     android:id="@+id/connection_delete"

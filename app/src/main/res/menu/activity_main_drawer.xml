@@ -3,9 +3,9 @@
 
   <group android:checkableBehavior="single">
     <item
-        android:id="@+id/nav_home"
-        android:icon="@drawable/ic_home_black_24dp"
-        android:title="@string/nav_home" />
+      android:id="@+id/nav_home"
+      android:icon="@drawable/ic_home_black_24dp"
+      android:title="@string/nav_home" />
 
     <item
       android:id="@+id/nav_library"
@@ -13,24 +13,24 @@
       android:title="@string/nav_library" />
 
     <item
-        android:id="@+id/nav_now_playing"
-        android:icon="@drawable/ic_view_list_black_24dp"
-        android:title="@string/nav_now_playing" />
+      android:id="@+id/nav_now_playing"
+      android:icon="@drawable/ic_view_list_black_24dp"
+      android:title="@string/nav_now_playing" />
 
     <item
-        android:id="@+id/nav_playlists"
-        android:icon="@drawable/ic_queue_music_black_24dp"
-        android:title="@string/nav_playlists"
-        />
-
-    <item android:id="@+id/nav_radio"
-          android:icon="@drawable/ic_radio_black_24dp"
-          android:title="@string/nav_radio"/>
+      android:id="@+id/nav_playlists"
+      android:icon="@drawable/ic_queue_music_black_24dp"
+      android:title="@string/nav_playlists" />
 
     <item
-        android:id="@+id/nav_lyrics"
-        android:icon="@drawable/ic_view_headline_black_24dp"
-        android:title="@string/nav_lyrics" />
+      android:id="@+id/nav_radio"
+      android:icon="@drawable/ic_radio_black_24dp"
+      android:title="@string/nav_radio" />
+
+    <item
+      android:id="@+id/nav_lyrics"
+      android:icon="@drawable/ic_view_headline_black_24dp"
+      android:title="@string/nav_lyrics" />
 
   </group>
 
@@ -42,19 +42,19 @@
         android:title="@string/nav_output" />
 
       <item
-          android:id="@+id/nav_settings"
-          android:icon="@drawable/ic_settings_black_24dp"
-          android:title="@string/nav_settings" />
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/ic_baseline_settings_24"
+        android:title="@string/nav_settings" />
 
       <item
-          android:id="@+id/nav_help"
-          android:icon="@drawable/ic_help_black_24dp"
-          android:title="@string/nav_help" />
+        android:id="@+id/nav_help"
+        android:icon="@drawable/ic_help_black_24dp"
+        android:title="@string/nav_help" />
 
       <item
-          android:id="@+id/nav_exit"
-          android:icon="@drawable/ic_close_black_24dp"
-          android:title="@string/nav_exit" />
+        android:id="@+id/nav_exit"
+        android:icon="@drawable/ic_close_black_24dp"
+        android:title="@string/nav_exit" />
     </menu>
   </item>
 

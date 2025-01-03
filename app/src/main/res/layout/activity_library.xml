@@ -41,24 +41,28 @@
 
       <TextView
         android:id="@+id/sync_progress_text"
-        android:text="@string/library_sync_in_progress"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
-        android:textAlignment="center"
         style="@style/TextAppearance.MaterialComponents.Caption"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="4dp"
+        android:text="@string/library_sync_in_progress"
+        android:textAlignment="center"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
       <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/sync_progress"
-        android:layout_marginTop="2dp"
+        style="@style/Widget.MaterialComponents.LinearProgressIndicator"
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:layout_gravity="start"
+        android:layout_marginTop="2dp"
         android:progress="70"
-        style="@style/Widget.MaterialComponents.LinearProgressIndicator" />
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -79,6 +83,7 @@
     android:layout_height="match_parent"
     android:layout_gravity="start"
     android:fitsSystemWindows="true"
+    app:elevation="@dimen/drawer_elevation"
     app:headerLayout="@layout/nav_header_main"
     app:menu="@menu/activity_main_drawer" />
 

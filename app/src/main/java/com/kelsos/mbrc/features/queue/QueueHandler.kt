@@ -1,15 +1,16 @@
 package com.kelsos.mbrc.features.queue
 
-import com.kelsos.mbrc.annotations.Queue
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
-import com.kelsos.mbrc.features.library.Track
-import com.kelsos.mbrc.features.library.TrackRepository
+import com.kelsos.mbrc.features.library.tracks.Track
+import com.kelsos.mbrc.features.library.tracks.TrackQuery
+import com.kelsos.mbrc.features.library.tracks.TrackRepository
 import com.kelsos.mbrc.features.player.CoverPayload
 import com.kelsos.mbrc.features.settings.BasicSettingsHelper
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.protocol.Protocol
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.io.IOException
 
 class QueueHandler(
   private val settings: BasicSettingsHelper,
@@ -18,7 +19,7 @@ class QueueHandler(
   private val dispatchers: AppCoroutineDispatchers,
 ) {
   private suspend fun queue(
-    @Queue.Action type: String,
+    type: Queue,
     tracks: List<String>,
     play: String? = null,
   ): Boolean {
@@ -27,13 +28,13 @@ class QueueHandler(
       try {
         val response =
           service.getItem(
-            Protocol.NOW_PLAYING_QUEUE,
+            Protocol.NowPlayingQueue,
             QueueResponse::class,
-            QueuePayload(type, tracks, play),
+            QueuePayload(type.action, tracks, play),
           )
 
         return@withContext response.code == CoverPayload.SUCCESS
-      } catch (e: Exception) {
+      } catch (e: IOException) {
         Timber.e(e)
         return@withContext false
       }
@@ -41,49 +42,58 @@ class QueueHandler(
   }
 
   suspend fun queueAlbum(
-    @Queue.Action type: String,
+    type: Queue,
     album: String,
     artist: String,
   ): QueueResult {
     var tracks = 0
     var success = false
     try {
-      val paths = trackRepository.getAlbumTrackPaths(album, artist)
+      val paths =
+        withContext(dispatchers.database) {
+          trackRepository.getTrackPaths(TrackQuery.Album(album, artist))
+        }
       tracks = paths.size
       success = queue(type, paths)
-    } catch (e: Exception) {
+    } catch (e: IOException) {
       Timber.e(e)
     }
     return QueueResult(success, tracks)
   }
 
   suspend fun queueArtist(
-    @Queue.Action type: String,
+    type: Queue,
     artist: String,
   ): QueueResult {
     var tracks = 0
     var success = false
     try {
-      val paths = trackRepository.getArtistTrackPaths(artist)
+      val paths =
+        withContext(dispatchers.database) {
+          trackRepository.getTrackPaths(TrackQuery.Artist(artist))
+        }
       tracks = paths.size
       success = queue(type, paths)
-    } catch (e: Exception) {
+    } catch (e: IOException) {
       Timber.e(e)
     }
     return QueueResult(success, tracks)
   }
 
   suspend fun queueGenre(
-    @Queue.Action type: String,
+    type: Queue,
     genre: String,
   ): QueueResult {
     var tracks = 0
     var success = false
     try {
-      val paths = trackRepository.getGenreTrackPaths(genre)
+      val paths =
+        withContext(dispatchers.database) {
+          trackRepository.getTrackPaths(TrackQuery.Genre(genre))
+        }
       tracks = paths.size
       success = queue(type, paths)
-    } catch (e: Exception) {
+    } catch (e: IOException) {
       Timber.e(e)
     }
     return QueueResult(success, tracks)
@@ -92,8 +102,8 @@ class QueueHandler(
   suspend fun queuePath(path: String): QueueResult {
     var success = false
     try {
-      success = queue(Queue.NOW, listOf(path))
-    } catch (e: Exception) {
+      success = queue(Queue.Now, listOf(path))
+    } catch (e: IOException) {
       Timber.e(e)
     }
     return QueueResult(success, 1)
@@ -101,7 +111,7 @@ class QueueHandler(
 
   suspend fun queueTrack(
     track: Track,
-    @Queue.Action type: String,
+    type: Queue,
     queueAlbum: Boolean = false,
   ): QueueResult {
     val trackSource: List<String>
@@ -109,28 +119,30 @@ class QueueHandler(
     val success: Boolean
     var action = type
     trackSource =
-      when (type) {
-        Queue.ADD_ALL -> {
-          path = track.src
-          if (queueAlbum) {
-            trackRepository.getAlbumTrackPaths(track.album!!, track.albumArtist!!)
-          } else {
-            trackRepository.getAllTrackPaths()
+      withContext(dispatchers.database) {
+        when (type) {
+          Queue.AddAll -> {
+            path = track.src
+            if (queueAlbum) {
+              trackRepository.getTrackPaths(TrackQuery.Album(track.album, track.albumArtist))
+            } else {
+              trackRepository.getTrackPaths(TrackQuery.All)
+            }
           }
-        }
-        Queue.PLAY_ALBUM -> {
-          action = Queue.ADD_ALL
-          path = track.src
-          trackRepository.getAlbumTrackPaths(track.album!!, track.albumArtist!!)
-        }
-        Queue.PLAY_ARTIST -> {
-          action = Queue.ADD_ALL
-          path = track.src
-          trackRepository.getArtistTrackPaths(track.artist!!)
-        }
-        else -> {
-          path = null
-          listOf(track.src!!)
+          Queue.PlayAlbum -> {
+            action = Queue.AddAll
+            path = track.src
+            trackRepository.getTrackPaths(TrackQuery.Album(track.album, track.albumArtist))
+          }
+          Queue.PlayArtist -> {
+            action = Queue.AddAll
+            path = track.src
+            trackRepository.getTrackPaths(TrackQuery.Artist(track.artist))
+          }
+          else -> {
+            path = null
+            listOf(track.src)
+          }
         }
       }
 
@@ -142,5 +154,5 @@ class QueueHandler(
   suspend fun queueTrack(
     track: Track,
     queueAlbum: Boolean = false,
-  ): QueueResult = queueTrack(track, settings.defaultAction, queueAlbum)
+  ): QueueResult = queueTrack(track, Queue.fromString(settings.defaultAction), queueAlbum)
 }

@@ -1,10 +1,14 @@
 package com.kelsos.mbrc.features.lyrics
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class LyricsPayload(
-  @JsonProperty("status") val status: Int = NOT_FOUND,
-  @JsonProperty("lyrics") val lyrics: String = "",
+  @Json(name = "status")
+  val status: Int = NOT_FOUND,
+  @Json(name = "lyrics")
+  val lyrics: String = "",
 ) {
   companion object {
     const val SUCCESS = 200

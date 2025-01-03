@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <style name="Theme.App.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" >
+  <style name="Theme.App.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar">
     <item name="autoCompleteTextViewStyle">@style/Widget.App.AutoCompleteTextView.SearchView</item>
-
   </style>
 
-  <style name="Widget.App.AutoCompleteTextView.SearchView" parent="Widget.AppCompat.Light.AutoCompleteTextView" >
+  <style name="Widget.App.AutoCompleteTextView.SearchView" parent="Widget.AppCompat.Light.AutoCompleteTextView">
     <item name="android:textColorHint">#5000</item>
     <item name="android:textColor">@color/secondary_text_material_light</item>
-  </style>>
+  </style>
 
   <style name="empty_view_image">
     <item name="android:tint">@color/empty_view_icon_tint</item>
@@ -18,6 +17,10 @@
     <item name="android:layout_centerHorizontal">true</item>
     <item name="android:layout_width">@dimen/empty_view_icon_size</item>
     <item name="android:layout_height">@dimen/empty_view_icon_size</item>
+  </style>
+
+  <style name="WidgetTheme" parent="Theme.Material3.DynamicColors.DayNight">
+    <item name="android:colorBackground">@color/background_dark</item>
   </style>
 
 </resources>

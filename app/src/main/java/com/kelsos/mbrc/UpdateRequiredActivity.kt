@@ -17,12 +17,12 @@ class UpdateRequiredActivity : AppCompatActivity() {
     window.sharedElementEnterTransition =
       MaterialContainerTransform().apply {
         addTarget(android.R.id.content)
-        duration = 300L
+        duration = ENTER_DURATION
       }
     window.sharedElementReturnTransition =
       MaterialContainerTransform().apply {
         addTarget(android.R.id.content)
-        duration = 250L
+        duration = RETURN_DURATION
       }
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_update_required)
@@ -36,5 +36,7 @@ class UpdateRequiredActivity : AppCompatActivity() {
 
   companion object {
     const val VERSION: String = "version"
+    const val ENTER_DURATION = 300L
+    const val RETURN_DURATION = 250L
   }
 }

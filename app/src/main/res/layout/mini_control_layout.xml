@@ -8,11 +8,6 @@
   android:orientation="vertical"
   tools:showIn="@layout/activity_lyrics">
 
-  <View
-    android:layout_width="match_parent"
-    android:layout_height="1dp"
-    android:background="@color/primary_dark" />
-
   <androidx.fragment.app.FragmentContainerView
     android:id="@+id/lyrics_mini_control"
     android:name="com.kelsos.mbrc.features.minicontrol.MiniControlFragment"

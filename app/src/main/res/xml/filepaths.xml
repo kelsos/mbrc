@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <cache-path name="logs" path="logs/"/>
-    <external-cache-path name="logs" path="logs/"/>
+  <cache-path
+    name="logs"
+    path="logs/" />
+  <external-cache-path
+    name="logs"
+    path="logs/" />
 </paths>

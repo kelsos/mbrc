@@ -32,14 +32,12 @@ class HelpFeedbackActivity : AppCompatActivity() {
     }
 
     pagerAdapter = HelpFeedbackPagerAdapter(this)
-    viewPager.apply {
-      adapter = pagerAdapter
-    }
+    viewPager.adapter = pagerAdapter
     TabLayoutMediator(tabLayout, viewPager) { currentTab, currentPosition ->
       currentTab.text =
         when (currentPosition) {
           HelpFeedbackPagerAdapter.HELP -> getString(R.string.tab_help)
-          HelpFeedbackPagerAdapter.FEEDBACK -> getString(R.string.tab_feedback)
+          HelpFeedbackPagerAdapter.FEEDBACK -> getString(R.string.common_feedback)
           else -> throw IllegalArgumentException("invalid position")
         }
     }.attach()

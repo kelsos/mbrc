@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <plurals name="track">
+    <item quantity="one">%d track</item>
+    <item quantity="other">%d tracks</item>
+  </plurals>
+  <plurals name="genre">
+    <item quantity="one">%d genre</item>
+    <item quantity="other">%d genres</item>
+  </plurals>
+  <plurals name="album">
+    <item quantity="one">%d album</item>
+    <item quantity="other">%d albums</item>
+  </plurals>
+  <plurals name="artist">
+    <item quantity="one">%d artist</item>
+    <item quantity="other">%d artists</item>
+  </plurals>
+  <plurals name="playlist">
+    <item quantity="one">%d playlist</item>
+    <item quantity="other">%d playlists</item>
+  </plurals>
+</resources>

@@ -1,14 +1,14 @@
 package com.kelsos.mbrc.features.library
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonClass(generateAdapter = true)
 data class Cover(
-  @JsonProperty("status")
+  @Json(name = "status")
   val status: Int,
-  @JsonProperty("cover")
+  @Json(name = "cover")
   val cover: String?,
-  @JsonProperty("hash")
+  @Json(name = "hash")
   val hash: String?,
 )

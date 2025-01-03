@@ -1,73 +1,57 @@
 package com.kelsos.mbrc.data
 
-import com.kelsos.mbrc.features.library.Album
-import com.kelsos.mbrc.features.library.Artist
-import com.kelsos.mbrc.features.library.Genre
-import com.kelsos.mbrc.features.library.Track
-import com.kelsos.mbrc.features.nowplaying.NowPlaying
-import com.kelsos.mbrc.features.playlists.Playlist
-import com.raizlabs.android.dbflow.annotation.Migration
-import com.raizlabs.android.dbflow.sql.SQLiteType
-import com.raizlabs.android.dbflow.sql.migration.AlterTableMigration
-import com.raizlabs.android.dbflow.annotation.Database as Db
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import com.kelsos.mbrc.data.Database.Companion.VERSION
+import com.kelsos.mbrc.features.library.albums.AlbumDao
+import com.kelsos.mbrc.features.library.albums.AlbumEntity
+import com.kelsos.mbrc.features.library.artists.ArtistDao
+import com.kelsos.mbrc.features.library.artists.ArtistEntity
+import com.kelsos.mbrc.features.library.genres.GenreDao
+import com.kelsos.mbrc.features.library.genres.GenreEntity
+import com.kelsos.mbrc.features.library.tracks.TrackDao
+import com.kelsos.mbrc.features.library.tracks.TrackEntity
+import com.kelsos.mbrc.features.nowplaying.NowPlayingDao
+import com.kelsos.mbrc.features.nowplaying.NowPlayingEntity
+import com.kelsos.mbrc.features.playlists.PlaylistDao
+import com.kelsos.mbrc.features.playlists.PlaylistEntity
+import com.kelsos.mbrc.features.radio.RadioStationDao
+import com.kelsos.mbrc.features.radio.RadioStationEntity
+import com.kelsos.mbrc.features.settings.ConnectionDao
+import com.kelsos.mbrc.features.settings.ConnectionSettingsEntity
 
-@Db(version = Database.VERSION, name = Database.NAME)
-object Database {
-  const val VERSION = 3
-  const val NAME = "cache"
+@Database(
+  entities = [
+    GenreEntity::class,
+    ArtistEntity::class,
+    AlbumEntity::class,
+    TrackEntity::class,
+    NowPlayingEntity::class,
+    PlaylistEntity::class,
+    RadioStationEntity::class,
+    ConnectionSettingsEntity::class,
+  ],
+  version = VERSION,
+)
+abstract class Database : RoomDatabase() {
+  abstract fun genreDao(): GenreDao
 
-  @Migration(version = 3, database = Database::class)
-  class Migration3Genre(
-    table: Class<Genre>,
-  ) : AlterTableMigration<Genre>(table) {
-    override fun onPreMigrate() {
-      addColumn(SQLiteType.INTEGER, "date_added")
-    }
-  }
+  abstract fun artistDao(): ArtistDao
 
-  @Migration(version = 3, database = Database::class)
-  class Migration3Artist(
-    table: Class<Artist>,
-  ) : AlterTableMigration<Artist>(table) {
-    override fun onPreMigrate() {
-      addColumn(SQLiteType.INTEGER, "date_added")
-    }
-  }
+  abstract fun albumDao(): AlbumDao
 
-  @Migration(version = 3, database = Database::class)
-  class Migration3Album(
-    table: Class<Album>,
-  ) : AlterTableMigration<Album>(table) {
-    override fun onPreMigrate() {
-      addColumn(SQLiteType.TEXT, "cover")
-      addColumn(SQLiteType.INTEGER, "date_added")
-    }
-  }
+  abstract fun trackDao(): TrackDao
 
-  @Migration(version = 3, database = Database::class)
-  class Migration3Track(
-    table: Class<Track>,
-  ) : AlterTableMigration<Track>(table) {
-    override fun onPreMigrate() {
-      addColumn(SQLiteType.INTEGER, "date_added")
-    }
-  }
+  abstract fun nowPlayingDao(): NowPlayingDao
 
-  @Migration(version = 3, database = Database::class)
-  class Migration3NowPlaying(
-    table: Class<NowPlaying>,
-  ) : AlterTableMigration<NowPlaying>(table) {
-    override fun onPreMigrate() {
-      addColumn(SQLiteType.INTEGER, "date_added")
-    }
-  }
+  abstract fun playlistDao(): PlaylistDao
 
-  @Migration(version = 3, database = Database::class)
-  class Migration3Playlist(
-    table: Class<Playlist>,
-  ) : AlterTableMigration<Playlist>(table) {
-    override fun onPreMigrate() {
-      addColumn(SQLiteType.INTEGER, "date_added")
-    }
+  abstract fun radioStationDao(): RadioStationDao
+
+  abstract fun connectionDao(): ConnectionDao
+
+  companion object {
+    const val VERSION = 3
+    const val NAME = "cache.db"
   }
 }

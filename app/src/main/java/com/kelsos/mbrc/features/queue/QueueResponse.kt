@@ -1,7 +1,9 @@
 package com.kelsos.mbrc.features.queue
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class QueueResponse(
-  @JsonProperty("code") val code: Int,
+  @Json(name = "code") val code: Int,
 )

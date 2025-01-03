@@ -10,31 +10,33 @@
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
   <uses-permission android:name="android.permission.READ_PHONE_STATE" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
   <uses-sdk tools:overrideLibrary="timber.log" />
 
   <application
     android:name=".App"
     android:allowBackup="true"
-    android:enableOnBackInvokedCallback="true"
     android:description="@string/application_description"
+    android:enableOnBackInvokedCallback="true"
     android:icon="@mipmap/ic_launcher"
     android:label="@string/application_name"
     android:logo="@mipmap/ic_launcher"
+    android:supportsRtl="true"
     android:theme="@style/Theme.App"
     tools:ignore="UnusedAttribute">
 
     <activity
       android:name=".UpdateRequiredActivity"
-      android:exported="true" />
+      android:exported="false" />
 
     <activity
       android:name=".features.player.PlayerActivity"
-      android:launchMode="singleTop"
       android:exported="true"
+      android:launchMode="singleTop"
       android:noHistory="true"
       android:theme="@style/Theme.App.Starting"
-      android:windowSoftInputMode="adjustNothing" >
+      android:windowSoftInputMode="adjustNothing">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
 
@@ -53,11 +55,11 @@
         android:value=".features.player.PlayerActivity" />
     </activity>
 
-    <activity android:name=".features.library.AlbumTracksActivity" />
+    <activity android:name=".features.library.tracks.AlbumTracksActivity" />
 
-    <activity android:name=".features.library.ArtistAlbumsActivity" />
+    <activity android:name=".features.library.albums.ArtistAlbumsActivity" />
 
-    <activity android:name=".features.library.GenreArtistsActivity" />
+    <activity android:name=".features.library.artists.GenreArtistsActivity" />
 
     <activity
       android:name=".features.lyrics.LyricsActivity"
@@ -115,7 +117,7 @@
 
     <activity
       android:name=".features.help.HelpFeedbackActivity"
-      android:label="@string/title_activity_help_feedback"
+      android:label="@string/nav_help"
       android:parentActivityName=".features.player.PlayerActivity"
       android:windowSoftInputMode="adjustNothing">
       <meta-data
@@ -146,7 +148,8 @@
 
     <receiver
       android:name=".platform.mediasession.MediaButtonReceiver"
-      android:exported="true">
+      android:exported="true"
+      android:permission="android.permission.BIND_MEDIA_SESSION">
       <intent-filter>
         <action android:name="android.intent.action.MEDIA_BUTTON" />
       </intent-filter>

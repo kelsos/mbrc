@@ -1,8 +1,12 @@
 package com.kelsos.mbrc.networking.protocol
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class NowPlayingMoveRequest(
-  @JsonProperty("from") val from: Int,
-  @JsonProperty("to") val to: Int,
+  @Json(name = "from")
+  val from: Int,
+  @Json(name = "to")
+  val to: Int,
 )

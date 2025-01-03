@@ -2,8 +2,8 @@ package com.kelsos.mbrc.features.widgets
 
 import android.os.Bundle
 import androidx.core.os.BundleCompat
-import com.kelsos.mbrc.annotations.PlayerState
-import com.kelsos.mbrc.features.player.TrackInfo
+import com.kelsos.mbrc.common.state.PlayerState
+import com.kelsos.mbrc.common.state.PlayingTrack
 
 class BundleData(
   private val bundle: Bundle,
@@ -18,12 +18,12 @@ class BundleData(
 
   fun state(): String = bundle.getString(WidgetUpdater.PLAYER_STATE, PlayerState.UNDEFINED)
 
-  fun playingTrack(): TrackInfo =
+  fun playingTrack(): PlayingTrack =
     BundleCompat.getParcelable(
       bundle,
       WidgetUpdater.TRACK_INFO,
-      TrackInfo::class.java,
-    ) ?: TrackInfo()
+      PlayingTrack::class.java,
+    ) ?: PlayingTrack()
 
   override fun toString(): String =
     when {

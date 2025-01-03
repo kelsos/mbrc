@@ -8,6 +8,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.view.isGone
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
@@ -16,12 +19,11 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.kelsos.mbrc.BaseActivity
 import com.kelsos.mbrc.R
-import com.kelsos.mbrc.annotations.Search
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 class LibraryActivity :
-  BaseActivity(),
-  LibraryView,
+  BaseActivity(R.layout.activity_library),
   OnQueryTextListener {
   private lateinit var pager: ViewPager2
   private lateinit var tabs: TabLayout
@@ -31,19 +33,20 @@ class LibraryActivity :
   private var albumArtistOnly: MenuItem? = null
   private var searchClear: MenuItem? = null
   private var pagerAdapter: LibraryPagerAdapter? = null
-  private val presenter: LibraryPresenter by inject()
+
+  private val viewModel: LibraryViewModel by inject()
 
   override fun onQueryTextSubmit(query: String): Boolean {
     val search = query.trim()
     if (search.isNotEmpty()) {
       closeSearch()
-      presenter.search(search)
+      viewModel.search(search)
       supportActionBar?.title = search
       supportActionBar?.setSubtitle(R.string.library_search_subtitle)
       searchMenuItem?.isVisible = false
       searchClear?.isVisible = true
     } else {
-      presenter.search("")
+      viewModel.search()
     }
 
     return true
@@ -66,7 +69,6 @@ class LibraryActivity :
 
   public override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_library)
 
     onBackPressedDispatcher.addCallback(
       this,
@@ -82,23 +84,42 @@ class LibraryActivity :
 
     pager = findViewById(R.id.search_pager)
     tabs = findViewById(R.id.pager_tab_strip)
-
-    super.setup()
     pagerAdapter = LibraryPagerAdapter(this)
-    pager.apply {
-      adapter = pagerAdapter
-    }
+    pager.adapter = pagerAdapter
 
     TabLayoutMediator(tabs, pager) { currentTab, currentPosition ->
       currentTab.text =
         when (currentPosition) {
-          Search.SECTION_ALBUM -> getString(R.string.label_albums)
-          Search.SECTION_ARTIST -> getString(R.string.label_artists)
-          Search.SECTION_GENRE -> getString(R.string.label_genres)
-          Search.SECTION_TRACK -> getString(R.string.label_tracks)
+          PagePosition.ALBUMS -> getString(R.string.media__albums)
+          PagePosition.ARTISTS -> getString(R.string.media__artists)
+          PagePosition.GENRES -> getString(R.string.media__genres)
+          PagePosition.TRACKS -> getString(R.string.media__tracks)
           else -> throw IllegalArgumentException("invalid position")
         }
     }.attach()
+
+    observeViewModel()
+  }
+
+  fun observeViewModel() {
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.events.collect { event ->
+          when (event) {
+            is LibraryUiEvent.LibraryStatsReady -> showStats(event.stats)
+            is LibraryUiEvent.LibrarySyncComplete -> {
+              syncComplete(event.stats)
+              hideSyncProgress()
+            }
+            is LibraryUiEvent.UpdateAlbumArtistOnly -> updateArtistOnlyPreference(event.enabled)
+            is LibraryUiEvent.LibrarySyncFailed -> {
+              syncFailure()
+              hideSyncProgress()
+            }
+          }
+        }
+      }
+    }
   }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -107,44 +128,46 @@ class LibraryActivity :
     searchClear = menu.findItem(R.id.library_search_clear)
     albumArtistOnly = menu.findItem(R.id.library_album_artist)
     searchView = searchMenuItem?.actionView as SearchView
-    searchView!!.queryHint = getString(R.string.library_search_hint)
-    searchView!!.setIconifiedByDefault(true)
-    searchView!!.setOnQueryTextListener(this)
-    presenter.loadArtistPreference()
+
+    val search = requireNotNull(searchView)
+
+    search.queryHint = getString(R.string.library_search_hint)
+    search.setIconifiedByDefault(true)
+    search.setOnQueryTextListener(this)
     return super.onCreateOptionsMenu(menu)
   }
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+  override fun onOptionsItemSelected(item: MenuItem): Boolean =
     when (item.itemId) {
       R.id.library_refresh_item -> {
-        presenter.refresh()
-        return true
+        viewModel.sync()
+        showSyncProgress()
+        true
       }
       R.id.library_album_artist -> {
         albumArtistOnly?.let {
           it.isChecked = !it.isChecked
-          presenter.setArtistPreference(it.isChecked)
+          viewModel.updateAlbumArtistOnly(it.isChecked)
         }
-
-        return true
+        true
       }
       R.id.library_search_clear -> {
         supportActionBar?.setTitle(R.string.nav_library)
         supportActionBar?.subtitle = ""
-        presenter.search("")
+        viewModel.search()
         searchMenuItem?.isVisible = true
         searchClear?.isVisible = false
-        return true
+        true
       }
       R.id.library_sync_state -> {
-        presenter.showStats()
-        return true
+        viewModel.displayLibraryStats()
+        true
       }
-    }
-    return super.onOptionsItemSelected(item)
-  }
 
-  override fun showStats(stats: LibraryStats) {
+      else -> super.onOptionsItemSelected(item)
+    }
+
+  fun showStats(stats: LibraryStats) {
     val dialog =
       MaterialAlertDialogBuilder(this)
         .setTitle(R.string.library_stats__title)
@@ -159,18 +182,18 @@ class LibraryActivity :
     dialog.findViewById<TextView>(R.id.library_stats__playlist_value)?.text = "${stats.playlists}"
   }
 
-  override fun syncComplete(stats: LibraryStats) {
+  fun syncComplete(stats: LibraryStats) {
     val message =
       getString(
         R.string.library__sync_complete,
-        stats.genres,
-        stats.artists,
-        stats.albums,
-        stats.tracks,
-        stats.playlists,
+        resources.getQuantityString(R.plurals.genre, stats.genres.toInt(), stats.genres.toInt()),
+        resources.getQuantityString(R.plurals.artist, stats.artists.toInt(), stats.artists.toInt()),
+        resources.getQuantityString(R.plurals.album, stats.albums.toInt(), stats.albums.toInt()),
+        resources.getQuantityString(R.plurals.track, stats.tracks.toInt(), stats.tracks.toInt()),
+        resources.getQuantityString(R.plurals.playlist, stats.playlists.toInt(), stats.playlists.toInt()),
       )
     Snackbar
-      .make(pager, R.string.library__sync_complete, Snackbar.LENGTH_LONG)
+      .make(pager, R.string.library__sync_complete_title, Snackbar.LENGTH_LONG)
       .setText(message)
       .show()
   }
@@ -180,17 +203,7 @@ class LibraryActivity :
     pagerAdapter = null
   }
 
-  override fun onStart() {
-    super.onStart()
-    presenter.attach(this)
-  }
-
-  override fun onStop() {
-    super.onStop()
-    presenter.detach()
-  }
-
-  override fun updateArtistOnlyPreference(albumArtistOnly: Boolean?) {
+  fun updateArtistOnlyPreference(albumArtistOnly: Boolean?) {
     this.albumArtistOnly?.isChecked = albumArtistOnly == true
   }
 
@@ -205,22 +218,21 @@ class LibraryActivity :
     pager.currentItem = savedInstanceState.getInt(PAGER_POSITION, 0)
   }
 
-  override fun syncFailure() {
+  fun syncFailure() {
     Snackbar.make(pager, R.string.library__sync_failed, Snackbar.LENGTH_LONG).show()
   }
 
-  override fun showSyncProgress() {
+  fun showSyncProgress() {
     findViewById<LinearProgressIndicator>(R.id.sync_progress).isGone = false
     findViewById<TextView>(R.id.sync_progress_text).isGone = false
   }
 
-  override fun hideSyncProgress() {
+  fun hideSyncProgress() {
     findViewById<LinearProgressIndicator>(R.id.sync_progress).isGone = true
     findViewById<TextView>(R.id.sync_progress_text).isGone = true
   }
 
   companion object {
     private const val PAGER_POSITION = "com.kelsos.mbrc.ui.activities.nav.PAGER_POSITION"
-    val LIBRARY_SCOPE: Class<*> = LibraryActivity::class.java
   }
 }

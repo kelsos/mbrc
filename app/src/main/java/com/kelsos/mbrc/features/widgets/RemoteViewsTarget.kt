@@ -15,11 +15,17 @@ class RemoteViewsTarget(
   private val widgetIds: IntArray,
   @IdRes private val imageViewResId: Int,
 ) : Target {
-  override fun onStart(placeholder: Image?) = setDrawable(placeholder, "start")
+  override fun onStart(placeholder: Image?) {
+    setDrawable(placeholder, "start")
+  }
 
-  override fun onError(error: Image?) = setDrawable(error, "error")
+  override fun onError(error: Image?) {
+    setDrawable(error, "error")
+  }
 
-  override fun onSuccess(result: Image) = setDrawable(result, "success")
+  override fun onSuccess(result: Image) {
+    setDrawable(result, "success")
+  }
 
   private fun setDrawable(
     image: Image?,

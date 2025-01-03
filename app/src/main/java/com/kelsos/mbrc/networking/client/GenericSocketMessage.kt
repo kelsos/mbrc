@@ -1,10 +1,12 @@
 package com.kelsos.mbrc.networking.client
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 class GenericSocketMessage<T>(
-  @param:JsonProperty
-  var context: String,
-  @param:JsonProperty
-  var data: T,
+  @Json(name = "context")
+  val context: String,
+  @Json(name = "data")
+  val data: T,
 ) where T : Any

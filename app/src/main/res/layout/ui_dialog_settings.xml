@@ -19,12 +19,12 @@
     app:layout_constraintVertical_bias="0.0">
 
     <EditText
-      android:text="@string/settings_dialog__name_placeholder"
       android:id="@+id/settings_dialog_name"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:hint="@string/settings_dialog_hint_name"
-      android:inputType="text" />
+      android:inputType="text"
+      android:text="@string/settings_dialog__name_placeholder" />
   </com.google.android.material.textfield.TextInputLayout>
 
   <com.google.android.material.textfield.TextInputLayout
@@ -68,8 +68,6 @@
       android:maxLength="5"
       android:text="@string/default_port" />
   </com.google.android.material.textfield.TextInputLayout>
-
-
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

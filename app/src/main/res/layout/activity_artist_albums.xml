@@ -12,9 +12,11 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <com.kelsos.mbrc.common.ui.EmptyRecyclerView
-      android:id="@+id/album_recycler"
+      android:id="@+id/details_recycler"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
+      android:layout_marginTop="@dimen/small_margin"
+      android:layout_marginBottom="@dimen/small_margin"
       tools:listitem="@layout/ui_list_dual" />
 
     <include layout="@layout/empty_list" />

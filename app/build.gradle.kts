@@ -1,8 +1,8 @@
+
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import com.android.build.gradle.internal.lint.AndroidLintTask
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import io.gitlab.arturbosch.detekt.Detekt
-import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.*
@@ -11,7 +11,6 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlinAndroid)
   alias(libs.plugins.kotlinParcelize)
-  alias(libs.plugins.kapt)
   alias(libs.plugins.ksp)
   alias(libs.plugins.protobuf)
   alias(libs.plugins.googleServices) apply false
@@ -56,32 +55,25 @@ object KeyLoader {
   fun getValue(key: String): String = properties.getProperty(key)
 }
 
-fun String.runCommand(currentWorkingDir: File = file("./")): String {
-  val byteOut = ByteArrayOutputStream()
-  project.exec {
-    workingDir = currentWorkingDir
-    commandLine = this@runCommand.split("\\s".toRegex())
-    standardOutput = byteOut
-  }
-  return String(byteOut.toByteArray()).trim()
-}
+val gitHashProvider = providers.exec {
+  workingDir = rootDir
+  commandLine("git", "rev-parse", "--short", "HEAD")
+  isIgnoreExitValue = true
+}.standardOutput.asText.map { it.trim() }.orElse("unknown")
 
-
-fun buildTime(): String {
+val buildTimeProvider = providers.provider {
   val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
   df.timeZone = TimeZone.getTimeZone("UTC")
-  return df.format(Date())
+  df.format(Date())
 }
 
-fun gitHash(): String {
-  return "git -C $rootDir rev-parse --short HEAD".runCommand()
-}
-
-val version = "1.6.0-alpha.1"
-val code = 125
+val appVersionName = "1.6.0-alpha.1"
+val appVersionCode = 125
+val minSDKVersion = 23
+val compileSDKVersion = 35
 
 android {
-  compileSdk = 35
+  compileSdk = compileSDKVersion
   namespace = "com.kelsos.mbrc"
 
   buildFeatures {
@@ -90,12 +82,12 @@ android {
 
   defaultConfig {
     applicationId = "com.kelsos.mbrc"
-    minSdk = 23
-    targetSdk = 35
-    versionCode = code
-    versionName = version
-    buildConfigField("String", "GIT_SHA", "\"${gitHash()}\"")
-    buildConfigField("String", "BUILD_TIME", "\"${buildTime()}\"")
+    minSdk = minSDKVersion
+    targetSdk = compileSDKVersion
+    versionCode = appVersionCode
+    versionName = appVersionName
+    buildConfigField("String", "GIT_SHA", "\"${gitHashProvider.get()}\"")
+    buildConfigField("String", "BUILD_TIME", "\"${buildTimeProvider.get()}\"")
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -112,13 +104,18 @@ android {
     targetCompatibility = JavaVersion.VERSION_11
   }
 
-  kotlinOptions {
-    jvmTarget = "11"
-    freeCompilerArgs = listOf(
-      "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-      "-opt-in=kotlin.RequiresOptIn",
-      "-opt-in=kotlin.time.ExperimentalTime",
-    )
+  kotlin {
+    compilerOptions {
+      jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+      freeCompilerArgs.set(listOf(
+        "-Xannotation-default-target=param-property"
+      ))
+      optIn.set(listOf(
+        "kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "kotlin.RequiresOptIn",
+        "kotlin.time.ExperimentalTime",
+      ))
+    }
   }
 
   signingConfigs {
@@ -137,8 +134,8 @@ android {
       isMinifyEnabled = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 
-      buildConfigField("String", "GIT_SHA", "\"${gitHash()}\"")
-      buildConfigField("String", "BUILD_TIME", "\"${buildTime()}\"")
+      buildConfigField("String", "GIT_SHA", "\"${gitHashProvider.get()}\"")
+      buildConfigField("String", "BUILD_TIME", "\"${buildTimeProvider.get()}\"")
     }
 
     getByName("debug") {
@@ -191,6 +188,16 @@ android {
   }
 }
 
+ksp {
+  arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+detekt {
+  source.setFrom(files("src/main/java", "src/main/kotlin"))
+  config.setFrom(files(rootProject.file("config/detekt/detekt.yml")))
+  buildUponDefaultConfig = true
+}
+
 val dummyGoogleServicesJson: Configuration by configurations.creating {
   isCanBeResolved = true
   isCanBeConsumed = false
@@ -205,51 +212,49 @@ dependencies {
 
   implementation(projects.changelog)
 
-  testImplementation(libs.androidx.arch.core.testing)
-  testImplementation(libs.androidx.test.core)
-  testImplementation(libs.androidx.test.runner)
-  testImplementation(libs.androidx.test.junit)
-  testImplementation(libs.androidx.test.truth)
-  testImplementation(libs.bundles.androidx.test.espresso)
-  testImplementation(libs.truth)
-  testImplementation(libs.koin.test)
-  testImplementation(libs.kotlin.coroutines.test)
-  testImplementation(libs.mockk)
-  testImplementation(libs.robolectric)
-
   implementation(libs.androidx.annotation)
   implementation(libs.androidx.appcompat)
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.constraintlayout)
   implementation(libs.androidx.datastore)
   implementation(libs.androidx.fragment.ktx)
-  implementation(libs.androidx.media)
+  implementation(libs.bundles.androidx.media3)
   implementation(libs.androidx.paging.runtime.ktx)
   implementation(libs.androidx.preference.ktx)
   implementation(libs.androidx.recyclerview)
   implementation(libs.androidx.core.splashscreen)
   implementation(libs.androidx.viewpager2)
+  implementation(libs.androidx.swiperefreshlayout)
   implementation(libs.bundles.androidx.lifecycle)
-  implementation(libs.androidx.legacy.support.v4)
-  implementation(libs.androidx.legacy.support.v13)
   implementation(libs.bundles.coroutines)
+  implementation(libs.bundles.androidx.room)
   implementation(libs.bundles.coil)
   implementation(libs.bundles.koin)
   implementation(libs.google.material)
   implementation(libs.google.protobuf.javalite)
+  implementation(libs.squareup.moshi.lib)
   implementation(libs.squareup.okio)
+  implementation(libs.squareup.okhttp)
   implementation(libs.timber)
 
-  implementation(libs.bundles.dbflow)
-  implementation(libs.bundles.jackson)
-  implementation(libs.kotlin.stdlib)
-  implementation(libs.kotlin.reflect)
-  implementation(libs.rxandroid)
-  implementation(libs.rxjava)
-  implementation(libs.rxkotlin)
-  implementation(libs.rxrelay)
+  ksp(libs.androidx.room.compiler)
+  ksp(libs.squareup.moshi.codegen)
 
-  kapt(libs.dbflow.processor)
+  testImplementation(libs.androidx.arch.core.testing)
+  testImplementation(libs.androidx.room.testing)
+  testImplementation(libs.androidx.test.core)
+  testImplementation(libs.androidx.test.runner)
+  testImplementation(libs.androidx.test.junit)
+  testImplementation(libs.androidx.test.truth)
+  testImplementation(libs.bundles.androidx.test.espresso)
+  testImplementation(libs.androidx.paging.common.ktx)
+  testImplementation(libs.androidx.paging.testing)
+  testImplementation(libs.turbine)
+  testImplementation(libs.truth)
+  testImplementation(libs.koin.test)
+  testImplementation(libs.kotlin.coroutines.test)
+  testImplementation(libs.mockk)
+  testImplementation(libs.robolectric)
 
   debugImplementation(libs.squareup.leakcanary)
   debugImplementation(libs.androidx.fragment.testing)
@@ -336,7 +341,8 @@ tasks {
       }
       detekt.forEach {
         from(it.sarifReportFile) {
-          rename { "detekt.sarif" }
+          val name = it.sarifReportFile.get().asFile.nameWithoutExtension.prefixIfNot("detekt").toKebabCase()
+          rename { "$name.sarif" }
         }
       }
       from(lintReportReleaseSarifOutput) {
@@ -352,8 +358,6 @@ tasks {
     }
   }
 
-
-
   val copyDummyGoogleServicesJson by registering(GenerateGoogleServicesJson::class) {
     onlyIf { System.getenv("CI") == "true" }
     configuration = dummyGoogleServicesJson
@@ -365,7 +369,8 @@ tasks {
     doLast {
       if (!project.file("google-services.json").exists()) {
         throw GradleException(
-          "You need a google-services.json file to run this project. Please refer to the CONTRIBUTING.md file for details."
+          "You need a google-services.json file to run this project." +
+            " Please refer to the CONTRIBUTING.md file for details."
         )
       }
     }
@@ -379,12 +384,6 @@ tasks {
   }
 }
 
-kotlin {
-  sourceSets.all {
-    languageSettings.enableLanguageFeature("ExplicitBackingFields")
-  }
-}
-
 configurations.all {
   resolutionStrategy {
     force("com.google.code.findbugs:jsr305:3.0.2")
@@ -392,3 +391,14 @@ configurations.all {
     force("org.jetbrains.kotlin:kotlin-reflect:${project.libs.versions.kotlin.get()}")
   }
 }
+
+
+fun String.toKebabCase(): String {
+  return this.trim()
+    .replace(Regex("([a-z])([A-Z])"), "$1-$2")
+    .replace(Regex("[\\s_]+"), "-")
+    .replace(Regex("[^a-zA-Z0-9-]"), "")
+    .lowercase()
+}
+
+fun String.prefixIfNot(prefix: String): String = if (this.startsWith(prefix)) this else "$prefix-$this"

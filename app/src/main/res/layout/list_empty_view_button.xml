@@ -12,21 +12,22 @@
     android:id="@+id/list_empty_icon"
     style="@style/empty_view_image"
     android:layout_below="@+id/list_empty_title"
+    android:contentDescription="@string/content_description__empty_warning"
     android:src="@drawable/ic_music_note_black_80dp" />
 
   <TextView
-    style="@style/TextAppearance.MaterialComponents.Headline4"
     android:id="@+id/list_empty_title"
+    style="@style/TextAppearance.MaterialComponents.Headline4"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_centerHorizontal="true"
     android:maxLines="1"
-    android:text="@string/now_playing_list_empty"
+    android:text="@string/common_empty_no_tracks"
     tools:ignore="MissingPrefix" />
 
   <Button
-    style="@style/Widget.MaterialComponents.Button.TextButton"
     android:id="@+id/list_empty_sync"
+    style="@style/Widget.MaterialComponents.Button.TextButton"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_below="@+id/list_empty_icon"

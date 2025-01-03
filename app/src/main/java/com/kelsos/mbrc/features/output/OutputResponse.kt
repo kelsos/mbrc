@@ -1,14 +1,12 @@
 package com.kelsos.mbrc.features.output
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder("devices", "active")
+@JsonClass(generateAdapter = true)
 data class OutputResponse(
-  @field:JsonProperty("devices")
+  @Json(name = "devices")
   val devices: List<String> = emptyList(),
-  @field:JsonProperty("active")
+  @Json(name = "active")
   val active: String = "",
 )

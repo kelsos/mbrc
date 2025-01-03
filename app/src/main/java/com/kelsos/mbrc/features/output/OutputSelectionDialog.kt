@@ -42,7 +42,9 @@ class OutputSelectionDialog :
 
   private val viewModel: OutputSelectionViewModel by viewModel()
 
-  private val onItemSelectedListener =
+  private val onItemSelectedListener: AdapterView.OnItemSelectedListener by lazy {
+    val vm = viewModel
+
     object : AdapterView.OnItemSelectedListener {
       override fun onNothingSelected(parent: AdapterView<*>?) {
         // We don't handle this
@@ -59,10 +61,11 @@ class OutputSelectionDialog :
         }
 
         val selectedOutput = availableOutputs.adapter.getItem(position) as String
-        viewModel.setOutput(selectedOutput)
+        vm.setOutput(selectedOutput)
         touchInitiated = false
       }
     }
+  }
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val context = requireContext()

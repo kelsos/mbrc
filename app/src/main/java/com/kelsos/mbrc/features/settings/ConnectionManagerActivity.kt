@@ -4,89 +4,72 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
 import androidx.core.view.isGone
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.R
-import com.kelsos.mbrc.constants.UserInputEventType
-import com.kelsos.mbrc.events.DefaultSettingsChangedEvent
-import com.kelsos.mbrc.events.MessageEvent
-import com.kelsos.mbrc.events.bus.RxBus
-import com.kelsos.mbrc.events.ui.ConnectionSettingsChanged
-import com.kelsos.mbrc.events.ui.DiscoveryStopped
-import com.kelsos.mbrc.events.ui.NotifyUser
 import com.kelsos.mbrc.networking.discovery.DiscoveryStop
-import org.koin.android.ext.android.inject
+import kotlinx.coroutines.launch
 import org.koin.androidx.scope.ScopeActivity
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ConnectionManagerActivity :
   ScopeActivity(),
-  ConnectionManagerView,
   SettingsDialogFragment.SettingsSaveListener,
-  ConnectionAdapter.ConnectionChangeListener {
-  private val bus: RxBus by inject()
-  private val presenter: ConnectionManagerPresenter by inject()
+  ConnectionChangeListener {
+  private val viewModel: ConnectionManagerViewModel by viewModel()
 
   private lateinit var recyclerView: RecyclerView
   private lateinit var toolbar: MaterialToolbar
+  private lateinit var scanButton: Button
 
-  private var adapter: ConnectionAdapter? = null
-
-  private fun onAddButtonClick() {
-    val settingsDialog = SettingsDialogFragment()
-    settingsDialog.show(supportFragmentManager, "settings_dialog")
-  }
-
-  private fun onScanButtonClick() {
-    findViewById<LinearProgressIndicator>(R.id.connection_manager__progress).isGone = false
-    bus.post(MessageEvent(UserInputEventType.START_DISCOVERY))
-  }
+  private val adapter: ConnectionAdapter = ConnectionAdapter()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.ui_activity_connection_manager)
     recyclerView = findViewById(R.id.connection_list)
     toolbar = findViewById(R.id.toolbar)
-    findViewById<Button>(R.id.connection_add).setOnClickListener { onAddButtonClick() }
-    findViewById<Button>(R.id.connection_scan).setOnClickListener { onScanButtonClick() }
+    scanButton = findViewById(R.id.connection_scan)
+    findViewById<Button>(R.id.connection_add).setOnClickListener {
+      val settingsDialog = SettingsDialogFragment()
+      settingsDialog.show(this.supportFragmentManager, "settings_dialog")
+    }
+    scanButton.setOnClickListener {
+      findViewById<LinearProgressIndicator>(R.id.connection_manager__progress).isGone = false
+      scanButton.isEnabled = false
+      viewModel.actions.startDiscovery()
+    }
 
     setSupportActionBar(toolbar)
     recyclerView.setHasFixedSize(true)
     val layoutManager = LinearLayoutManager(this)
     recyclerView.layoutManager = layoutManager
-    adapter = ConnectionAdapter()
-    adapter!!.setChangeListener(this)
+    adapter.setChangeListener(this)
     recyclerView.adapter = adapter
-    presenter.attach(this)
-    presenter.load()
-  }
-
-  override fun onStart() {
-    super.onStart()
-
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
     supportActionBar?.setTitle(R.string.connection_manager_title)
-  }
 
-  override fun onResume() {
-    super.onResume()
-    presenter.attach(this)
-    bus.register(
-      this,
-      ConnectionSettingsChanged::class.java,
-      { this.onConnectionSettingsChange(it) },
-      true,
-    )
-    bus.register(this, DiscoveryStopped::class.java, { this.onDiscoveryStopped(it) }, true)
-    bus.register(this, NotifyUser::class.java, { this.onUserNotification(it) }, true)
-  }
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.state.settings.collect {
+          adapter.submitData(it)
+        }
+      }
+    }
 
-  override fun onPause() {
-    super.onPause()
-    presenter.detach()
-    bus.unregister(this)
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.state.events.collect {
+          onDiscoveryStopped(it)
+        }
+      }
+    }
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -98,22 +81,18 @@ class ConnectionManagerActivity :
   }
 
   override fun onSave(settings: ConnectionSettings) {
-    presenter.save(settings)
+    viewModel.actions.save(settings)
   }
 
-  private fun onConnectionSettingsChange(event: ConnectionSettingsChanged) {
-    adapter!!.setSelectionId(event.defaultId)
-  }
-
-  private fun onDiscoveryStopped(event: DiscoveryStopped) {
+  private fun onDiscoveryStopped(event: DiscoveryStop) {
     findViewById<LinearProgressIndicator>(R.id.connection_manager__progress).isGone = true
+    scanButton.isEnabled = true
 
     val message: String =
-      when (event.reason) {
-        DiscoveryStop.NO_WIFI -> getString(R.string.con_man_no_wifi)
-        DiscoveryStop.NOT_FOUND -> getString(R.string.con_man_not_found)
-        DiscoveryStop.COMPLETE -> {
-          presenter.load()
+      when (event) {
+        DiscoveryStop.NoWifi -> getString(R.string.con_man_no_wifi)
+        DiscoveryStop.NotFound -> getString(R.string.con_man_not_found)
+        is DiscoveryStop.Complete -> {
           getString(R.string.con_man_success)
         }
       }
@@ -121,13 +100,8 @@ class ConnectionManagerActivity :
     Snackbar.make(recyclerView, message, Snackbar.LENGTH_SHORT).show()
   }
 
-  private fun onUserNotification(event: NotifyUser) {
-    val message = if (event.isFromResource) getString(event.resId) else event.message
-    Snackbar.make(recyclerView, message, Snackbar.LENGTH_SHORT).show()
-  }
-
   override fun onDelete(settings: ConnectionSettings) {
-    presenter.delete(settings)
+    viewModel.actions.delete(settings)
   }
 
   override fun onEdit(settings: ConnectionSettings) {
@@ -137,18 +111,6 @@ class ConnectionManagerActivity :
   }
 
   override fun onDefault(settings: ConnectionSettings) {
-    presenter.setDefault(settings)
-  }
-
-  override fun updateModel(connectionModel: ConnectionModel) {
-    adapter!!.update(connectionModel)
-  }
-
-  override fun defaultChanged() {
-    bus.post(DefaultSettingsChangedEvent.create())
-  }
-
-  override fun dataUpdated() {
-    presenter.load()
+    viewModel.actions.setDefault(settings)
   }
 }

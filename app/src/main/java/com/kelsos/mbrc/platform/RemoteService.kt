@@ -1,72 +1,33 @@
 package com.kelsos.mbrc.platform
 
-import android.app.Notification
 import android.app.Service
 import android.content.Intent
-import android.os.Binder
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
-import com.kelsos.mbrc.R
-import com.kelsos.mbrc.constants.UserInputEventType
-import com.kelsos.mbrc.events.MessageEvent
-import com.kelsos.mbrc.networking.discovery.RemoteServiceDiscovery
-import com.kelsos.mbrc.networking.protocol.CommandRegistration
-import com.kelsos.mbrc.networking.protocol.RemoteController
-import com.kelsos.mbrc.platform.mediasession.RemoteIntentCode
-import com.kelsos.mbrc.platform.mediasession.RemoteViewIntentBuilder
-import com.kelsos.mbrc.platform.mediasession.SessionNotificationManager
-import org.koin.android.ext.android.getKoin
+import com.kelsos.mbrc.common.state.AppStateManager
+import com.kelsos.mbrc.networking.client.ClientConnectionManager
+import com.kelsos.mbrc.platform.mediasession.AppNotificationManager
 import org.koin.android.ext.android.inject
 import timber.log.Timber
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 class RemoteService : Service() {
-  private val controllerBinder = ControllerBinder()
-
-  private val remoteController: RemoteController by inject()
-  private val discovery: RemoteServiceDiscovery by inject()
   private val receiver: RemoteBroadcastReceiver by inject()
-  private var threadPoolExecutor: ExecutorService? = null
+  private val appStateManager: AppStateManager by inject()
+  private val notificationManager: AppNotificationManager by inject()
+  private val connectionManager: ClientConnectionManager by inject()
   private lateinit var handler: Handler
 
-  private fun placeholderNotification(): Notification {
-    val channel = SessionNotificationManager.Companion.channel()
-    channel?.let { notificationChannel ->
-      val manager = NotificationManagerCompat.from(this)
-      manager.createNotificationChannel(notificationChannel)
-    }
-    val cancelIntent = RemoteViewIntentBuilder.getPendingIntent(RemoteIntentCode.Cancel, this)
-    val action =
-      NotificationCompat.Action
-        .Builder(
-          R.drawable.ic_close_black_24dp,
-          getString(android.R.string.cancel),
-          cancelIntent,
-        ).build()
-
-    return NotificationCompat
-      .Builder(this, SessionNotificationManager.Companion.CHANNEL_ID)
-      .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-      .setSmallIcon(R.drawable.ic_mbrc_status)
-      .setContentTitle(getString(R.string.application_name))
-      .addAction(action)
-      .setContentText(getString(R.string.application_starting))
-      .build()
-  }
-
-  override fun onBind(intent: Intent?): IBinder = controllerBinder
+  override fun onBind(intent: Intent?): IBinder? = null
 
   override fun onCreate() {
     super.onCreate()
-    Timber.Forest.d("Background Service::Created")
-    startForeground(SessionNotificationManager.Companion.NOW_PLAYING_PLACEHOLDER, placeholderNotification())
-    handler = Handler(Looper.myLooper()!!)
+    Timber.d("Background Service::Created")
+    startForeground(AppNotificationManager.MEDIA_SESSION_NOTIFICATION_ID, notificationManager.createPlaceholder())
+    val looper = requireNotNull(Looper.myLooper())
+    handler = Handler(looper)
     serviceRunning = true
     ContextCompat.registerReceiver(this, receiver, receiver.filter(this), ContextCompat.RECEIVER_EXPORTED)
   }
@@ -76,47 +37,40 @@ class RemoteService : Service() {
     flags: Int,
     startId: Int,
   ): Int {
-    Timber.Forest.d("Background Service::Started")
-    startForeground(SessionNotificationManager.Companion.NOW_PLAYING_PLACEHOLDER, placeholderNotification())
-    CommandRegistration.register(remoteController, getKoin())
-    threadPoolExecutor =
-      Executors
-        .newSingleThreadExecutor {
-          Thread(it, "message-thread")
-        }.apply {
-          execute(remoteController)
-        }
-
-    remoteController.executeCommand(MessageEvent(UserInputEventType.START_CONNECTION))
-    discovery.startDiscovery()
-
+    Timber.d("Background Service::Started")
+    notificationManager.initialize()
+    startForeground(AppNotificationManager.MEDIA_SESSION_NOTIFICATION_ID, notificationManager.createPlaceholder())
+    appStateManager.start()
+    connectionManager.start()
     return super.onStartCommand(intent, flags, startId)
   }
 
   override fun onDestroy() {
     super.onDestroy()
+    notificationManager.destroy()
+    appStateManager.stop()
+    connectionManager.stop()
     serviceStopping = true
     ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
     this.unregisterReceiver(receiver)
-    handler.postDelayed({
-      remoteController.executeCommand(MessageEvent(UserInputEventType.TERMINATE_CONNECTION))
-      CommandRegistration.unregister(remoteController)
-      threadPoolExecutor?.shutdownNow()
-
-      serviceStopping = false
-      serviceRunning = false
-      Timber.Forest.d("Background Service::Destroyed")
-    }, 150)
+    handler.postDelayed(
+      {
+        serviceStopping = false
+        serviceRunning = false
+        Timber.d("Background Service::Destroyed")
+      },
+      DESTROY_DELAY_MS,
+    )
   }
 
-  private inner class ControllerBinder : Binder() {
-    val service: ControllerBinder
-      @SuppressWarnings("unused")
-      get() = this@ControllerBinder
+  override fun onTaskRemoved(rootIntent: Intent?) {
+    super.onTaskRemoved(rootIntent)
+    appStateManager.stop()
   }
 
   companion object {
     var serviceRunning = false
     var serviceStopping = false
+    const val DESTROY_DELAY_MS = 150L
   }
 }

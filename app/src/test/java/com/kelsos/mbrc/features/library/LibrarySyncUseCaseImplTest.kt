@@ -2,15 +2,17 @@
 
 package com.kelsos.mbrc.features.library
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.common.truth.Truth.assertThat
-import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
-import com.kelsos.mbrc.events.bus.RxBus
-import com.kelsos.mbrc.events.ui.LibraryRefreshCompleteEvent
+import com.kelsos.mbrc.common.data.cacheIsEmpty
+import com.kelsos.mbrc.features.library.albums.AlbumRepository
+import com.kelsos.mbrc.features.library.artists.ArtistRepository
+import com.kelsos.mbrc.features.library.genres.GenreRepository
+import com.kelsos.mbrc.features.library.tracks.TrackRepository
 import com.kelsos.mbrc.features.playlists.PlaylistRepository
+import com.kelsos.mbrc.utils.parserModule
+import com.kelsos.mbrc.utils.testDispatcher
+import com.kelsos.mbrc.utils.testDispatcherModule
 import io.mockk.Runs
-import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -18,7 +20,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -40,28 +41,17 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   private val trackRepository: TrackRepository by inject()
   private val playlistRepository: PlaylistRepository by inject()
   private val sync: LibrarySyncUseCase by inject()
-  private val bus: RxBus by inject()
-
-  private val testDispatcher = StandardTestDispatcher()
 
   private val testModule =
     module {
-      single {
-        AppCoroutineDispatchers(
-          testDispatcher,
-          testDispatcher,
-          testDispatcher,
-          testDispatcher,
-        )
-      }
+      includes(testDispatcherModule, parserModule)
+
       singleOf(::LibrarySyncUseCaseImpl) { bind<LibrarySyncUseCase>() }
       single { mockk<GenreRepository>() }
       single { mockk<ArtistRepository>() }
       single { mockk<AlbumRepository>() }
       single { mockk<TrackRepository>() }
       single { mockk<PlaylistRepository>() }
-      single { mockk<RxBus>() }
-      single { ObjectMapper().registerKotlinModule() }
       single { mockk<CoverCache>(relaxed = true) }
     }
 
@@ -70,7 +60,6 @@ class LibrarySyncUseCaseImplTest : KoinTest {
     startKoin {
       modules(listOf(testModule))
     }
-    every { bus.post(any()) } just Runs
   }
 
   @After
@@ -79,7 +68,7 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   }
 
   @Test
-  fun emptyLibraryAutoSync() =
+  fun emptyLibraryAutoSync() {
     runTest(testDispatcher) {
       val onCompleteListener = setupOnCompleteListener()
 
@@ -97,13 +86,13 @@ class LibrarySyncUseCaseImplTest : KoinTest {
       verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
       verify(exactly = 1) { onCompleteListener.onTermination() }
       verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-      verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
 
       assertThat(sync.isRunning()).isFalse()
     }
+  }
 
   @Test
-  fun nonEmptyLibraryAutoSync() =
+  fun nonEmptyLibraryAutoSync() {
     runTest(testDispatcher) {
       val onCompleteListener = setupOnCompleteListener()
 
@@ -118,13 +107,13 @@ class LibrarySyncUseCaseImplTest : KoinTest {
       verify(exactly = 0) { onCompleteListener.onSuccess(any()) }
       verify(exactly = 1) { onCompleteListener.onTermination() }
       verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-      verify(exactly = 0) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
 
       assertThat(sync.isRunning()).isFalse()
     }
+  }
 
   @Test
-  fun nonEmptyLibraryManualSyncTwiceConsecutiveCalled() =
+  fun nonEmptyLibraryManualSyncTwiceConsecutiveCalled() {
     runTest(testDispatcher) {
       val onCompleteListener = setupOnCompleteListener()
 
@@ -144,13 +133,13 @@ class LibrarySyncUseCaseImplTest : KoinTest {
       verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
       verify(exactly = 1) { onCompleteListener.onTermination() }
       verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-      verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
 
       assertThat(sync.isRunning()).isFalse()
     }
+  }
 
   @Test
-  fun nonEmptyLibraryManualSyncAndSecondAfterCompletion() =
+  fun nonEmptyLibraryManualSyncAndSecondAfterCompletion() {
     runTest(testDispatcher) {
       var onCompleteListener = setupOnCompleteListener()
 
@@ -169,12 +158,8 @@ class LibrarySyncUseCaseImplTest : KoinTest {
       verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
       verify(exactly = 1) { onCompleteListener.onTermination() }
       verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-      verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
 
       assertThat(sync.isRunning()).isFalse()
-
-      clearMocks(onCompleteListener, bus)
-      every { bus.post(any()) } just Runs
 
       onCompleteListener = setupOnCompleteListener()
       sync.setOnCompleteListener(onCompleteListener)
@@ -190,13 +175,13 @@ class LibrarySyncUseCaseImplTest : KoinTest {
       verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
       verify(exactly = 1) { onCompleteListener.onTermination() }
       verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-      verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
 
       assertThat(sync.isRunning()).isFalse()
     }
+  }
 
   @Test
-  fun nonEmptyLibraryManualSyncFailure() =
+  fun nonEmptyLibraryManualSyncFailure() {
     runTest(testDispatcher) {
       val onCompleteListener = setupOnCompleteListener()
 
@@ -214,10 +199,10 @@ class LibrarySyncUseCaseImplTest : KoinTest {
       verify(exactly = 0) { onCompleteListener.onSuccess(any()) }
       verify(exactly = 1) { onCompleteListener.onTermination() }
       verify(exactly = 1) { onCompleteListener.onFailure(ofType(Exception::class)) }
-      verify(exactly = 0) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
 
       assertThat(sync.isRunning()).isFalse()
     }
+  }
 
   private fun setupOnCompleteListener(): LibrarySyncUseCase.OnCompleteListener {
     val onCompleteListener = mockk<LibrarySyncUseCase.OnCompleteListener>()
@@ -228,7 +213,7 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   }
 
   @Test
-  fun syncWithoutCompletionListener() =
+  fun syncWithoutCompletionListener() {
     runTest(testDispatcher) {
       mockCacheState(false)
       mockSuccessfulRepositoryResponse()
@@ -242,8 +227,8 @@ class LibrarySyncUseCaseImplTest : KoinTest {
       advanceTimeBy(5 * TASK_DELAY)
 
       assertThat(sync.isRunning()).isFalse()
-      verify(exactly = 1) { bus.post(ofType(LibraryRefreshCompleteEvent::class)) }
     }
+  }
 
   private fun mockCacheState(isEmpty: Boolean) {
     coEvery { genreRepository.cacheIsEmpty() } returns isEmpty

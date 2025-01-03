@@ -13,10 +13,7 @@ import androidx.preference.PreferenceManager
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.request.crossfade
-import coil3.util.DebugLogger
 import com.kelsos.mbrc.common.utilities.CustomLoggingTree
-import com.raizlabs.android.dbflow.config.FlowConfig
-import com.raizlabs.android.dbflow.config.FlowManager
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.fragment.koin.fragmentFactory
 import org.koin.core.context.GlobalContext.startKoin
@@ -32,7 +29,6 @@ open class App : Application() {
       ImageLoader
         .Builder(context)
         .crossfade(true)
-        .logger(DebugLogger())
         .build()
     }
     initialize()
@@ -57,17 +53,12 @@ open class App : Application() {
   }
 
   protected open fun initialize() {
-    initializeDbflow()
     startKoin {
       androidContext(this@App)
       fragmentFactory()
       modules(appModules())
     }
     initializeTimber()
-  }
-
-  private fun initializeDbflow() {
-    FlowManager.init(FlowConfig.Builder(this).openDatabasesOnInit(true).build())
   }
 
   private fun initializeTimber() {

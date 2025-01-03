@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
   <version
-     version="1.5.1"
-     release="Sep 13,2021">
+    release="Sep 13,2021"
+    version="1.5.1">
     <bug>Fixes an issue where the last playing track information would not properly persist.</bug>
     <bug>Fixes an issue where pressing the up volume button once would decrease the volume.</bug>
     <bug>Fixes a crash when attempting to send debug logs via the Feedback screen.</bug>
@@ -10,18 +10,20 @@
     <bug>Fixes an issue that would fail to properly sync album covers after the first sync.</bug>
   </version>
   <version
-    version="1.5.0"
-    release="Apr 13,2021">
+    release="Apr 13,2021"
+    version="1.5.0">
     <feature>Adds radio station support.</feature>
     <feature>Adds support for album covers on the library albums, and tracks tab.</feature>
     <feature>Adds an auto-connect behavior when restoring the application to the foreground.</feature>
     <bug>Fixes an issue where the volume up button would not work when volume was greater than 90%.</bug>
-    <bug>Fixes an issue that would cause the library search to hang after navigating view details. e.g. After going to album tracks.</bug>
+    <bug>Fixes an issue that would cause the library search to hang after navigating view details. e.g. After going to
+      album tracks.
+    </bug>
     <bug>Fixes an issue where the remote would continuously pause videos playing on the device.</bug>
   </version>
   <version
-    version="1.4.0"
-    release="Dec 22,2020">
+    release="Dec 22,2020"
+    version="1.4.0">
     <feature>Adds statistics dialog when you can check how many tracks, etc are currently synced.</feature>
     <feature>Improves visual feedback when performing a library metadata sync.</feature>
     <feature>Adds a feedback message when queueing tracks/albums/genres/artists.</feature>
@@ -29,8 +31,8 @@
     <bug>Fixes a bug that would prevent users from queueing albums when browsing an artist's albums.</bug>
   </version>
   <version
-    version="1.3.0"
-    release="Dec 12,2020">
+    release="Dec 12,2020"
+    version="1.3.0">
     <feature>Introduces the ability to change audio outputs.</feature>
     <bug>Fixes a bug with the feedback input being collapsed on smaller screen sizes.</bug>
     <bug>Fixes a crash while starting or stopping the background service.</bug>
@@ -54,7 +56,9 @@
     <feature>Improves the library metadata sync performance.</feature>
     <feature>Updates to the latest Material Design library.</feature>
     <feature>Integrates the library search functionality to the library screen.</feature>
-    <removed>Removes the ability to hide the notification due to background execution limitations introduced in Android.</removed>
+    <removed>Removes the ability to hide the notification due to background execution limitations introduced in
+      Android.
+    </removed>
     <removed>Removes fast scrolling due to performance issues.</removed>
     <feature>Improves media integration with Android</feature>
   </version>

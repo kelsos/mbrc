@@ -15,10 +15,11 @@ class OutputSelectionViewModel(
   private val outputApi: OutputApi,
   private val dispatchers: AppCoroutineDispatchers,
 ) : ViewModel() {
-  val outputs: SharedFlow<OutputResponse>
-    field = MutableSharedFlow()
-  val events: SharedFlow<OutputSelectionResult>
-    field = MutableSharedFlow()
+  private val backingOutputs = MutableSharedFlow<OutputResponse>()
+  private val backingEvents = MutableSharedFlow<OutputSelectionResult>()
+
+  val outputs: SharedFlow<OutputResponse> = backingOutputs
+  val events: SharedFlow<OutputSelectionResult> = backingEvents
 
   private fun code(throwable: Throwable?): OutputSelectionResult =
     when (throwable?.cause ?: throwable) {
@@ -32,10 +33,10 @@ class OutputSelectionViewModel(
     viewModelScope.launch(dispatchers.network) {
       Timber.d("reload outputs")
       try {
-        outputs.emit(outputApi.getOutputs())
+        backingOutputs.emit(outputApi.getOutputs())
       } catch (e: IOException) {
-        events.emit(code(e))
-        Timber.Forest.e(e)
+        backingEvents.emit(code(e))
+        Timber.e(e)
       }
     }
   }
@@ -43,9 +44,9 @@ class OutputSelectionViewModel(
   fun setOutput(output: String) {
     viewModelScope.launch {
       try {
-        outputs.emit(outputApi.setOutput(output))
+        backingOutputs.emit(outputApi.setOutput(output))
       } catch (e: IOException) {
-        events.emit(code(e))
+        backingEvents.emit(code(e))
       }
     }
   }

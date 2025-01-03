@@ -1,33 +1,31 @@
 package com.kelsos.mbrc.features.playlists
 
-import android.app.Activity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.kelsos.mbrc.R
-import com.raizlabs.android.dbflow.list.FlowCursorList
 
-class PlaylistAdapter(
-  context: Activity,
-) : RecyclerView.Adapter<PlaylistAdapter.ViewHolder>() {
-  private val inflater: LayoutInflater = LayoutInflater.from(context)
-  private var data: FlowCursorList<Playlist>? = null
+class PlaylistAdapter : PagingDataAdapter<Playlist, PlaylistAdapter.ViewHolder>(DIFF_CALLBACK) {
   private var playlistPressedListener: OnPlaylistPressedListener? = null
 
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int,
   ): ViewHolder {
+    val inflater = LayoutInflater.from(parent.context)
     val view = inflater.inflate(R.layout.listitem_single, parent, false)
     val viewHolder = ViewHolder(view)
 
     viewHolder.itemView.setOnClickListener {
-      val path = data?.getItem(viewHolder.bindingAdapterPosition.toLong())?.url
-      path?.let {
-        playlistPressedListener?.playlistPressed(it)
+      val position = viewHolder.bindingAdapterPosition
+      val path = getItem(position)?.url
+      if (path != null) {
+        playlistPressedListener?.playlistPressed(path)
       }
     }
     return viewHolder
@@ -37,25 +35,18 @@ class PlaylistAdapter(
     holder: ViewHolder,
     position: Int,
   ) {
-    val playlist = data?.getItem(holder.bindingAdapterPosition.toLong())
-    playlist?.let {
+    val playlist = getItem(position)
+    if (playlist != null) {
       holder.name.text = playlist.name
     }
     holder.context.visibility = View.GONE
   }
 
-  override fun getItemCount(): Int = data?.count?.toInt() ?: 0
-
-  fun update(cursor: FlowCursorList<Playlist>) {
-    this.data = cursor
-    notifyDataSetChanged()
-  }
-
-  fun setPlaylistPressedListener(playlistPressedListener: OnPlaylistPressedListener) {
+  fun setPlaylistPressedListener(playlistPressedListener: OnPlaylistPressedListener?) {
     this.playlistPressedListener = playlistPressedListener
   }
 
-  interface OnPlaylistPressedListener {
+  fun interface OnPlaylistPressedListener {
     fun playlistPressed(path: String)
   }
 
@@ -64,5 +55,20 @@ class PlaylistAdapter(
   ) : RecyclerView.ViewHolder(itemView) {
     val name: TextView = itemView.findViewById(R.id.line_one)
     val context: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
+  }
+
+  companion object {
+    private val DIFF_CALLBACK =
+      object : DiffUtil.ItemCallback<Playlist>() {
+        override fun areContentsTheSame(
+          oldItem: Playlist,
+          newItem: Playlist,
+        ): Boolean = oldItem.id == newItem.id
+
+        override fun areItemsTheSame(
+          oldItem: Playlist,
+          newItem: Playlist,
+        ): Boolean = oldItem == newItem
+      }
   }
 }

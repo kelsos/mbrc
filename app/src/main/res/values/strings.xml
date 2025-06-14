@@ -56,6 +56,7 @@
   <string name="library__sync_complete">Sync completed successfully. %1$s , %2$s, %3$s, %4$s and %5$s are available.</string>
   <string name="library__sync_complete_title">Sync complete</string>
   <string name="library__sync_failed">The library metadata sync was incomplete or failed completely. This might result in queueing not working properly..</string>
+  <string name="library__sync_progress">Syncing %1$d of %2$d %3$s</string>
   <string name="library_actionbar_refresh">Refresh</string>
   <string name="library_album_artists_only">Only Album Artists</string>
   <string name="library_menu__sync_state">Library Sync State</string>
@@ -76,6 +77,7 @@
   <string name="main_menu_title_share">Share</string>
   <string name="media__albums">Albums</string>
   <string name="media__artists">Artists</string>
+  <string name="media__covers">Covers</string>
   <string name="media__genres">Genres</string>
   <string name="media__playlists">Playlists</string>
   <string name="media__tracks">Tracks</string>
@@ -106,6 +108,8 @@
   <string name="non_album_tracks">Non album tracks</string>
   <string name="notification__session_channel_description">Used to display the media control notification.</string>
   <string name="notification__session_channel_name">MusicBee Remote Session</string>
+  <string name="notification__sync_description">Library metadata sync in progress</string>
+  <string name="notification__sync_title">Library Sync</string>
   <string name="now_playing_indicator">Should be shown if the track is currently playing</string>
   <string name="now_playing_search">Search</string>
   <string name="now_playing_search_hint">Search and play a track</string>
@@ -167,6 +171,8 @@
   <string name="settings_version">settings_version</string>
   <string name="settings_version_number">v%1$s</string>
   <string name="swipe_to_refresh">Swipe to refresh the list.</string>
+  <string name="sync_notification__channel_description">Shows the progress of the library metadata sync</string>
+  <string name="sync_notification__channel_name">Library Metadata Sync</string>
   <string name="tab_help">Help</string>
   <string name="title_activity_radios">Radios</string>
   <string name="unknown_artist">Unknown artist</string>

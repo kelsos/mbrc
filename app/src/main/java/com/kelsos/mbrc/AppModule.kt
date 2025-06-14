@@ -2,6 +2,7 @@ package com.kelsos.mbrc
 
 import androidx.core.app.NotificationManagerCompat
 import androidx.room.Room
+import androidx.work.WorkManager
 import com.kelsos.mbrc.common.state.AppState
 import com.kelsos.mbrc.common.state.AppStateFlow
 import com.kelsos.mbrc.common.state.AppStateManager
@@ -24,6 +25,9 @@ import com.kelsos.mbrc.features.library.LibraryActivity
 import com.kelsos.mbrc.features.library.LibrarySearchModel
 import com.kelsos.mbrc.features.library.LibrarySyncUseCase
 import com.kelsos.mbrc.features.library.LibrarySyncUseCaseImpl
+import com.kelsos.mbrc.features.library.LibrarySyncWorkHandler
+import com.kelsos.mbrc.features.library.LibrarySyncWorkHandlerImpl
+import com.kelsos.mbrc.features.library.LibrarySyncWorker
 import com.kelsos.mbrc.features.library.LibraryViewModel
 import com.kelsos.mbrc.features.library.albums.AlbumEntryAdapter
 import com.kelsos.mbrc.features.library.albums.AlbumRepository
@@ -152,6 +156,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
+import org.koin.androidx.workmanager.dsl.workerOf
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.scopedOf
@@ -196,9 +201,8 @@ val appModule =
 
     singleOf(::QueueHandler)
 
-    single<NotificationManagerCompat> {
-      NotificationManagerCompat.from(get())
-    }
+    single<NotificationManagerCompat> { NotificationManagerCompat.from(get()) }
+    single { WorkManager.getInstance(get()) }
 
     singleOf(::RemoteBroadcastReceiver)
     singleOf(::SettingsManagerImpl) { bind<SettingsManager>() }
@@ -256,8 +260,11 @@ val appModule =
     factoryOf(::SimpleLogCommand)
     factoryOf(::ProtocolVersionUpdate)
 
+    workerOf(::LibrarySyncWorker)
+
     singleOf(::RemoteServiceDiscoveryImpl) { bind<RemoteServiceDiscovery>() }
     singleOf(::WidgetUpdaterImpl) { bind<WidgetUpdater>() }
+    singleOf(::LibrarySyncWorkHandlerImpl) { bind<LibrarySyncWorkHandler>() }
 
     val network = createDispatcher(name = "Network", threads = 2)
     val database = createDispatcher(name = "Database")

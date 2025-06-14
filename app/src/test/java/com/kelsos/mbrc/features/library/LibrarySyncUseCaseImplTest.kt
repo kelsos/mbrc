@@ -12,15 +12,14 @@ import com.kelsos.mbrc.features.playlists.PlaylistRepository
 import com.kelsos.mbrc.utils.parserModule
 import com.kelsos.mbrc.utils.testDispatcher
 import com.kelsos.mbrc.utils.testDispatcherModule
-import io.mockk.Runs
 import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -70,23 +69,22 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   @Test
   fun emptyLibraryAutoSync() {
     runTest(testDispatcher) {
-      val onCompleteListener = setupOnCompleteListener()
-
       mockCacheState(true)
       mockSuccessfulRepositoryResponse()
 
-      sync.setOnCompleteListener(onCompleteListener)
-      sync.sync(true)
+      var syncResult: SyncResult? = null
+
+      val job = launch { syncResult = sync.sync(true) }
+
       advanceTimeBy(TASK_DELAY)
       assertThat(sync.isRunning()).isTrue()
       advanceTimeBy(TASK_DELAY)
       assertThat(sync.isRunning()).isTrue()
       advanceTimeBy(5 * TASK_DELAY)
 
-      verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
-      verify(exactly = 1) { onCompleteListener.onTermination() }
-      verify(exactly = 0) { onCompleteListener.onFailure(any()) }
+      job.join()
 
+      assertThat(syncResult).isInstanceOf(SyncResult.Success::class.java)
       assertThat(sync.isRunning()).isFalse()
     }
   }
@@ -94,20 +92,14 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   @Test
   fun nonEmptyLibraryAutoSync() {
     runTest(testDispatcher) {
-      val onCompleteListener = setupOnCompleteListener()
-
       mockCacheState(false)
       mockSuccessfulRepositoryResponse()
 
-      sync.setOnCompleteListener(onCompleteListener)
-      sync.sync(true)
+      val syncResult = sync.sync(true)
 
       advanceTimeBy(TASK_DELAY)
 
-      verify(exactly = 0) { onCompleteListener.onSuccess(any()) }
-      verify(exactly = 1) { onCompleteListener.onTermination() }
-      verify(exactly = 0) { onCompleteListener.onFailure(any()) }
-
+      assertThat(syncResult).isEqualTo(SyncResult.Noop)
       assertThat(sync.isRunning()).isFalse()
     }
   }
@@ -115,25 +107,25 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   @Test
   fun nonEmptyLibraryManualSyncTwiceConsecutiveCalled() {
     runTest(testDispatcher) {
-      val onCompleteListener = setupOnCompleteListener()
-
       mockCacheState(false)
       mockSuccessfulRepositoryResponse()
 
-      sync.setOnCompleteListener(onCompleteListener)
-      sync.sync()
-      sync.sync()
+      val firstJob = async { sync.sync() }
 
-      advanceTimeBy(TASK_DELAY)
+      advanceTimeBy(TASK_DELAY / 2)
       assertThat(sync.isRunning()).isTrue()
+
+      val secondSyncResult = sync.sync()
+
+      assertThat(secondSyncResult).isEqualTo(SyncResult.Noop)
+
       advanceTimeBy(TASK_DELAY)
       assertThat(sync.isRunning()).isTrue()
       advanceTimeBy(5 * TASK_DELAY)
 
-      verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
-      verify(exactly = 1) { onCompleteListener.onTermination() }
-      verify(exactly = 0) { onCompleteListener.onFailure(any()) }
+      val syncResult = firstJob.await()
 
+      assertThat(syncResult).isInstanceOf(SyncResult.Success::class.java)
       assertThat(sync.isRunning()).isFalse()
     }
   }
@@ -141,41 +133,34 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   @Test
   fun nonEmptyLibraryManualSyncAndSecondAfterCompletion() {
     runTest(testDispatcher) {
-      var onCompleteListener = setupOnCompleteListener()
-
       mockCacheState(false)
       mockSuccessfulRepositoryResponse()
 
-      sync.setOnCompleteListener(onCompleteListener)
-      sync.sync()
+      var syncResult: SyncResult? = null
+      val firstJob = launch { syncResult = sync.sync() }
 
       advanceTimeBy(TASK_DELAY)
       assertThat(sync.isRunning()).isTrue()
       advanceTimeBy(TASK_DELAY)
       assertThat(sync.isRunning()).isTrue()
-      advanceTimeBy(5 * TASK_DELAY)
+      advanceUntilIdle()
 
-      verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
-      verify(exactly = 1) { onCompleteListener.onTermination() }
-      verify(exactly = 0) { onCompleteListener.onFailure(any()) }
+      firstJob.join()
 
+      assertThat(syncResult).isInstanceOf(SyncResult.Success::class.java)
       assertThat(sync.isRunning()).isFalse()
 
-      onCompleteListener = setupOnCompleteListener()
-      sync.setOnCompleteListener(onCompleteListener)
-
-      sync.sync()
+      val secondJob = launch { syncResult = sync.sync() }
 
       advanceTimeBy(TASK_DELAY)
       assertThat(sync.isRunning()).isTrue()
       advanceTimeBy(TASK_DELAY)
       assertThat(sync.isRunning()).isTrue()
-      advanceTimeBy(5 * TASK_DELAY)
+      advanceUntilIdle()
 
-      verify(exactly = 1) { onCompleteListener.onSuccess(any()) }
-      verify(exactly = 1) { onCompleteListener.onTermination() }
-      verify(exactly = 0) { onCompleteListener.onFailure(any()) }
+      secondJob.join()
 
+      assertThat(syncResult).isInstanceOf(SyncResult.Success::class.java)
       assertThat(sync.isRunning()).isFalse()
     }
   }
@@ -183,49 +168,22 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   @Test
   fun nonEmptyLibraryManualSyncFailure() {
     runTest(testDispatcher) {
-      val onCompleteListener = setupOnCompleteListener()
-
       mockCacheState(false)
       mockFailedRepositoryResponse()
 
-      sync.setOnCompleteListener(onCompleteListener)
-      sync.sync()
-      sync.sync()
+      val firstJob = async { sync.sync() }
 
       advanceTimeBy(TASK_DELAY / 2)
       assertThat(sync.isRunning()).isTrue()
+
+      val secondSyncResult = sync.sync()
+      assertThat(secondSyncResult).isEqualTo(SyncResult.Noop)
+
       advanceTimeBy(5 * TASK_DELAY)
 
-      verify(exactly = 0) { onCompleteListener.onSuccess(any()) }
-      verify(exactly = 1) { onCompleteListener.onTermination() }
-      verify(exactly = 1) { onCompleteListener.onFailure(ofType(Exception::class)) }
+      val syncResult = firstJob.await()
 
-      assertThat(sync.isRunning()).isFalse()
-    }
-  }
-
-  private fun setupOnCompleteListener(): LibrarySyncUseCase.OnCompleteListener {
-    val onCompleteListener = mockk<LibrarySyncUseCase.OnCompleteListener>()
-    every { onCompleteListener.onTermination() } just Runs
-    every { onCompleteListener.onSuccess(any()) } just Runs
-    every { onCompleteListener.onFailure(any()) } just Runs
-    return onCompleteListener
-  }
-
-  @Test
-  fun syncWithoutCompletionListener() {
-    runTest(testDispatcher) {
-      mockCacheState(false)
-      mockSuccessfulRepositoryResponse()
-
-      sync.sync()
-
-      advanceTimeBy(TASK_DELAY)
-      assertThat(sync.isRunning()).isTrue()
-      advanceTimeBy(TASK_DELAY)
-      assertThat(sync.isRunning()).isTrue()
-      advanceTimeBy(5 * TASK_DELAY)
-
+      assertThat(syncResult).isInstanceOf(SyncResult.Failed::class.java)
       assertThat(sync.isRunning()).isFalse()
     }
   }
@@ -252,19 +210,19 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   }
 
   private fun mockSuccessfulRepositoryResponse() {
-    coEvery { genreRepository.getRemote() } coAnswers { wait() }
-    coEvery { artistRepository.getRemote() } coAnswers { wait() }
-    coEvery { albumRepository.getRemote() } coAnswers { wait() }
-    coEvery { trackRepository.getRemote() } coAnswers { wait() }
-    coEvery { playlistRepository.getRemote() } coAnswers { wait() }
+    coEvery { genreRepository.getRemote(any()) } coAnswers { wait() }
+    coEvery { artistRepository.getRemote(any()) } coAnswers { wait() }
+    coEvery { albumRepository.getRemote(any()) } coAnswers { wait() }
+    coEvery { trackRepository.getRemote(any()) } coAnswers { wait() }
+    coEvery { playlistRepository.getRemote(any()) } coAnswers { wait() }
   }
 
   private fun mockFailedRepositoryResponse() {
-    coEvery { genreRepository.getRemote() } coAnswers { wait() }
-    coEvery { artistRepository.getRemote() } throws SocketTimeoutException()
-    coEvery { albumRepository.getRemote() } coAnswers { wait() }
-    coEvery { trackRepository.getRemote() } coAnswers { wait() }
-    coEvery { playlistRepository.getRemote() } coAnswers { wait() }
+    coEvery { genreRepository.getRemote(any()) } coAnswers { wait() }
+    coEvery { artistRepository.getRemote(any()) } throws SocketTimeoutException()
+    coEvery { albumRepository.getRemote(any()) } coAnswers { wait() }
+    coEvery { trackRepository.getRemote(any()) } coAnswers { wait() }
+    coEvery { playlistRepository.getRemote(any()) } coAnswers { wait() }
   }
 
   companion object {

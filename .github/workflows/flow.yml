@@ -15,17 +15,19 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  JVM_OPTS: -Xmx3200m
+  JVM_OPTS: -Xmx6g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx6g -XX:MaxMetaspaceSize=512m" -Dorg.gradle.daemon=false
 
 jobs:
   check:
-    timeout-minutes: 30
+    timeout-minutes: 45
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -46,7 +48,7 @@ jobs:
         with:
           sarif_file: app/build/reports/sarif/
   test:
-    timeout-minutes: 30
+    timeout-minutes: 45
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -72,8 +74,10 @@ jobs:
         with:
           files: ./app/build/reports/kover/project-xml/report.xml
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: test-results
           path: app/build/test-results

@@ -21,6 +21,7 @@ import com.kelsos.mbrc.BaseActivity
 import com.kelsos.mbrc.R
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import timber.log.Timber
 
 class LibraryActivity :
   BaseActivity(R.layout.activity_library),
@@ -111,12 +112,24 @@ class LibraryActivity :
               syncComplete(event.stats)
               hideSyncProgress()
             }
+
             is LibraryUiEvent.UpdateAlbumArtistOnly -> updateArtistOnlyPreference(event.enabled)
             is LibraryUiEvent.LibrarySyncFailed -> {
               syncFailure()
               hideSyncProgress()
             }
           }
+        }
+      }
+    }
+
+    lifecycleScope.launch {
+      viewModel.progress.collect { progress ->
+        Timber.v("progress: $progress")
+        if (progress.running) {
+          showSyncProgress(progress)
+        } else {
+          hideSyncProgress()
         }
       }
     }
@@ -141,9 +154,9 @@ class LibraryActivity :
     when (item.itemId) {
       R.id.library_refresh_item -> {
         viewModel.sync()
-        showSyncProgress()
         true
       }
+
       R.id.library_album_artist -> {
         albumArtistOnly?.let {
           it.isChecked = !it.isChecked
@@ -151,6 +164,7 @@ class LibraryActivity :
         }
         true
       }
+
       R.id.library_search_clear -> {
         supportActionBar?.setTitle(R.string.nav_library)
         supportActionBar?.subtitle = ""
@@ -159,6 +173,7 @@ class LibraryActivity :
         searchClear?.isVisible = false
         true
       }
+
       R.id.library_sync_state -> {
         viewModel.displayLibraryStats()
         true
@@ -222,9 +237,25 @@ class LibraryActivity :
     Snackbar.make(pager, R.string.library__sync_failed, Snackbar.LENGTH_LONG).show()
   }
 
-  fun showSyncProgress() {
-    findViewById<LinearProgressIndicator>(R.id.sync_progress).isGone = false
-    findViewById<TextView>(R.id.sync_progress_text).isGone = false
+  fun getCategoryText(mediaType: LibraryMediaType): String =
+    when (mediaType) {
+      LibraryMediaType.Albums -> getString(R.string.media__albums)
+      LibraryMediaType.Artists -> getString(R.string.media__artists)
+      LibraryMediaType.Genres -> getString(R.string.media__genres)
+      LibraryMediaType.Playlists -> getString(R.string.media__playlists)
+      LibraryMediaType.Tracks -> getString(R.string.media__tracks)
+      LibraryMediaType.Covers -> getString(R.string.media__covers)
+    }
+
+  fun showSyncProgress(progress: LibrarySyncProgress) {
+    val syncText = findViewById<TextView>(R.id.sync_progress_text)
+    val progressIndicator = findViewById<LinearProgressIndicator>(R.id.sync_progress)
+    val categoryText = getCategoryText(progress.category)
+    syncText.isGone = false
+    syncText.text = getString(R.string.library__sync_progress, progress.current, progress.total, categoryText)
+    progressIndicator.isGone = false
+    progressIndicator.progress = progress.current
+    progressIndicator.max = progress.total
   }
 
   fun hideSyncProgress() {

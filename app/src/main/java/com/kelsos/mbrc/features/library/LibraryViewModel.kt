@@ -3,34 +3,18 @@ package com.kelsos.mbrc.features.library
 import androidx.lifecycle.viewModelScope
 import com.kelsos.mbrc.common.mvvm.BaseViewModel
 import com.kelsos.mbrc.features.settings.SettingsManager
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class LibraryViewModel(
   private val searchModel: LibrarySearchModel,
+  private val librarySyncWorkHandler: LibrarySyncWorkHandler,
   private val librarySyncUseCase: LibrarySyncUseCase,
   private val settingsManager: SettingsManager,
 ) : BaseViewModel<LibraryUiEvent>() {
-  init {
-    librarySyncUseCase.setOnCompleteListener(
-      object : LibrarySyncUseCase.OnCompleteListener {
-        override fun onTermination() {
-          // figure out what to do here
-        }
-
-        override fun onFailure(throwable: Throwable) {
-          viewModelScope.launch {
-            emit(LibraryUiEvent.LibrarySyncFailed(throwable.message ?: "Unknown error"))
-          }
-        }
-
-        override fun onSuccess(stats: LibraryStats) {
-          viewModelScope.launch {
-            emit(LibraryUiEvent.LibrarySyncComplete(stats))
-          }
-        }
-      },
-    )
-  }
+  val progress: Flow<LibrarySyncProgress>
+    get() = librarySyncWorkHandler.syncProgress()
 
   fun search(string: String = "") {
     viewModelScope.launch {
@@ -39,7 +23,20 @@ class LibraryViewModel(
   }
 
   fun sync() {
-    librarySyncUseCase.sync()
+    viewModelScope.launch {
+      librarySyncWorkHandler.sync().collect { syncResult ->
+        Timber.v("SyncResult $syncResult")
+        when (syncResult) {
+          is SyncResult.Failed -> {
+            emit(LibraryUiEvent.LibrarySyncFailed(syncResult.message))
+          }
+          SyncResult.Noop -> Unit
+          is SyncResult.Success -> {
+            emit(LibraryUiEvent.LibrarySyncComplete(syncResult.stats))
+          }
+        }
+      }
+    }
   }
 
   fun updateAlbumArtistOnly(bool: Boolean) {
@@ -48,8 +45,8 @@ class LibraryViewModel(
 
   fun displayLibraryStats() {
     viewModelScope.launch {
-      val stats = librarySyncUseCase.syncStats()
-      emit(LibraryUiEvent.LibrarySyncComplete(stats))
+      val syncStats = librarySyncUseCase.syncStats()
+      emit(LibraryUiEvent.LibraryStatsReady(syncStats))
     }
   }
 }

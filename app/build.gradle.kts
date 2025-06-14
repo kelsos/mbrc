@@ -224,6 +224,7 @@ dependencies {
   implementation(libs.androidx.recyclerview)
   implementation(libs.androidx.core.splashscreen)
   implementation(libs.androidx.viewpager2)
+  implementation(libs.androidx.work.ktx)
   implementation(libs.androidx.swiperefreshlayout)
   implementation(libs.bundles.androidx.lifecycle)
   implementation(libs.bundles.coroutines)

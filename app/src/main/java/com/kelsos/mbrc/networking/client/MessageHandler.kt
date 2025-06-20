@@ -3,6 +3,7 @@ package com.kelsos.mbrc.networking.client
 import com.kelsos.mbrc.common.state.ConnectionStatePublisher
 import com.kelsos.mbrc.common.state.ConnectionStatus
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
+import com.kelsos.mbrc.features.library.LibrarySyncWorkHandler
 import com.kelsos.mbrc.features.settings.ClientInformationStore
 import com.kelsos.mbrc.networking.protocol.CommandFactory
 import com.kelsos.mbrc.networking.protocol.MessageEvent
@@ -27,6 +28,7 @@ class MessageHandlerImpl(
   private val uiMessageQueue: UiMessageQueue,
   private val connectionState: ConnectionStatePublisher,
   private val clientInformationStore: ClientInformationStore,
+  private val librarySyncWorkHandler: LibrarySyncWorkHandler,
   private val dispatchers: AppCoroutineDispatchers,
 ) : MessageHandler {
   private val commands: MutableMap<Protocol, ProtocolAction> = HashMap()
@@ -87,6 +89,9 @@ class MessageHandlerImpl(
         connectionState.updateConnection(ConnectionStatus.Connected)
         Timber.v("Handshake complete, sending init message")
         messageQueue.queue(SocketMessage.create(Protocol.Init))
+
+        Timber.v("Starting automatic library sync after successful connection")
+        librarySyncWorkHandler.sync(auto = true)
         true
       }
 

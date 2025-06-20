@@ -5,7 +5,6 @@ import com.kelsos.mbrc.common.mvvm.BaseViewModel
 import com.kelsos.mbrc.features.settings.SettingsManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class LibraryViewModel(
   private val searchModel: LibrarySearchModel,
@@ -16,6 +15,9 @@ class LibraryViewModel(
   val progress: Flow<LibrarySyncProgress>
     get() = librarySyncWorkHandler.syncProgress()
 
+  val syncResults: Flow<SyncResult>
+    get() = librarySyncWorkHandler.syncResults()
+
   fun search(string: String = "") {
     viewModelScope.launch {
       searchModel.term.emit(string)
@@ -24,18 +26,7 @@ class LibraryViewModel(
 
   fun sync() {
     viewModelScope.launch {
-      librarySyncWorkHandler.sync().collect { syncResult ->
-        Timber.v("SyncResult $syncResult")
-        when (syncResult) {
-          is SyncResult.Failed -> {
-            emit(LibraryUiEvent.LibrarySyncFailed(syncResult.message))
-          }
-          SyncResult.Noop -> Unit
-          is SyncResult.Success -> {
-            emit(LibraryUiEvent.LibrarySyncComplete(syncResult.stats))
-          }
-        }
-      }
+      librarySyncWorkHandler.sync()
     }
   }
 

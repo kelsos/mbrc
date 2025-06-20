@@ -33,7 +33,9 @@ data class LibrarySyncProgress(
 )
 
 interface LibrarySyncWorkHandler {
-  fun sync(auto: Boolean = false): Flow<SyncResult>
+  fun sync(auto: Boolean = false)
+
+  fun syncResults(): Flow<SyncResult>
 
   fun syncProgress(): Flow<LibrarySyncProgress>
 }
@@ -41,14 +43,18 @@ interface LibrarySyncWorkHandler {
 class LibrarySyncWorkHandlerImpl(
   private val workManager: WorkManager,
 ) : LibrarySyncWorkHandler {
-  override fun sync(auto: Boolean): Flow<SyncResult> {
+  override fun sync(auto: Boolean) {
     val workRequest = LibrarySyncWorker.createWorkRequest(auto)
     workManager.enqueueUniqueWork(LibrarySyncWorker.SYNC_WORK_TAG, ExistingWorkPolicy.REPLACE, workRequest)
-    return workManager
-      .getWorkInfoByIdFlow(workRequest.id)
-      .map { workInfo ->
+  }
 
-        when (workInfo?.state) {
+  override fun syncResults(): Flow<SyncResult> {
+    return workManager
+      .getWorkInfosForUniqueWorkFlow(LibrarySyncWorker.SYNC_WORK_TAG)
+      .map { workInfoList ->
+        if (workInfoList.isEmpty()) return@map null
+        val workInfo = workInfoList.first()
+        when (workInfo.state) {
           WorkInfo.State.SUCCEEDED -> {
             val data = workInfo.outputData
             val keys = data.keyValueMap.keys

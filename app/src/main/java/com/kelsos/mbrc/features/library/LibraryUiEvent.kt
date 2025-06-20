@@ -7,14 +7,6 @@ sealed class LibraryUiEvent : UiMessageBase {
     val stats: LibraryStats,
   ) : LibraryUiEvent()
 
-  class LibrarySyncComplete(
-    val stats: LibraryStats,
-  ) : LibraryUiEvent()
-
-  class LibrarySyncFailed(
-    val message: String,
-  ) : LibraryUiEvent()
-
   class UpdateAlbumArtistOnly(
     val enabled: Boolean,
   ) : LibraryUiEvent()

@@ -108,14 +108,23 @@ class LibraryActivity :
         viewModel.events.collect { event ->
           when (event) {
             is LibraryUiEvent.LibraryStatsReady -> showStats(event.stats)
-            is LibraryUiEvent.LibrarySyncComplete -> {
-              syncComplete(event.stats)
+            is LibraryUiEvent.UpdateAlbumArtistOnly -> updateArtistOnlyPreference(event.enabled)
+          }
+        }
+      }
+    }
+
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.syncResults.collect { syncResult ->
+          when (syncResult) {
+            is SyncResult.Failed -> {
+              syncFailure()
               hideSyncProgress()
             }
-
-            is LibraryUiEvent.UpdateAlbumArtistOnly -> updateArtistOnlyPreference(event.enabled)
-            is LibraryUiEvent.LibrarySyncFailed -> {
-              syncFailure()
+            SyncResult.Noop -> Unit
+            is SyncResult.Success -> {
+              syncComplete(syncResult.stats)
               hideSyncProgress()
             }
           }

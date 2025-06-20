@@ -4,6 +4,7 @@
   <string name="action_pause">Pause</string>
   <string name="action_play">Play</string>
   <string name="action_previous">Previous</string>
+  <string name="action_retry">Retry</string>
   <string name="album_tracks__cover_content">The cover of the album</string>
   <string name="album_tracks__play">Play Album</string>
   <string name="album_tracks__play__content_description">Plays all the tracks</string>
@@ -24,6 +25,14 @@
   <string name="con_man_success">Service successfully found</string>
   <string name="connect_button_description">Connect Button</string>
   <string name="connection_default_description">Represents if this connection is the default selected connection</string>
+  <string name="connection_error_all_retries_exhausted">Unable to connect after multiple attempts. Please check your connection settings.</string>
+  <string name="connection_error_authentication_failed">Authentication failed. The client is not allowed to connect.</string>
+  <string name="connection_error_network_unavailable">Network is unreachable. Please check your network connection.</string>
+  <string name="connection_error_refused">Connection was refused by the plugin. Please verify the plugin is running and accessible.</string>
+  <string name="connection_error_server_not_found">Unable to find the MusicBee plugin. Please check the connection settings.</string>
+  <string name="connection_error_timeout">Connection timed out. Please check your network connection and try again.</string>
+  <string name="connection_error_unknown">Connection failed: %1$s</string>
+  <string name="connection_error_unsupported_protocol">Protocol version is not supported. Please update your plugin or app.</string>
   <string name="connection_manager_scan">SCAN</string>
   <string name="connection_manager_title">Connection Manager</string>
   <string name="connectivity_manager_default">Set default</string>

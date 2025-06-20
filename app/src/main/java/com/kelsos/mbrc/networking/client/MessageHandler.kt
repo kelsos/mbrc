@@ -13,6 +13,7 @@ import com.kelsos.mbrc.networking.protocol.ProtocolPayload
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.util.concurrent.ConcurrentHashMap
 
 interface MessageHandler {
   suspend fun processIncoming(message: SocketMessage)
@@ -31,10 +32,15 @@ class MessageHandlerImpl(
   private val librarySyncWorkHandler: LibrarySyncWorkHandler,
   private val dispatchers: AppCoroutineDispatchers,
 ) : MessageHandler {
-  private val commands: MutableMap<Protocol, ProtocolAction> = HashMap()
+  private val commands: ConcurrentHashMap<Protocol, ProtocolAction> = ConcurrentHashMap()
 
   override suspend fun processIncoming(message: SocketMessage) {
     withContext(dispatchers.network) {
+      if (!isValidMessage(message)) {
+        Timber.w("Invalid message received: $message")
+        return@withContext
+      }
+
       val context = Protocol.Companion.fromString(message.context)
       Timber.v("received message with context -> ${message.context} :: ${message.data}")
 
@@ -50,6 +56,11 @@ class MessageHandlerImpl(
       }
     }
   }
+
+  private fun isValidMessage(message: SocketMessage): Boolean =
+    message.context.isNotBlank() &&
+      message.context.length <= MAX_CONTEXT_LENGTH &&
+      message.data.toString().length <= MAX_DATA_LENGTH
 
   private suspend fun handle(
     message: SocketMessage,
@@ -78,25 +89,55 @@ class MessageHandlerImpl(
       }
 
       Protocol.ProtocolTag -> {
-        val protocolVersion: Int =
-          try {
-            dataPayload.toString().toInt()
-          } catch (ignore: NumberFormatException) {
-            2
-          }
+        val protocolVersion = parseProtocolVersion(dataPayload)
 
-        execute(MessageEvent(Protocol.ProtocolTag, protocolVersion))
-        connectionState.updateConnection(ConnectionStatus.Connected)
-        Timber.v("Handshake complete, sending init message")
-        messageQueue.queue(SocketMessage.create(Protocol.Init))
+        if (isVersionSupported(protocolVersion)) {
+          execute(MessageEvent(Protocol.ProtocolTag, protocolVersion))
+          connectionState.updateConnection(ConnectionStatus.Connected)
+          Timber.v("Handshake complete with protocol version $protocolVersion, sending init message")
+          messageQueue.queue(SocketMessage.create(Protocol.Init))
 
-        Timber.v("Starting automatic library sync after successful connection")
-        librarySyncWorkHandler.sync(auto = true)
-        true
+          Timber.v("Starting automatic library sync after successful connection")
+          librarySyncWorkHandler.sync(auto = true)
+          true
+        } else {
+          Timber.w("Unsupported protocol version: $protocolVersion")
+          uiMessageQueue.messages.emit(UiMessage.ConnectionError.UnsupportedProtocolVersion)
+          connectionState.updateConnection(ConnectionStatus.Offline)
+          false
+        }
       }
 
       else -> false
     }
+
+  private fun parseProtocolVersion(dataPayload: Any): Int =
+    try {
+      val versionString = dataPayload.toString()
+      if (versionString.isBlank()) {
+        Timber.w("Empty protocol version, using default")
+        MIN_SUPPORTED_VERSION
+      } else {
+        val version = versionString.toFloat().toInt()
+        if (version < 1) {
+          Timber.w("Invalid protocol version: $version, using minimum supported")
+          MIN_SUPPORTED_VERSION
+        } else {
+          version
+        }
+      }
+    } catch (e: NumberFormatException) {
+      Timber.w(e, "Failed to parse protocol version: $dataPayload, using default")
+      MIN_SUPPORTED_VERSION
+    }
+
+  private fun isVersionSupported(version: Int): Boolean = version in MIN_SUPPORTED_VERSION..Protocol.PROTOCOL_VERSION
+
+  companion object {
+    private const val MIN_SUPPORTED_VERSION = 2
+    private const val MAX_CONTEXT_LENGTH = 100
+    private const val MAX_DATA_LENGTH = 10_000
+  }
 
   private suspend fun execute(event: MessageEvent) {
     get(event.type)
@@ -106,12 +147,8 @@ class MessageHandlerImpl(
 
   private fun get(context: Protocol) =
     runCatching {
-      val command = commands[context]
-      if (command != null) {
-        return@runCatching command
-      }
-      commandFactory.create(context).also { commandInstance ->
-        commands[context] = commandInstance
+      commands.computeIfAbsent(context) { protocol ->
+        commandFactory.create(protocol)
       }
     }
 

@@ -25,4 +25,25 @@ sealed class UiMessage {
   ) : UiMessage()
 
   object PluginUpdateAvailable : UiMessage()
+
+  // Connection Error Messages
+  sealed class ConnectionError : UiMessage() {
+    object ServerNotFound : ConnectionError()
+
+    object ConnectionTimeout : ConnectionError()
+
+    object ConnectionRefused : ConnectionError()
+
+    object NetworkUnavailable : ConnectionError()
+
+    object AuthenticationFailed : ConnectionError()
+
+    object UnsupportedProtocolVersion : ConnectionError()
+
+    data class UnknownConnectionError(
+      val message: String,
+    ) : ConnectionError()
+
+    object AllRetriesExhausted : ConnectionError()
+  }
 }

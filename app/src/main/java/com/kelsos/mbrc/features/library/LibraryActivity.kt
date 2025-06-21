@@ -78,7 +78,10 @@ class LibraryActivity :
           if (closeSearch()) {
             return
           }
+          // Call the default back behavior instead of onBackPressedDispatcher
+          isEnabled = false
           onBackPressedDispatcher.onBackPressed()
+          isEnabled = true
         }
       },
     )

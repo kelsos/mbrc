@@ -124,7 +124,10 @@ class NowPlayingActivity :
           if (closeSearch()) {
             return
           }
+          // Fix stack overflow by temporarily disabling callback
+          isEnabled = false
           onBackPressedDispatcher.onBackPressed()
+          isEnabled = true
         }
       },
     )

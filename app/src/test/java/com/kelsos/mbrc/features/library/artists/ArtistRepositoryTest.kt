@@ -141,4 +141,95 @@ class ArtistRepositoryTest {
       assertThat(artistNames).containsExactly(regularAlbumArtist, "Different Album Artist")
     }
   }
+
+  @Test
+  fun getAllArtists_shouldSortIgnoringThePrefix() {
+    runTest {
+      // Given: Artists with and without "the" prefix
+      val artists =
+        listOf(
+          ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
+          ArtistEntity(artist = "Adele", dateAdded = 1000L),
+          ArtistEntity(artist = "The Rolling Stones", dateAdded = 1000L),
+          ArtistEntity(artist = "Bob Dylan", dateAdded = 1000L),
+          ArtistEntity(artist = "The Who", dateAdded = 1000L),
+        )
+
+      // Insert test data
+      dao.insertAll(artists)
+
+      // When: Get all artists
+      val allArtists = repository.getAll().asSnapshot()
+
+      // Then: Should be sorted ignoring "the" prefix
+      // Expected order: Adele, The Beatles, Bob Dylan, The Rolling Stones, The Who
+      val artistNames = allArtists.map { it.artist }
+      assertThat(artistNames)
+        .containsExactly(
+          "Adele",
+          "The Beatles",
+          "Bob Dylan",
+          "The Rolling Stones",
+          "The Who",
+        ).inOrder()
+    }
+  }
+
+  @Test
+  fun getAlbumArtistsOnly_shouldSortIgnoringThePrefix() {
+    runTest {
+      // Given: Album artists with "the" prefix
+      val tracks =
+        listOf(
+          TrackEntity(
+            artist = "John Lennon",
+            title = "Track 1",
+            album = "Album 1",
+            albumArtist = "The Beatles",
+            src = "track1.mp3",
+            dateAdded = 1000L,
+          ),
+          TrackEntity(
+            artist = "Bob Dylan",
+            title = "Track 2",
+            album = "Album 2",
+            albumArtist = "Bob Dylan",
+            src = "track2.mp3",
+            dateAdded = 1000L,
+          ),
+          TrackEntity(
+            artist = "Roger Daltrey",
+            title = "Track 3",
+            album = "Album 3",
+            albumArtist = "The Who",
+            src = "track3.mp3",
+            dateAdded = 1000L,
+          ),
+        )
+
+      val artists =
+        listOf(
+          ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
+          ArtistEntity(artist = "Bob Dylan", dateAdded = 1000L),
+          ArtistEntity(artist = "The Who", dateAdded = 1000L),
+        )
+
+      // Insert test data
+      database.trackDao().insertAll(tracks)
+      dao.insertAll(artists)
+
+      // When: Get album artists only
+      val albumArtists = repository.getAlbumArtistsOnly().asSnapshot()
+
+      // Then: Should be sorted ignoring "the" prefix
+      // Expected order: The Beatles, Bob Dylan, The Who
+      val artistNames = albumArtists.map { it.artist }
+      assertThat(artistNames)
+        .containsExactly(
+          "The Beatles",
+          "Bob Dylan",
+          "The Who",
+        ).inOrder()
+    }
+  }
 }

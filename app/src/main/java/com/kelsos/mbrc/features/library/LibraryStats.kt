@@ -9,6 +9,7 @@ data class LibraryStats(
   val albums: Long,
   val tracks: Long,
   val playlists: Long,
+  val covers: Long,
 )
 
 fun LibraryStats.toWorkData(): Data =
@@ -18,6 +19,7 @@ fun LibraryStats.toWorkData(): Data =
     "albums" to albums,
     "tracks" to tracks,
     "playlists" to playlists,
+    "covers" to covers,
   )
 
 fun Data.toLibraryStats(): LibraryStats =
@@ -27,4 +29,5 @@ fun Data.toLibraryStats(): LibraryStats =
     getLong("albums", 0),
     getLong("tracks", 0),
     getLong("playlists", 0),
+    getLong("covers", 0),
   )

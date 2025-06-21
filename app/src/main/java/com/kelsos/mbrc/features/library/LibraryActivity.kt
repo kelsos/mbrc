@@ -207,6 +207,7 @@ class LibraryActivity :
     dialog.findViewById<TextView>(R.id.library_stats__album_value)?.text = "${stats.albums}"
     dialog.findViewById<TextView>(R.id.library_stats__track_value)?.text = "${stats.tracks}"
     dialog.findViewById<TextView>(R.id.library_stats__playlist_value)?.text = "${stats.playlists}"
+    dialog.findViewById<TextView>(R.id.library_stats__covers_value)?.text = "${stats.covers}"
   }
 
   fun syncComplete(stats: LibraryStats) {

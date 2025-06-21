@@ -18,6 +18,8 @@ interface AlbumRepository : Repository<Album> {
   suspend fun updateCovers(updated: List<AlbumCover>)
 
   suspend fun getCovers(): List<AlbumCover>
+
+  suspend fun coverCount(): Long
 }
 
 class AlbumRepositoryImpl(
@@ -93,4 +95,6 @@ class AlbumRepositoryImpl(
       return@withContext entity.toAlbum()
     }
   }
+
+  override suspend fun coverCount(): Long = withContext(dispatchers.database) { dao.coverCount() }
 }

@@ -89,6 +89,7 @@ class LibrarySyncUseCaseImpl(
       albums = albumRepository.count(),
       tracks = trackRepository.count(),
       playlists = playlistRepository.count(),
+      covers = albumRepository.coverCount(),
     )
 
   private suspend fun checkIfShouldSync(auto: Boolean): Boolean = !auto || isEmpty()

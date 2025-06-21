@@ -202,6 +202,7 @@ class LibrarySyncUseCaseImplTest : KoinTest {
     coEvery { albumRepository.count() } returns cached
     coEvery { trackRepository.count() } returns cached
     coEvery { playlistRepository.count() } returns cached
+    coEvery { albumRepository.coverCount() } returns cached
   }
 
   private suspend fun wait() {

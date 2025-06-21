@@ -40,6 +40,9 @@ interface AlbumDao {
   @Query("select album, artist, cover as hash from album")
   fun getCovers(): List<AlbumCover>
 
+  @Query("select count(*) from album where cover is not null")
+  fun coverCount(): Long
+
   @Query("update album set cover = :cover where artist = :artist and album = :album")
   fun updateCover(
     artist: String,

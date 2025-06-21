@@ -79,6 +79,18 @@
     app:layout_constraintTop_toBottomOf="@id/library_stats__track_label" />
 
   <TextView
+    android:id="@+id/library_stats__covers_label"
+    android:layout_width="80dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="4dp"
+    android:fontFamily="sans-serif-medium"
+    android:text="@string/media__covers"
+    android:textColor="@color/primary"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/library_stats__playlist_label" />
+
+  <TextView
     android:id="@+id/library_stats__genre_value"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -134,6 +146,18 @@
     app:layout_constraintStart_toEndOf="@id/library_stats__playlist_label"
     app:layout_constraintTop_toBottomOf="@id/library_stats__playlist_label"
     app:layout_constraintTop_toTopOf="@id/library_stats__playlist_label"
+    tools:text="1" />
+
+  <TextView
+    android:id="@+id/library_stats__covers_value"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:layout_constraintBottom_toBottomOf="@id/library_stats__covers_label"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0"
+    app:layout_constraintStart_toEndOf="@id/library_stats__covers_label"
+    app:layout_constraintTop_toBottomOf="@id/library_stats__covers_label"
+    app:layout_constraintTop_toTopOf="@id/library_stats__covers_label"
     tools:text="1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

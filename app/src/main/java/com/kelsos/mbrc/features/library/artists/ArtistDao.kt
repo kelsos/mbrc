@@ -20,7 +20,7 @@ interface ArtistDao {
       from artist
         inner join track on artist.artist = track.artist
         inner join genre on genre.genre = track.genre
-      where genre.id = :genreId group by artist.artist order by artist.artist asc
+      where genre.id = :genreId group by artist.artist order by artist.artist collate nocase asc
       """,
   )
   fun getArtistByGenre(genreId: Long): PagingSource<Int, ArtistEntity>
@@ -44,7 +44,7 @@ interface ArtistDao {
     """
       select distinct artist.id, artist.artist, artist.date_added, artist.count
       from artist inner join track on artist.artist = track.artist
-      where track.album_artist = artist.artist group by artist.artist order by artist.artist asc
+      where track.album_artist = artist.artist group by artist.artist order by artist.artist collate nocase asc
     """,
   )
   fun getAlbumArtists(): PagingSource<Int, ArtistEntity>

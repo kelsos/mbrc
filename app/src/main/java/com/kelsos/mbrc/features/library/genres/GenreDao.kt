@@ -15,16 +15,16 @@ interface GenreDao {
   @Update
   fun update(list: List<GenreEntity>)
 
-  @Query("select * from genre order by genre")
+  @Query("select * from genre order by genre collate nocase")
   fun getAll(): PagingSource<Int, GenreEntity>
 
-  @Query("select * from genre order by genre")
+  @Query("select * from genre order by genre collate nocase")
   fun all(): List<GenreEntity>
 
-  @Query("select id, genre from genre order by genre")
+  @Query("select id, genre from genre order by genre collate nocase")
   fun genres(): List<Genre>
 
-  @Query("select * from genre where genre like '%' || :term || '%' order by genre")
+  @Query("select * from genre where genre like '%' || :term || '%' order by genre collate nocase")
   fun search(term: String): PagingSource<Int, GenreEntity>
 
   @Query("select count(*) from genre")

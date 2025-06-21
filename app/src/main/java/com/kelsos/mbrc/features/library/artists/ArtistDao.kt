@@ -43,8 +43,8 @@ interface ArtistDao {
   @Query(
     """
       select distinct artist.id, artist.artist, artist.date_added, artist.count
-      from artist inner join track on artist.artist = track.artist
-      where track.album_artist = artist.artist group by artist.artist order by artist.artist collate nocase asc
+      from artist inner join track on artist.artist = track.album_artist
+      group by artist.artist order by artist.artist collate nocase asc
     """,
   )
   fun getAlbumArtists(): PagingSource<Int, ArtistEntity>

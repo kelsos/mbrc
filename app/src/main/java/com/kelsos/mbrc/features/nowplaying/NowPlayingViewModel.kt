@@ -32,6 +32,7 @@ class NowPlayingViewModel(
     moveManager.onMoveCommit { originalPosition, finalPosition ->
       viewModelScope.launch(dispatchers.network) {
         userActionUseCase.moveTrack(NowPlayingMoveRequest(originalPosition, finalPosition))
+        repository.move(originalPosition + 1, finalPosition + 1)
       }
     }
   }

@@ -371,7 +371,6 @@ class SimpleLogCommand : ProtocolAction {
 class UpdateNowPlayingTrackMoved(
   moshi: Moshi,
   dispatchers: AppCoroutineDispatchers,
-  private val nowPlayingRepository: NowPlayingRepository,
 ) : ProtocolAction {
   private val scope = CoroutineScope(dispatchers.network)
   private val adapter = moshi.adapter(NowPlayingMoveResponse::class.java)
@@ -380,7 +379,7 @@ class UpdateNowPlayingTrackMoved(
     scope.launch {
       val response = adapter.fromJsonValue(message.data)
       if (response != null && response.success) {
-        nowPlayingRepository.move(from = response.from + 1, to = response.to + 1)
+        Timber.v("confirmed successful move from ${response.from + 1} to ${response.to + 1}")
       }
     }
   }

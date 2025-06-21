@@ -74,9 +74,9 @@ interface NowPlayingDao {
 
   @Query(
     """
-    update now_playing set position = position + 1
-    where position < :from
-    and position >= :to
+    update now_playing set position = position - 1
+    where position > :from
+    and position <= :to
     """,
   )
   fun updateMovedDown(
@@ -86,10 +86,10 @@ interface NowPlayingDao {
 
   @Query(
     """
-    update now_playing set position = position - 1
-    where position > :from
-    and position <= :to
-     """,
+    update now_playing set position = position + 1
+    where position < :from
+    and position >= :to
+    """,
   )
   fun updateMovedUp(
     from: Int,
@@ -102,9 +102,9 @@ interface NowPlayingDao {
     to: Int,
   ) {
     val fromId = findIdByPosition(from)
-    if (from > to) {
+    if (from < to) {
       updateMovedDown(from, to)
-    } else {
+    } else if (from > to) {
       updateMovedUp(from, to)
     }
 

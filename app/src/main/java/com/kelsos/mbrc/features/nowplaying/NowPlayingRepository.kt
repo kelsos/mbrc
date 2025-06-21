@@ -80,6 +80,9 @@ class NowPlayingRepositoryImpl(
     from: Int,
     to: Int,
   ) {
+    if (from == to) {
+      return
+    }
     withContext(dispatchers.database) {
       dao.move(from, to)
     }
@@ -93,6 +96,9 @@ class NowPlayingRepositoryImpl(
 
   override suspend fun findPosition(query: String): Int =
     withContext(dispatchers.database) {
+      if (query.isBlank()) {
+        return@withContext -1
+      }
       return@withContext dao.findPositionByQuery(query) ?: -1
     }
 

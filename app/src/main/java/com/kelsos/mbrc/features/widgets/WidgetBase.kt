@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.RemoteViews
 import coil3.imageLoader
+import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.error
 import coil3.size.Precision
@@ -29,8 +30,21 @@ abstract class WidgetBase : AppWidgetProvider() {
     intent: Intent?,
   ) {
     super.onReceive(context, intent)
-    if (intent?.action == AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
-      whenNotNull(context, intent.extras, this::updateWidget)
+    when (intent?.action) {
+      AppWidgetManager.ACTION_APPWIDGET_UPDATE -> {
+        whenNotNull(context, intent.extras, this::updateWidget)
+      }
+      else -> {
+        val extras = intent?.extras
+        if (context == null || extras == null) {
+          return
+        }
+
+        val data = BundleData(extras)
+        if (data.isInfo() || data.isState()) {
+          updateWidget(context, extras)
+        }
+      }
     }
   }
 
@@ -38,36 +52,41 @@ abstract class WidgetBase : AppWidgetProvider() {
     context: Context,
     extras: Bundle,
   ) {
-    val widgetManager = AppWidgetManager.getInstance(context)
-    val widgets = ComponentName(context.packageName, config.widgetClass.java.name)
-    val widgetsIds = widgetManager.getAppWidgetIds(widgets)
-    val data = BundleData(extras)
+    try {
+      val widgetManager = AppWidgetManager.getInstance(context)
+      val widgets = ComponentName(context.packageName, config.widgetClass.java.name)
+      val widgetsIds = widgetManager.getAppWidgetIds(widgets)
+      val data = BundleData(extras)
 
-    if (widgetsIds.isEmpty()) {
-      Timber.v("No $type widgets found for update")
-      return
-    }
-
-    Timber.v("Updating $type widgets ${widgetsIds.joinToString(", ")} with extras: $data")
-
-    when {
-      data.isCover() -> {
-        updateCover(context, widgetManager, widgetsIds, data.cover())
+      if (widgetsIds.isEmpty()) {
+        Timber.v("No $type widgets found for update")
+        return
       }
-      data.isInfo() ->
-        updateInfo(
-          context,
-          widgetManager,
-          widgetsIds,
-          data.playingTrack(),
-        )
-      data.isState() ->
-        updatePlayState(
-          context,
-          widgetManager,
-          widgetsIds,
-          data.state(),
-        )
+
+      Timber.v("Updating $type widgets ${widgetsIds.joinToString(", ")} with extras: $data")
+
+      when {
+        data.isInfo() -> {
+          val playingTrack = data.playingTrack()
+          updateInfoWithCover(
+            context,
+            widgetManager,
+            widgetsIds,
+            playingTrack,
+          )
+        }
+        data.isState() ->
+          updatePlayState(
+            context,
+            widgetManager,
+            widgetsIds,
+            data.state(),
+          )
+      }
+    } catch (e: SecurityException) {
+      Timber.e(e, "Security error updating $type widget - check permissions")
+    } catch (e: IllegalArgumentException) {
+      Timber.e(e, "Invalid arguments for $type widget update")
     }
   }
 
@@ -109,36 +128,66 @@ abstract class WidgetBase : AppWidgetProvider() {
     info: PlayingTrack,
   )
 
-  private fun updateInfo(
+  private fun updateInfoWithCover(
     context: Context,
     widgetManager: AppWidgetManager,
     widgetsIds: IntArray,
     info: PlayingTrack,
   ) {
-    val views = RemoteViews(context.packageName, config.layout)
-    setupTrackInfo(views, info)
-    widgetManager.updateAppWidget(widgetsIds, views)
+    Timber.d("updateInfoWithCover called for $type widget, coverUrl: '${info.coverUrl}'")
+
+    val widget = RemoteViews(context.packageName, config.layout)
+    setupTrackInfo(widget, info)
+    preserveActions(context, widget)
+
+    if (info.coverUrl.isNotBlank()) {
+      // Load image asynchronously, but the widget is already set up with track info
+      val target =
+        RemoteViewsTarget(
+          widgetManager,
+          widget,
+          widgetsIds,
+          config.imageId,
+          onImageUpdated = {
+            // Callback to preserve actions after the image loads
+            preserveActions(context, widget)
+          },
+        )
+
+      val request =
+        ImageRequest
+          .Builder(context)
+          .data(info.coverUrl)
+          .size(R.dimen.widget_small_height)
+          .scale(Scale.FILL)
+          .error(R.drawable.ic_image_no_cover)
+          .precision(Precision.INEXACT)
+          .memoryCachePolicy(CachePolicy.DISABLED)
+          .diskCachePolicy(CachePolicy.ENABLED)
+          .target(target)
+          .build()
+
+      context.imageLoader.enqueue(request)
+    } else {
+      // No cover URL, use placeholder and update immediately
+      widget.setImageViewResource(config.imageId, R.drawable.ic_image_no_cover)
+      widgetManager.updateAppWidget(widgetsIds, widget)
+    }
   }
 
-  private fun updateCover(
+  private fun preserveActions(
     context: Context,
-    widgetManager: AppWidgetManager,
-    widgetsIds: IntArray,
-    path: String,
+    views: RemoteViews,
   ) {
-    val widget = RemoteViews(context.packageName, config.layout)
-    val request =
-      ImageRequest
-        .Builder(context)
-        .data(path)
-        .size(R.dimen.widget_small_height)
-        .scale(Scale.FILL)
-        .error(R.drawable.ic_image_no_cover)
-        .precision(Precision.INEXACT)
-        .target(RemoteViewsTarget(widgetManager, widget, widgetsIds, config.imageId))
-        .build()
-
-    context.imageLoader.enqueue(request)
+    val intent = Intent(context, PlayerActivity::class.java)
+    val pendingIntent =
+      PendingIntent.getActivity(
+        context,
+        0,
+        intent,
+        PendingIntent.FLAG_IMMUTABLE,
+      )
+    setupActionIntents(views, pendingIntent, context)
   }
 
   private fun updatePlayState(
@@ -157,6 +206,9 @@ abstract class WidgetBase : AppWidgetProvider() {
         R.drawable.ic_baseline_play_arrow_24
       },
     )
+
+    preserveActions(context, widget)
+
     manager.updateAppWidget(widgetsIds, widget)
   }
 }

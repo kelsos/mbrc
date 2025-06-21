@@ -213,7 +213,6 @@ class UpdateVolume(
 
 class UpdateCover(
   private val app: Application,
-  private val updater: WidgetUpdater,
   private val moshi: Moshi,
   private val api: ApiBase,
   private val dispatchers: AppCoroutineDispatchers,
@@ -259,7 +258,6 @@ class UpdateCover(
   ) {
     val newState = previousState.copy(coverUrl = coverUri)
     appState.updatePlayingTrack(newState)
-    updater.updateCover(coverUri)
   }
 
   private fun getBitmap(base64: String): Bitmap {

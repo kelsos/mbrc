@@ -14,9 +14,10 @@ class RemoteViewsTarget(
   private val widget: RemoteViews,
   private val widgetIds: IntArray,
   @IdRes private val imageViewResId: Int,
+  private val onImageUpdated: (() -> Unit)? = null,
 ) : Target {
   override fun onStart(placeholder: Image?) {
-    setDrawable(placeholder, "start")
+    Timber.v("Image loading started for widgets ${widgetIds.joinToString(", ")}")
   }
 
   override fun onError(error: Image?) {
@@ -35,9 +36,11 @@ class RemoteViewsTarget(
       Timber.v("No image found for widget setting placeholder, reason: $reason")
       widget.setImageViewResource(imageViewResId, R.drawable.ic_image_no_cover)
     } else {
-      Timber.v("Updating image for widget, reason: $reason")
+      Timber.v("Updating image for widgets ${widgetIds.joinToString(", ")}, reason: $reason")
       widget.setImageViewBitmap(imageViewResId, image.toBitmap())
     }
+
+    onImageUpdated?.invoke()
     manager.updateAppWidget(widgetIds, widget)
   }
 }

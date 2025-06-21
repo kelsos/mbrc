@@ -12,10 +12,6 @@ class BundleData(
 
   fun isInfo() = bundle.getBoolean(WidgetUpdater.INFO, false)
 
-  fun isCover() = bundle.getBoolean(WidgetUpdater.COVER, false)
-
-  fun cover(): String = bundle.getString(WidgetUpdater.COVER_PATH, "")
-
   fun state(): String = bundle.getString(WidgetUpdater.PLAYER_STATE, PlayerState.UNDEFINED)
 
   fun playingTrack(): PlayingTrack =
@@ -29,7 +25,6 @@ class BundleData(
     when {
       this.isState() -> "State: ${this.state()}"
       this.isInfo() -> "Info: ${this.playingTrack()}"
-      this.isCover() -> "Cover: ${this.cover()}"
       else -> "Unknown"
     }
 }

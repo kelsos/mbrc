@@ -28,10 +28,6 @@ interface PlayingTrackCache {
   suspend fun persistInfo(playingTrack: PlayingTrack)
 
   suspend fun restoreInfo(): PlayingTrack
-
-  suspend fun persistCover(cover: String)
-
-  suspend fun restoreCover(): String
 }
 
 class PlayingTrackCacheImpl(
@@ -67,6 +63,11 @@ class PlayingTrackCacheImpl(
           .toBuilder()
           .setTrack(track)
           .build()
+
+        store
+          .toBuilder()
+          .setCover(playingTrack.coverUrl)
+          .build()
       }
       return@withContext
     }
@@ -75,23 +76,17 @@ class PlayingTrackCacheImpl(
   override suspend fun restoreInfo(): PlayingTrack =
     withContext(dispatchers.io) {
       val track = storeFlow.first().track
+      val cover = storeFlow.first().cover
 
       return@withContext PlayingTrack(
-        track.artist,
-        track.title,
-        track.album,
-        track.year,
-        track.path,
+        artist = track.artist,
+        title = track.title,
+        album = track.album,
+        year = track.year,
+        path = track.path,
+        coverUrl = cover,
       )
     }
-
-  override suspend fun persistCover(cover: String) {
-    context.cacheDataStore.updateData { store ->
-      store.toBuilder().setCover(cover).build()
-    }
-  }
-
-  override suspend fun restoreCover(): String = storeFlow.first().cover
 }
 
 object PlayerStateSerializer : Serializer<Store> {

@@ -27,6 +27,7 @@ class AppStateManager(
   init {
     launch {
       val track = trackCache.restoreInfo()
+      Timber.v("Restoring playing last played track: $track")
       appState.updatePlayingTrack(track)
     }
   }

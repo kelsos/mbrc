@@ -14,6 +14,8 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.request.crossfade
 import com.kelsos.mbrc.common.utilities.CustomLoggingTree
+import com.kelsos.mbrc.features.theme.ThemeManager
+import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.fragment.koin.fragmentFactory
 import org.koin.androidx.workmanager.koin.workManagerFactory
@@ -61,6 +63,12 @@ open class App : Application() {
       modules(appModules())
     }
     initializeTimber()
+    initializeTheme()
+  }
+
+  private fun initializeTheme() {
+    val themeManager: ThemeManager by inject()
+    themeManager.applyTheme()
   }
 
   private fun initializeTimber() {

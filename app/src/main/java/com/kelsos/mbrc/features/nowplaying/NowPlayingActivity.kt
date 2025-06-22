@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -108,6 +109,11 @@ class NowPlayingActivity :
     menuInflater.inflate(R.menu.nowplaying_search, menu)
     searchMenuItem = menu.findItem(R.id.now_playing_search)
     searchView = searchMenuItem?.actionView as SearchView
+
+    // Apply tint to menu icons for day/night theme
+    val menuIconTint = ContextCompat.getColor(this, R.color.menu_icon_tint)
+    menu.findItem(R.id.now_playing_search)?.icon?.setTint(menuIconTint)
+
     searchView?.queryHint = getString(R.string.now_playing_search_hint)
     searchView?.setIconifiedByDefault(true)
     searchView?.setOnQueryTextListener(this)

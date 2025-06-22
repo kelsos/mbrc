@@ -1,6 +1,8 @@
 package com.kelsos.mbrc.features.player
 
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -26,6 +28,7 @@ import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
 import coil3.size.Scale
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import com.kelsos.mbrc.BaseActivity
 import com.kelsos.mbrc.R
@@ -67,7 +70,13 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
   private var menu: Menu? = null
 
   private val activeColor by lazy { ContextCompat.getColor(this, R.color.accent) }
-  private val inactiveColor by lazy { ContextCompat.getColor(this, R.color.button_dark) }
+  private val inactiveColor by lazy {
+    return@lazy MaterialColors.getColor(
+      this@PlayerActivity,
+      android.R.attr.colorControlNormal,
+      Color.GRAY,
+    )
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     installSplashScreen()
@@ -198,6 +207,13 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
     menuInflater.inflate(R.menu.menu, menu)
     this.menu = menu
+
+    // Apply tint to menu icons for day/night theme
+    val menuIconTint = ContextCompat.getColor(this, R.color.menu_icon_tint)
+    menu.findItem(R.id.menu_rating_dialog)?.icon?.setTint(menuIconTint)
+    menu.findItem(R.id.menu_lastfm_love)?.icon?.setTint(menuIconTint)
+    menu.findItem(R.id.actionbar_share)?.icon?.setTint(menuIconTint)
+
     val shareItem = menu.findItem(R.id.actionbar_share)
     val shareActionProvider = ShareActionProvider(this)
     MenuItemCompat.setActionProvider(shareItem, shareActionProvider)
@@ -251,7 +267,7 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
   private fun updateShuffleState(shuffleModel: ShuffleMode) {
     val shuffle = ShuffleMode.Off != shuffleModel
     val autoDj = ShuffleMode.AutoDJ == shuffleModel
-    shuffleButton.setColorFilter(if (shuffle) activeColor else inactiveColor)
+    shuffleButton.imageTintList = ColorStateList.valueOf(if (shuffle) activeColor else inactiveColor)
     shuffleButton.setImageResource(if (autoDj) R.drawable.ic_headset_black_24dp else R.drawable.ic_shuffle_black_24dp)
   }
 
@@ -266,7 +282,7 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
     }
 
     repeatButton.setImageResource(resId)
-    repeatButton.setColorFilter(color)
+    repeatButton.imageTintList = ColorStateList.valueOf(color)
   }
 
   private fun updateVolume(
@@ -274,7 +290,7 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
     mute: Boolean,
   ) {
     volumeBar.progress = if (mute) 0 else volume
-    muteButton.setColorFilter(inactiveColor)
+    muteButton.imageTintList = ColorStateList.valueOf(inactiveColor)
     muteButton.setImageResource(if (mute) R.drawable.ic_volume_off_black_24dp else R.drawable.ic_volume_up_black_24dp)
   }
 
@@ -291,7 +307,7 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
         else -> R.drawable.ic_play_circle_filled_black_24dp
       }
 
-    playPauseButton.setColorFilter(accentColor)
+    playPauseButton.imageTintList = ColorStateList.valueOf(accentColor)
     playPauseButton.setImageResource(resId)
     playPauseButton.tag = tag
   }
@@ -322,6 +338,10 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
       LfmRating.Loved -> favoriteMenuItem.setIcon(R.drawable.ic_favorite_black_24dp)
       else -> favoriteMenuItem.setIcon(R.drawable.ic_favorite_border_black_24dp)
     }
+
+    // Apply tint after setting the icon
+    val menuIconTint = ContextCompat.getColor(this, R.color.menu_icon_tint)
+    favoriteMenuItem.icon?.setTint(menuIconTint)
   }
 
   override fun onDestroy() {

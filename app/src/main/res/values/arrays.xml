@@ -27,4 +27,16 @@
     <item>stop</item>
     <item>reduce</item>
   </string-array>
+
+  <string-array name="theme_options">
+    <item>@string/theme_system</item>
+    <item>@string/theme_light</item>
+    <item>@string/theme_dark</item>
+  </string-array>
+
+  <string-array name="theme_options_values">
+    <item>system</item>
+    <item>light</item>
+    <item>dark</item>
+  </string-array>
 </resources>

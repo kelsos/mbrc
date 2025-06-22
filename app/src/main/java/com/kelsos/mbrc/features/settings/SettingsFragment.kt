@@ -18,12 +18,15 @@ import androidx.preference.PreferenceFragmentCompat
 import com.kelsos.mbrc.BuildConfig
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.utilities.RemoteUtils.VERSION
+import com.kelsos.mbrc.features.theme.ThemeManager
 import com.kelsos.mbrc.logging.FileLoggingTree
 import com.kelsos.mbrc.platform.RemoteService
+import org.koin.android.ext.android.inject
 import timber.log.Timber
 
 class SettingsFragment : PreferenceFragmentCompat() {
   private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+  private val themeManager: ThemeManager by inject()
 
   override fun onCreatePreferences(
     savedInstanceState: Bundle?,
@@ -55,6 +58,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
     val revision = findPreference<Preference>(resources.getString(R.string.pref_key_revision))
     val debugLogging =
       findPreference<CheckBoxPreference>(resources.getString(R.string.settings_key_debug_logging))
+    val themePreference =
+      findPreference<ListPreference>(resources.getString(R.string.settings_key_theme))
 
     debugLogging?.setOnPreferenceChangeListener { _, newValue ->
       if (newValue == true) {
@@ -64,6 +69,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         fileLoggingTree?.let { Timber.uproot(it) }
       }
 
+      true
+    }
+
+    themePreference?.setOnPreferenceChangeListener { _, newValue ->
+      val theme = newValue as String
+      themeManager.applyTheme(theme)
       true
     }
 

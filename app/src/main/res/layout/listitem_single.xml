@@ -27,7 +27,7 @@
       android:layout_gravity="center_vertical"
       android:contentDescription="@string/menu_overflow_description"
       android:src="@drawable/ic_more_vert_black_24dp"
-      app:tint="@android:color/white" />
+      app:tint="?android:attr/textColorSecondary" />
   </LinearLayout>
 
   <TextView
@@ -42,7 +42,7 @@
     android:paddingStart="@dimen/normal_margin"
     android:paddingLeft="@dimen/normal_margin"
     android:text="@string/artist_placeholder"
-    android:textColor="@color/primary_text"
+    android:textColor="?android:attr/textColorPrimary"
     android:textSize="@dimen/list_item_one"
     android:textStyle="normal"
     app:layout_constraintBottom_toBottomOf="parent"

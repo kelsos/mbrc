@@ -7,6 +7,16 @@
       android:title="@string/settings_manage_connections" />
   </androidx.preference.PreferenceCategory>
 
+  <androidx.preference.PreferenceCategory android:title="@string/settings_appearance">
+    <androidx.preference.ListPreference
+      android:defaultValue="system"
+      android:entries="@array/theme_options"
+      android:entryValues="@array/theme_options_values"
+      android:key="@string/settings_key_theme"
+      android:summary="@string/setting_appearance_theme_summary"
+      android:title="@string/setting_appearance_theme" />
+  </androidx.preference.PreferenceCategory>
+
   <androidx.preference.PreferenceCategory android:title="@string/settings_miscellaneous">
 
     <androidx.preference.ListPreference

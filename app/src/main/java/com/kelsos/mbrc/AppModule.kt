@@ -94,6 +94,8 @@ import com.kelsos.mbrc.features.settings.ConnectionRepository
 import com.kelsos.mbrc.features.settings.ConnectionRepositoryImpl
 import com.kelsos.mbrc.features.settings.SettingsManager
 import com.kelsos.mbrc.features.settings.SettingsManagerImpl
+import com.kelsos.mbrc.features.theme.ThemeManager
+import com.kelsos.mbrc.features.theme.ThemeManagerImpl
 import com.kelsos.mbrc.features.widgets.WidgetUpdater
 import com.kelsos.mbrc.features.widgets.WidgetUpdaterImpl
 import com.kelsos.mbrc.logging.LogHelper
@@ -206,6 +208,7 @@ val appModule =
 
     singleOf(::RemoteBroadcastReceiver)
     singleOf(::SettingsManagerImpl) { bind<SettingsManager>() }
+    singleOf(::ThemeManagerImpl) { bind<ThemeManager>() }
     singleOf(::ServiceCheckerImpl) { bind<ServiceChecker>() }
     singleOf(::PlayingTrackCacheImpl) { bind<PlayingTrackCache>() }
     singleOf(::SocketActivityChecker)

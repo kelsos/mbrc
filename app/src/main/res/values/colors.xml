@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <color name="primary">#FFC107</color>
-  <color name="primary_dark">#FFA000</color>
-  <color name="primary_light">#FFECB3</color>
-  <color name="accent">#FF5722</color>
-  <color name="primary_text">#FFFFFF</color>
-  <color name="secondary_text">#b2ffffff</color>
-  <color name="button_dark">#9E9E9E</color>
-  <color name="white">#fff</color>
+  <!-- Light theme colors (better contrast for accessibility) -->
+  <color name="primary">#E65100</color>
+  <color name="primary_dark">#BF360C</color>
+  <color name="primary_light">#FF8F00</color>
+  <color name="accent">#BF360C</color>
+  <color name="background_light">#FEFEFE</color>
+  <color name="primary_text">#212121</color>
+  <color name="secondary_text">#757575</color>
   <color name="black">#000</color>
   <color name="power_on">#33A328</color>
-  <color name="background_dark">#ff303030</color>
-  <color name="secondary_text_material_light">#8a000000</color>
   <color name="empty_view_icon_tint">#bdbdbd</color>
   <color name="light_gray">#bdbdbd</color>
+  <color name="progress_tint">#212121</color>
+  <color name="menu_icon_tint">#FFFFFF</color>
+  <!-- Widget colors for light mode -->
+  <color name="widget_background">#FEFEFE</color>
+  <color name="widget_text_primary">#212121</color>
+  <color name="widget_text_secondary">#757575</color>
 </resources>

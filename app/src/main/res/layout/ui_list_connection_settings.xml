@@ -18,7 +18,7 @@
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
-    app:tint="@color/secondary_text" />
+    app:tint="?android:attr/textColorSecondary" />
 
   <ImageView
     android:id="@+id/cs_list_default"
@@ -53,7 +53,7 @@
       android:layout_gravity="center_vertical"
       android:contentDescription="@string/menu_overflow_description"
       android:src="@drawable/ic_more_vert_black_24dp"
-      app:tint="@android:color/white" />
+      app:tint="?attr/colorOnBackground" />
   </LinearLayout>
 
   <TextView
@@ -71,7 +71,7 @@
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_marginEnd="8dp"
-    android:textColor="@color/secondary_text"
+    android:textColor="?android:attr/textColorSecondary"
     android:textSize="@dimen/text_body_size"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toStartOf="@+id/cs_list_default"
@@ -90,7 +90,7 @@
     android:layout_marginEnd="8dp"
     android:lines="1"
     android:linksClickable="false"
-    android:textColor="@color/primary_text"
+    android:textColor="?android:attr/textColorPrimary"
     android:textSize="@dimen/text_subhead_size"
     app:layout_constraintBottom_toTopOf="@id/cs_list_host"
     app:layout_constraintEnd_toStartOf="@+id/cs_list_default"
@@ -105,7 +105,7 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="8dp"
     android:layout_marginBottom="8dp"
-    android:textColor="@color/secondary_text"
+    android:textColor="?android:attr/textColorSecondary"
     android:textSize="@dimen/text_body_size"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toStartOf="@+id/textView"

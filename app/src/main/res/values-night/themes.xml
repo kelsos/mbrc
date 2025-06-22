@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
   <style name="Theme.App" parent="Theme.MaterialComponents.DayNight">
     <item name="colorPrimary">@color/primary</item>
     <item name="colorPrimaryVariant">@color/primary_dark</item>
     <item name="colorSecondary">@color/accent</item>
-    <item name="android:colorBackground">@color/background_light</item>
+    <item name="android:colorBackground">@color/background</item>
     <item name="android:textColorPrimary">@color/primary_text</item>
     <item name="android:textColor">@color/secondary_text</item>
     <item name="android:statusBarColor">@color/primary_dark</item>
@@ -19,10 +18,5 @@
     <item name="android:windowAllowReturnTransitionOverlap">true</item>
     <item name="android:windowSharedElementEnterTransition">@android:transition/move</item>
     <item name="android:windowSharedElementExitTransition">@android:transition/move</item>
-  </style>
-
-  <color name="background">#121212</color>
-
-  <style name="Theme.App.Starting" parent="Theme.App">
   </style>
 </resources>

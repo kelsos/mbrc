@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -153,6 +154,12 @@ class LibraryActivity :
     searchClear = menu.findItem(R.id.library_search_clear)
     albumArtistOnly = menu.findItem(R.id.library_album_artist)
     searchView = searchMenuItem?.actionView as SearchView
+
+    // Apply tint to menu icons for day/night theme
+    val menuIconTint = ContextCompat.getColor(this, R.color.menu_icon_tint)
+    menu.findItem(R.id.library_search_clear)?.icon?.setTint(menuIconTint)
+    menu.findItem(R.id.library_search_item)?.icon?.setTint(menuIconTint)
+    menu.findItem(R.id.library_refresh_item)?.icon?.setTint(menuIconTint)
 
     val search = requireNotNull(searchView)
 

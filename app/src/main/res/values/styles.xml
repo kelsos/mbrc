@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <style name="Theme.App.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar">
+  <style name="Theme.App.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Light">
     <item name="autoCompleteTextViewStyle">@style/Widget.App.AutoCompleteTextView.SearchView</item>
   </style>
 
-  <style name="Widget.App.AutoCompleteTextView.SearchView" parent="Widget.AppCompat.Light.AutoCompleteTextView">
-    <item name="android:textColorHint">#5000</item>
-    <item name="android:textColor">@color/secondary_text_material_light</item>
+  <style name="Widget.App.AutoCompleteTextView.SearchView" parent="Widget.AppCompat.AutoCompleteTextView">
+    <item name="android:textColorHint">?android:attr/textColorSecondaryInverse</item>
+    <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
   </style>
 
   <style name="empty_view_image">
@@ -20,7 +20,9 @@
   </style>
 
   <style name="WidgetTheme" parent="Theme.Material3.DynamicColors.DayNight">
-    <item name="android:colorBackground">@color/background_dark</item>
+    <item name="android:colorBackground">@color/widget_background</item>
+    <item name="android:textColorPrimary">@color/widget_text_primary</item>
+    <item name="android:textColorSecondary">@color/widget_text_secondary</item>
   </style>
 
 </resources>

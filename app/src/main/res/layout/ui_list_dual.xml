@@ -38,7 +38,7 @@
       android:layout_gravity="center_vertical"
       android:contentDescription="@string/menu_overflow_description"
       android:src="@drawable/ic_more_vert_black_24dp"
-      app:tint="@android:color/white" />
+      app:tint="?android:attr/textColorSecondary" />
   </LinearLayout>
 
   <TextView
@@ -50,7 +50,7 @@
     android:layout_marginEnd="8dp"
     android:ellipsize="end"
     android:maxLines="1"
-    android:textColor="@color/primary_text"
+    android:textColor="?android:attr/textColorPrimary"
     android:textSize="@dimen/dual_list_title"
     app:layout_constraintBottom_toTopOf="@id/line_two"
     app:layout_constraintEnd_toStartOf="@id/ui_item_context_indicator"
@@ -67,7 +67,7 @@
     android:layout_marginBottom="4dp"
     android:ellipsize="end"
     android:maxLines="1"
-    android:textColor="@color/secondary_text"
+    android:textColor="?android:attr/textColorSecondary"
     android:textSize="@dimen/dual_list_subtitle"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toStartOf="@id/ui_item_context_indicator"

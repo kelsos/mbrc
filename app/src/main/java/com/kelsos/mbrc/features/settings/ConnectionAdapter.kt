@@ -1,16 +1,17 @@
 package com.kelsos.mbrc.features.settings
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.color.MaterialColors
 import com.kelsos.mbrc.R
 
 interface ConnectionChangeListener {
@@ -63,9 +64,14 @@ class ConnectionAdapter : PagingDataAdapter<ConnectionSettings, ConnectionAdapte
       holder.defaultSettings.isVisible = settings.isDefault
 
       if (settings.isDefault) {
-        val grey = ContextCompat.getColor(holder.itemView.context, R.color.button_dark)
+        val controlColor =
+          MaterialColors.getColor(
+            holder.itemView.context,
+            android.R.attr.colorControlNormal,
+            Color.GRAY,
+          )
         holder.defaultSettings.setImageResource(R.drawable.ic_check_black_24dp)
-        holder.defaultSettings.setColorFilter(grey)
+        holder.defaultSettings.setColorFilter(controlColor)
       }
     }
   }

@@ -20,7 +20,7 @@
     android:src="@drawable/ic_volume_off_black_24dp"
     app:layout_constraintBottom_toTopOf="@+id/main_repeat_button"
     app:layout_constraintLeft_toLeftOf="parent"
-    app:tint="@color/button_dark"
+    app:tint="?attr/colorControlNormal"
     tools:ignore="RtlHardcoded,RtlSymmetry" />
 
   <LinearLayout
@@ -51,7 +51,7 @@
       android:gravity="center_horizontal"
       android:maxLines="1"
       android:scrollHorizontally="true"
-      android:textColor="@color/primary_text"
+      android:textColor="?android:attr/textColorPrimary"
       android:textSize="@dimen/text_title_size"
       tools:ignore="MissingPrefix"
       tools:text="Rock it for me" />
@@ -67,7 +67,7 @@
       android:gravity="center_horizontal"
       android:maxLines="1"
       android:scrollHorizontally="true"
-      android:textColor="@color/primary_text"
+      android:textColor="?android:attr/textColorPrimary"
       android:textSize="@dimen/text_subhead_size"
       tools:text="Caravan Palace" />
 
@@ -82,7 +82,7 @@
       android:lines="1"
       android:maxLines="1"
       android:scrollHorizontally="true"
-      android:textColor="@color/primary_text"
+      android:textColor="?android:attr/textColorPrimary"
       android:textSize="@dimen/text_body_size"
       tools:ignore="MissingPrefix"
       tools:text="Panic [2012]" />
@@ -97,9 +97,9 @@
     android:layout_gravity="top"
     android:gravity="center"
     android:progress="0"
-    android:progressTint="@color/white"
+    android:progressTint="@color/progress_tint"
     android:secondaryProgress="0"
-    android:thumbTint="@color/white"
+    android:thumbTint="@color/progress_tint"
     app:layout_constraintBottom_toTopOf="@+id/track_info_area"
     app:layout_constraintLeft_toRightOf="@+id/main_track_progress_current"
     app:layout_constraintRight_toLeftOf="@+id/main_track_duration_total" />
@@ -148,7 +148,7 @@
     android:shadowDy="1"
     android:shadowRadius="1.5"
     android:text="@string/main_label_duration_current"
-    android:textColor="@color/primary_text"
+    android:textColor="?android:attr/textColorPrimary"
     android:textSize="12sp"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintStart_toStartOf="parent"
@@ -170,7 +170,7 @@
     android:shadowDy="1"
     android:shadowRadius="1.5"
     android:text="@string/main_label_duration_total"
-    android:textColor="@color/primary_text"
+    android:textColor="?android:attr/textColorPrimary"
     android:textSize="12sp"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toTopOf="@+id/main_track_progress_seeker"
@@ -191,7 +191,7 @@
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toLeftOf="@+id/main_button_previous"
     app:layout_constraintTop_toTopOf="@+id/main_button_play_pause"
-    app:tint="@color/button_dark" />
+    app:tint="?attr/colorControlNormal" />
 
   <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_button_previous"
@@ -206,7 +206,7 @@
     app:layout_constraintLeft_toRightOf="@+id/main_repeat_button"
     app:layout_constraintRight_toLeftOf="@+id/main_button_play_pause"
     app:layout_constraintTop_toTopOf="@+id/main_button_play_pause"
-    app:tint="@color/button_dark" />
+    app:tint="?attr/colorControlNormal" />
 
   <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_button_play_pause"
@@ -238,7 +238,7 @@
     app:layout_constraintLeft_toRightOf="@+id/main_button_play_pause"
     app:layout_constraintRight_toLeftOf="@+id/main_shuffle_button"
     app:layout_constraintTop_toTopOf="@+id/main_button_play_pause"
-    app:tint="@color/button_dark" />
+    app:tint="?attr/colorControlNormal" />
 
   <com.kelsos.mbrc.common.ui.SquareImageButton
     android:id="@+id/main_shuffle_button"
@@ -255,7 +255,7 @@
     app:layout_constraintLeft_toRightOf="@+id/main_button_next"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toTopOf="@+id/main_button_play_pause"
-    app:tint="@color/button_dark" />
+    app:tint="?attr/colorControlNormal" />
 
   <com.kelsos.mbrc.common.ui.SquareImageView
     android:id="@+id/main_album_cover_image_view"

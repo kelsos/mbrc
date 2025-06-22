@@ -22,7 +22,7 @@
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintTop_toTopOf="parent"
-    app:tint="@color/white"
+    app:tint="?attr/colorControlNormal"
     tools:visibility="visible" />
 
   <LinearLayout
@@ -41,7 +41,7 @@
       android:layout_height="@dimen/mbrc_list_drag_icon"
       android:contentDescription="@string/drag_n_drop_description"
       android:src="@drawable/ic_baseline_drag_handle_24"
-      app:tint="@color/white" />
+      app:tint="?android:attr/textColorPrimary" />
   </LinearLayout>
 
   <TextView
@@ -53,7 +53,7 @@
     android:layout_marginEnd="8dp"
     android:ellipsize="end"
     android:maxLines="1"
-    android:textColor="@color/primary_text"
+    android:textColor="?android:attr/textColorPrimary"
     android:textSize="@dimen/dual_list_title"
     app:layout_constraintBottom_toTopOf="@id/track_artist"
     app:layout_constraintEnd_toStartOf="@id/track_indicator_view"
@@ -70,7 +70,7 @@
     android:layout_marginBottom="8dp"
     android:ellipsize="end"
     android:maxLines="1"
-    android:textColor="@color/secondary_text"
+    android:textColor="?android:attr/textColorSecondary"
     android:textSize="@dimen/dual_list_subtitle"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toStartOf="@id/track_indicator_view"

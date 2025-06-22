@@ -10,7 +10,7 @@
 
   <ProgressBar
     android:id="@+id/empty_view_progress_bar"
-    style="@style/Widget.AppCompat.ProgressBar"
+    style="@style/Widget.MaterialComponents.CircularProgressIndicator"
     android:layout_width="60dp"
     android:layout_height="60dp"
     android:layout_marginTop="16dp"

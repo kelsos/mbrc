@@ -87,6 +87,17 @@ class SettingsManagerImpl(
     return false
   }
 
+  override fun getThemePreference(): String {
+    val key = getKey(R.string.settings_key_theme)
+    return preferences.getString(key, "dark") ?: "dark"
+  }
+
+  override fun setThemePreference(theme: String) {
+    preferences.edit {
+      putString(getKey(R.string.settings_key_theme), theme)
+    }
+  }
+
   private fun getKey(settingsKey: Int) = context.getString(settingsKey)
 
   companion object {
@@ -111,4 +122,8 @@ interface SettingsManager {
     lastChecked: Instant,
     required: Boolean = false,
   )
+
+  fun getThemePreference(): String
+
+  fun setThemePreference(theme: String)
 }

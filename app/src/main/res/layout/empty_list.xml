@@ -23,7 +23,7 @@
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
     app:layout_constraintVertical_bias="0.45"
-    app:tint="@color/white"
+    app:tint="?android:attr/textColorSecondary"
     tools:ignore="RtlSymmetry" />
 
   <TextView
@@ -33,7 +33,7 @@
     android:layout_marginTop="32dp"
     android:fontFamily="sans-serif-light"
     android:text="@string/no_results_found"
-    android:textColor="@color/primary_text"
+    android:textColor="?android:attr/textColorPrimary"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"

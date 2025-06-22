@@ -87,10 +87,11 @@ class AppNotificationManagerImpl(
 
   override fun connectionStateChanged(connected: Boolean) {
     if (connected) {
-      cancel(AppNotificationManager.MEDIA_SESSION_NOTIFICATION_ID)
-    } else {
       val mediaSession = mediaSessionManager.mediaSession ?: return
       notification = notificationBuilder.createBuilder(this.notificationData, mediaSession).build()
+      notificationManager.notify(AppNotificationManager.MEDIA_SESSION_NOTIFICATION_ID, notification)
+    } else {
+      cancel(AppNotificationManager.MEDIA_SESSION_NOTIFICATION_ID)
     }
   }
 

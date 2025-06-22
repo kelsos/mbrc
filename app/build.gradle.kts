@@ -261,7 +261,10 @@ dependencies {
   debugImplementation(libs.androidx.fragment.testing)
 
   "playImplementation"(platform(libs.google.firebase.bom))
-  "playImplementation"(libs.bundles.google.firebase)
+  "playImplementation"(libs.bundles.google.firebase) {
+    exclude(group = "com.google.protobuf")
+    exclude(group = "com.google.firebase", module = "protolite-well-known-types")
+  }
   dummyGoogleServicesJson(projects.mbrc)
 }
 

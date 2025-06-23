@@ -1,11 +1,14 @@
 package com.kelsos.mbrc.features.nowplaying
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 
+@RunWith(AndroidJUnit4::class)
 class MoveManagerImplTest {
   private lateinit var moveManager: MoveManagerImpl
   private val onMoveSubmit: (Int, Int) -> Unit = mockk(relaxed = true)

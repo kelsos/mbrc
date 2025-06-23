@@ -1,13 +1,12 @@
 package com.kelsos.mbrc.features.nowplaying
 
 import android.content.Context
-import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.paging.testing.asSnapshot
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.kelsos.mbrc.TestApplication
 import com.kelsos.mbrc.data.Database
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.utils.testDispatcher
@@ -21,14 +20,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
-@Config(
-  application = TestApplication::class,
-  sdk = [Build.VERSION_CODES.VANILLA_ICE_CREAM],
-)
+@RunWith(AndroidJUnit4::class)
 class NowPlayingRepositoryTest {
   private lateinit var repository: NowPlayingRepositoryImpl
   private lateinit var db: Database

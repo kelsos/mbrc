@@ -1,5 +1,6 @@
 package com.kelsos.mbrc.networking.client
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.data.DeserializationAdapter
 import com.kelsos.mbrc.data.DeserializationAdapterImpl
@@ -21,6 +22,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.dsl.bind
@@ -40,6 +42,7 @@ import java.util.concurrent.Executors
 
 private const val EXCEPTION_MESSAGE = "Test should throw"
 
+@RunWith(AndroidJUnit4::class)
 class ConnectivityVerifierImplTest : KoinTest {
   private var server: ServerSocket? = null
   private val connectionRepository: ConnectionRepository by inject()

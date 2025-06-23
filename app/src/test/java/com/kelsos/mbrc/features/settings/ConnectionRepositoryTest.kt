@@ -3,13 +3,12 @@ package com.kelsos.mbrc.features.settings
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
-import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.paging.testing.asSnapshot
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.kelsos.mbrc.TestApplication
 import com.kelsos.mbrc.data.Database
 import com.kelsos.mbrc.networking.discovery.RemoteServiceDiscovery
 import com.kelsos.mbrc.utils.testDispatcher
@@ -32,14 +31,8 @@ import org.koin.test.inject
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
-@Config(
-  application = TestApplication::class,
-  sdk = [Build.VERSION_CODES.VANILLA_ICE_CREAM],
-)
+@RunWith(AndroidJUnit4::class)
 class ConnectionRepositoryTest : KoinTest {
   private val repository: ConnectionRepository by inject()
 

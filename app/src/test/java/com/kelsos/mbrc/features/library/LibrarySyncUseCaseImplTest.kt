@@ -2,6 +2,7 @@
 
 package com.kelsos.mbrc.features.library
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.common.data.cacheIsEmpty
 import com.kelsos.mbrc.features.library.albums.AlbumRepository
@@ -24,6 +25,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.dsl.bind
@@ -33,6 +35,7 @@ import org.koin.test.KoinTest
 import org.koin.test.inject
 import java.net.SocketTimeoutException
 
+@RunWith(AndroidJUnit4::class)
 class LibrarySyncUseCaseImplTest : KoinTest {
   private val genreRepository: GenreRepository by inject()
   private val artistRepository: ArtistRepository by inject()

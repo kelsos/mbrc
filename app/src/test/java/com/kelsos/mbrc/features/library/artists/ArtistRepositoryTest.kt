@@ -2,31 +2,31 @@
 
 package com.kelsos.mbrc.features.library.artists
 
-import android.os.Build
 import androidx.paging.testing.asSnapshot
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.kelsos.mbrc.TestApplication
+import com.kelsos.mbrc.common.data.Progress
 import com.kelsos.mbrc.data.Database
+import com.kelsos.mbrc.features.library.genres.GenreEntity
 import com.kelsos.mbrc.features.library.tracks.TrackEntity
 import com.kelsos.mbrc.networking.ApiBase
+import com.kelsos.mbrc.networking.protocol.Protocol
+import com.kelsos.mbrc.utils.testDispatcher
 import com.kelsos.mbrc.utils.testDispatchers
+import io.mockk.coEvery
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
-@Config(
-  application = TestApplication::class,
-  sdk = [Build.VERSION_CODES.VANILLA_ICE_CREAM],
-)
+@RunWith(AndroidJUnit4::class)
 class ArtistRepositoryTest {
   private lateinit var database: Database
   private lateinit var repository: ArtistRepository
@@ -49,6 +49,235 @@ class ArtistRepositoryTest {
   @After
   fun tearDown() {
     database.close()
+  }
+
+  @Test
+  fun count_shouldReturnCorrectCount() {
+    runTest(testDispatcher) {
+      val artists =
+        listOf(
+          ArtistEntity(artist = "Artist 1", dateAdded = 1000L),
+          ArtistEntity(artist = "Artist 2", dateAdded = 1000L),
+          ArtistEntity(artist = "Artist 3", dateAdded = 1000L),
+        )
+      dao.insertAll(artists)
+
+      val count = repository.count()
+
+      assertThat(count).isEqualTo(3)
+    }
+  }
+
+  @Test
+  fun count_shouldReturnZeroWhenEmpty() {
+    runTest(testDispatcher) {
+      val count = repository.count()
+
+      assertThat(count).isEqualTo(0)
+    }
+  }
+
+  @Test
+  fun getArtistByGenre_shouldReturnArtistsForGenre() {
+    runTest(testDispatcher) {
+      // Given: Artists and tracks with different genres
+      val rockGenre = GenreEntity(genre = "Rock", dateAdded = 1000L)
+      val popGenre = GenreEntity(genre = "Pop", dateAdded = 1000L)
+      database.genreDao().insertAll(listOf(rockGenre, popGenre))
+
+      // Get the inserted genre IDs
+      val rockGenreId =
+        database
+          .genreDao()
+          .genres()
+          .first { it.genre == "Rock" }
+          .id
+      val popGenreId =
+        database
+          .genreDao()
+          .genres()
+          .first { it.genre == "Pop" }
+          .id
+
+      val artists =
+        listOf(
+          ArtistEntity(artist = "Rock Artist 1", dateAdded = 1000L),
+          ArtistEntity(artist = "Rock Artist 2", dateAdded = 1000L),
+          ArtistEntity(artist = "Pop Artist", dateAdded = 1000L),
+        )
+      dao.insertAll(artists)
+
+      val tracks =
+        listOf(
+          TrackEntity(
+            artist = "Rock Artist 1",
+            title = "Rock Track 1",
+            album = "Rock Album 1",
+            genre = "Rock",
+            dateAdded = 1000L,
+          ),
+          TrackEntity(
+            artist = "Rock Artist 2",
+            title = "Rock Track 2",
+            album = "Rock Album 2",
+            genre = "Rock",
+            dateAdded = 1000L,
+          ),
+          TrackEntity(
+            artist = "Pop Artist",
+            title = "Pop Track",
+            album = "Pop Album",
+            genre = "Pop",
+            dateAdded = 1000L,
+          ),
+        )
+      database.trackDao().insertAll(tracks)
+
+      // When: Get artists by rock genre
+      val rockArtists = repository.getArtistByGenre(rockGenreId).asSnapshot()
+
+      // Then: Should only include rock artists
+      val artistNames = rockArtists.map { it.artist }
+      assertThat(artistNames).containsExactly("Rock Artist 1", "Rock Artist 2")
+
+      // When: Get artists by pop genre
+      val popArtists = repository.getArtistByGenre(popGenreId).asSnapshot()
+
+      // Then: Should only include pop artists
+      val popArtistNames = popArtists.map { it.artist }
+      assertThat(popArtistNames).containsExactly("Pop Artist")
+    }
+  }
+
+  @Test
+  fun search_shouldReturnMatchingArtists() {
+    runTest(testDispatcher) {
+      val artists =
+        listOf(
+          ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
+          ArtistEntity(artist = "The Beach Boys", dateAdded = 1000L),
+          ArtistEntity(artist = "Queen", dateAdded = 1000L),
+        )
+      dao.insertAll(artists)
+
+      val result = repository.search("The").asSnapshot()
+
+      assertThat(result.map { it.artist }).containsExactly("The Beach Boys", "The Beatles")
+    }
+  }
+
+  @Test
+  fun search_shouldReturnEmptyWhenNoMatches() {
+    runTest(testDispatcher) {
+      val artists =
+        listOf(
+          ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
+          ArtistEntity(artist = "Queen", dateAdded = 1000L),
+        )
+      dao.insertAll(artists)
+
+      val result = repository.search("Metallica").asSnapshot()
+
+      assertThat(result).isEmpty()
+    }
+  }
+
+  @Test
+  fun getById_shouldReturnArtistWhenExists() {
+    runTest(testDispatcher) {
+      val artist = ArtistEntity(artist = "The Beatles", dateAdded = 1000L)
+      dao.insertAll(listOf(artist))
+      val insertedArtist = dao.all().first()
+
+      val result = repository.getById(insertedArtist.id!!)
+
+      assertThat(result).isNotNull()
+      assertThat(result!!.artist).isEqualTo("The Beatles")
+      assertThat(result.id).isEqualTo(insertedArtist.id)
+    }
+  }
+
+  @Test
+  fun getById_shouldReturnNullWhenNotExists() {
+    runTest(testDispatcher) {
+      val result = repository.getById(999L)
+
+      assertThat(result).isNull()
+    }
+  }
+
+  @Test
+  fun getRemote_shouldFetchAndStoreNewArtists() {
+    runTest(testDispatcher) {
+      val remoteArtists =
+        listOf(
+          ArtistDto(artist = "Remote Artist 1"),
+          ArtistDto(artist = "Remote Artist 2"),
+        )
+      coEvery {
+        api.getAllPages(Protocol.LibraryBrowseArtists, ArtistDto::class, any())
+      } returns flowOf(remoteArtists)
+
+      repository.getRemote(null)
+
+      val storedArtists = dao.all()
+      assertThat(storedArtists.map { it.artist }).containsExactly("Remote Artist 1", "Remote Artist 2")
+    }
+  }
+
+  @Test
+  fun getRemote_shouldUpdateExistingArtists() {
+    runTest(testDispatcher) {
+      val existingArtist = ArtistEntity(artist = "Existing Artist", dateAdded = 500L)
+      dao.insertAll(listOf(existingArtist))
+
+      val remoteArtists = listOf(ArtistDto(artist = "Existing Artist"))
+      coEvery {
+        api.getAllPages(Protocol.LibraryBrowseArtists, ArtistDto::class, any())
+      } returns flowOf(remoteArtists)
+
+      repository.getRemote(null)
+
+      val updatedArtists = dao.all()
+      assertThat(updatedArtists).hasSize(1)
+      assertThat(updatedArtists.first().artist).isEqualTo("Existing Artist")
+      assertThat(updatedArtists.first().dateAdded).isGreaterThan(500L)
+    }
+  }
+
+  @Test
+  fun getRemote_shouldRemovePreviousEntries() {
+    runTest(testDispatcher) {
+      val oldArtist = ArtistEntity(artist = "Old Artist", dateAdded = 500L)
+      dao.insertAll(listOf(oldArtist))
+
+      val remoteArtists = listOf(ArtistDto(artist = "New Artist"))
+      coEvery {
+        api.getAllPages(Protocol.LibraryBrowseArtists, ArtistDto::class, any())
+      } returns flowOf(remoteArtists)
+
+      repository.getRemote(null)
+
+      val storedArtists = dao.all()
+      assertThat(storedArtists).hasSize(1)
+      assertThat(storedArtists.first().artist).isEqualTo("New Artist")
+    }
+  }
+
+  @Test
+  fun getRemote_shouldHandleProgressCallback() {
+    runTest(testDispatcher) {
+      val progress: Progress = mockk(relaxed = true)
+      val remoteArtists = listOf(ArtistDto(artist = "Artist"))
+      coEvery {
+        api.getAllPages(Protocol.LibraryBrowseArtists, ArtistDto::class, progress)
+      } returns flowOf(remoteArtists)
+
+      repository.getRemote(progress)
+
+      @Suppress("IgnoredReturnValue")
+      verify { api.getAllPages(Protocol.LibraryBrowseArtists, ArtistDto::class, progress) }
+    }
   }
 
   @Test

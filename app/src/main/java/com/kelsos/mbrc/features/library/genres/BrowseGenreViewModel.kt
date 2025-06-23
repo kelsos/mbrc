@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.library.genres
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.kelsos.mbrc.features.library.BaseLibraryViewModel
 import com.kelsos.mbrc.features.library.LibrarySearchModel
 import com.kelsos.mbrc.features.library.LibrarySyncUseCase
@@ -21,13 +22,14 @@ class BrowseGenreViewModel(
   settingsHelper: BasicSettingsHelper,
 ) : BaseLibraryViewModel<GenreUiMessage>(settingsHelper) {
   val genres: Flow<PagingData<Genre>> =
-    searchModel.term.flatMapMerge { term ->
-      if (term.isEmpty()) {
-        repository.getAll()
-      } else {
-        repository.search(term)
-      }
-    }
+    searchModel.term
+      .flatMapMerge { term ->
+        if (term.isEmpty()) {
+          repository.getAll()
+        } else {
+          repository.search(term)
+        }
+      }.cachedIn(viewModelScope)
 
   val showSync = searchModel.term.map { it.isEmpty() }
 

@@ -30,7 +30,8 @@ interface TrackDao {
 
   @Query(
     """
-    select * from track where '%' || :term ||'%'
+    select * from track
+    where title LIKE '%' || :term || '%'
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
     """,
   )

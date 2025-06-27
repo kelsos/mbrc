@@ -32,15 +32,6 @@ class HelpFragment : Fragment() {
   }
 
   private class RemoteWebViewClient : WebViewClient() {
-    @Deprecated("Deprecated in Java")
-    override fun shouldOverrideUrlLoading(
-      view: WebView,
-      url: String,
-    ): Boolean {
-      view.loadUrl(url)
-      return false
-    }
-
     override fun shouldOverrideUrlLoading(
       view: WebView?,
       request: WebResourceRequest?,

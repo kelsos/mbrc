@@ -70,7 +70,7 @@ val buildTimeProvider = providers.provider {
 val appVersionName = "1.6.0-alpha.1"
 val appVersionCode = 125
 val minSDKVersion = 23
-val compileSDKVersion = 35
+val compileSDKVersion = 36
 
 android {
   compileSdk = compileSDKVersion

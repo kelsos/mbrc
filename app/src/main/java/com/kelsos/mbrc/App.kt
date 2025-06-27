@@ -47,7 +47,7 @@ open class App : Application() {
         single { checkNotNull(app.getSystemService<NotificationManager>()) }
         single { checkNotNull(app.getSystemService<WifiManager>()) }
         single { checkNotNull(app.getSystemService<ConnectivityManager>()) }
-        single<SharedPreferences> { PreferenceManager.getDefaultSharedPreferences(get()) }
+        single<SharedPreferences> { PreferenceManager.getDefaultSharedPreferences(app) }
       }
     return listOf(
       appModule,

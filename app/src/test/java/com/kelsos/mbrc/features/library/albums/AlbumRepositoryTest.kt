@@ -129,7 +129,7 @@ class AlbumRepositoryTest : KoinTest {
   }
 
   @Test
-  fun searchShouldReturnMatchingAlbums() {
+  fun searchShouldReturnMatchingAlbumsByAlbumName() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -143,7 +143,7 @@ class AlbumRepositoryTest : KoinTest {
       val result = repository.search("Rock").asSnapshot()
 
       // The DAO sorts by album name, so the order is alphabetical
-      assertThat(result.map { it.album }).containsExactly("Rock Album", "Pop Rock", "Hard Rock").inOrder()
+      assertThat(result.map { it.album }).containsExactly("Hard Rock", "Pop Rock", "Rock Album").inOrder()
     }
   }
 
@@ -177,6 +177,80 @@ class AlbumRepositoryTest : KoinTest {
       val result = repository.search("rock").asSnapshot()
 
       assertThat(result.map { it.album }).containsExactly("Rock Album")
+    }
+  }
+
+  @Test
+  fun searchShouldReturnMatchingAlbumsByArtistName() {
+    runTest(testDispatcher) {
+      val albums =
+        listOf(
+          AlbumEntity(artist = "Metallica", album = "Master of Puppets", dateAdded = 1000L),
+          AlbumEntity(artist = "Metallica", album = "Black Album", dateAdded = 1000L),
+          AlbumEntity(artist = "Iron Maiden", album = "The Number of the Beast", dateAdded = 1000L),
+          AlbumEntity(artist = "Black Sabbath", album = "Paranoid", dateAdded = 1000L),
+        )
+      dao.insert(albums)
+
+      val result = repository.search("Metallica").asSnapshot()
+
+      // Should return albums by Metallica, sorted by album name
+      assertThat(result.map { it.album }).containsExactly("Black Album", "Master of Puppets").inOrder()
+      assertThat(result.map { it.artist }).containsExactly("Metallica", "Metallica")
+    }
+  }
+
+  @Test
+  fun searchShouldReturnMatchingAlbumsByPartialArtistName() {
+    runTest(testDispatcher) {
+      val albums =
+        listOf(
+          AlbumEntity(artist = "Iron Maiden", album = "Powerslave", dateAdded = 1000L),
+          AlbumEntity(artist = "Iron Butterfly", album = "In-A-Gadda-Da-Vida", dateAdded = 1000L),
+          AlbumEntity(artist = "Black Sabbath", album = "Iron Man", dateAdded = 1000L),
+          AlbumEntity(artist = "Metallica", album = "Master of Puppets", dateAdded = 1000L),
+        )
+      dao.insert(albums)
+
+      val result = repository.search("Iron").asSnapshot()
+
+      // Should return albums containing "Iron" in either artist or album name, sorted by album name
+      assertThat(result.map { it.album }).containsExactly("In-A-Gadda-Da-Vida", "Iron Man", "Powerslave").inOrder()
+    }
+  }
+
+  @Test
+  fun searchShouldReturnBothArtistAndAlbumMatches() {
+    runTest(testDispatcher) {
+      val albums =
+        listOf(
+          AlbumEntity(artist = "Pink Floyd", album = "Dark Side of the Moon", dateAdded = 1000L),
+          AlbumEntity(artist = "Led Zeppelin", album = "Pink Floyd Tribute", dateAdded = 1000L),
+          AlbumEntity(artist = "The Beatles", album = "Abbey Road", dateAdded = 1000L),
+        )
+      dao.insert(albums)
+
+      val result = repository.search("Pink").asSnapshot()
+
+      // Should return both albums: one by artist match, one by album match
+      assertThat(result.map { it.album }).containsExactly("Dark Side of the Moon", "Pink Floyd Tribute").inOrder()
+    }
+  }
+
+  @Test
+  fun searchShouldBeCaseInsensitiveForArtistNames() {
+    runTest(testDispatcher) {
+      val albums =
+        listOf(
+          AlbumEntity(artist = "METALLICA", album = "Master of Puppets", dateAdded = 1000L),
+          AlbumEntity(artist = "metallica", album = "Black Album", dateAdded = 1000L),
+          AlbumEntity(artist = "Iron Maiden", album = "Powerslave", dateAdded = 1000L),
+        )
+      dao.insert(albums)
+
+      val result = repository.search("metallica").asSnapshot()
+
+      assertThat(result.map { it.album }).containsExactly("Black Album", "Master of Puppets").inOrder()
     }
   }
 

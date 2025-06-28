@@ -23,34 +23,56 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.get
+import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
-class GenreRepositoryTest {
+class GenreRepositoryTest : KoinTest {
   private lateinit var database: Database
-  private lateinit var repository: GenreRepository
   private lateinit var dao: GenreDao
   private val api: ApiBase = mockk()
 
+  private val testModule =
+    module {
+      single { api }
+      single { testDispatchers }
+      single {
+        Room
+          .inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            Database::class.java,
+          ).allowMainThreadQueries()
+          .build()
+      }
+      single { get<Database>().genreDao() }
+      singleOf(::GenreRepositoryImpl) {
+        bind<GenreRepository>()
+      }
+    }
+
+  private val repository: GenreRepository by inject()
+
   @Before
   fun setUp() {
-    database =
-      Room
-        .inMemoryDatabaseBuilder(
-          ApplicationProvider.getApplicationContext(),
-          Database::class.java,
-        ).allowMainThreadQueries()
-        .build()
-    dao = database.genreDao()
-    repository = GenreRepositoryImpl(api, dao, testDispatchers)
+    startKoin { modules(listOf(testModule)) }
+    database = get()
+    dao = get()
   }
 
   @After
   fun tearDown() {
     database.close()
+    stopKoin()
   }
 
   @Test
-  fun count_shouldReturnCorrectCount() {
+  fun countShouldReturnCorrectCount() {
     runTest(testDispatcher) {
       val genres =
         listOf(
@@ -67,7 +89,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun count_shouldReturnZeroWhenEmpty() {
+  fun countShouldReturnZeroWhenEmpty() {
     runTest(testDispatcher) {
       val count = repository.count()
 
@@ -76,7 +98,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun getAll_shouldReturnAllGenresSorted() {
+  fun getAllShouldReturnAllGenresSorted() {
     runTest(testDispatcher) {
       val genres =
         listOf(
@@ -93,7 +115,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun getAll_shouldReturnEmptyWhenNoGenres() {
+  fun getAllShouldReturnEmptyWhenNoGenres() {
     runTest(testDispatcher) {
       val result = repository.getAll().asSnapshot()
 
@@ -102,7 +124,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun search_shouldReturnMatchingGenres() {
+  fun searchShouldReturnMatchingGenres() {
     runTest(testDispatcher) {
       val genres =
         listOf(
@@ -120,7 +142,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun search_shouldReturnEmptyWhenNoMatches() {
+  fun searchShouldReturnEmptyWhenNoMatches() {
     runTest(testDispatcher) {
       val genres =
         listOf(
@@ -136,7 +158,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun search_shouldBeCaseInsensitive() {
+  fun searchShouldBeCaseInsensitive() {
     runTest(testDispatcher) {
       val genres =
         listOf(
@@ -153,7 +175,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun getById_shouldReturnGenreWhenExists() {
+  fun getByIdShouldReturnGenreWhenExists() {
     runTest(testDispatcher) {
       val genre = GenreEntity(genre = "Rock", dateAdded = 1000L)
       dao.insertAll(listOf(genre))
@@ -168,7 +190,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun getById_shouldReturnNullWhenNotExists() {
+  fun getByIdShouldReturnNullWhenNotExists() {
     runTest(testDispatcher) {
       val result = repository.getById(999L)
 
@@ -177,7 +199,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldFetchAndStoreNewGenres() {
+  fun getRemoteShouldFetchAndStoreNewGenres() {
     runTest(testDispatcher) {
       val remoteGenres =
         listOf(
@@ -196,7 +218,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldUpdateExistingGenres() {
+  fun getRemoteShouldUpdateExistingGenres() {
     runTest(testDispatcher) {
       val existingGenre = GenreEntity(genre = "Rock", dateAdded = 500L)
       dao.insertAll(listOf(existingGenre))
@@ -217,7 +239,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldRemovePreviousEntries() {
+  fun getRemoteShouldRemovePreviousEntries() {
     runTest(testDispatcher) {
       val oldGenre = GenreEntity(genre = "Old Genre", dateAdded = 500L)
       dao.insertAll(listOf(oldGenre))
@@ -236,7 +258,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldHandleProgressCallback() {
+  fun getRemoteShouldHandleProgressCallback() {
     runTest(testDispatcher) {
       val progress: Progress = mockk(relaxed = true)
       val remoteGenres = listOf(GenreDto(genre = "Rock"))
@@ -252,7 +274,7 @@ class GenreRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldHandleMixOfNewAndExistingGenres() {
+  fun getRemoteShouldHandleMixOfNewAndExistingGenres() {
     runTest(testDispatcher) {
       val existingGenres =
         listOf(

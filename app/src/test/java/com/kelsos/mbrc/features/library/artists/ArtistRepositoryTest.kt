@@ -25,34 +25,56 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.get
+import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
-class ArtistRepositoryTest {
+class ArtistRepositoryTest : KoinTest {
   private lateinit var database: Database
-  private lateinit var repository: ArtistRepository
   private lateinit var dao: ArtistDao
   private val api: ApiBase = mockk()
 
+  private val testModule =
+    module {
+      single { api }
+      single { testDispatchers }
+      single {
+        Room
+          .inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            Database::class.java,
+          ).allowMainThreadQueries()
+          .build()
+      }
+      single { get<Database>().artistDao() }
+      singleOf(::ArtistRepositoryImpl) {
+        bind<ArtistRepository>()
+      }
+    }
+
+  private val repository: ArtistRepository by inject()
+
   @Before
   fun setUp() {
-    database =
-      Room
-        .inMemoryDatabaseBuilder(
-          ApplicationProvider.getApplicationContext(),
-          Database::class.java,
-        ).allowMainThreadQueries()
-        .build()
-    dao = database.artistDao()
-    repository = ArtistRepositoryImpl(dao, api, testDispatchers)
+    startKoin { modules(listOf(testModule)) }
+    database = get()
+    dao = get()
   }
 
   @After
   fun tearDown() {
     database.close()
+    stopKoin()
   }
 
   @Test
-  fun count_shouldReturnCorrectCount() {
+  fun countShouldReturnCorrectCount() {
     runTest(testDispatcher) {
       val artists =
         listOf(
@@ -69,7 +91,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun count_shouldReturnZeroWhenEmpty() {
+  fun countShouldReturnZeroWhenEmpty() {
     runTest(testDispatcher) {
       val count = repository.count()
 
@@ -78,7 +100,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getArtistByGenre_shouldReturnArtistsForGenre() {
+  fun getArtistByGenreShouldReturnArtistsForGenre() {
     runTest(testDispatcher) {
       // Given: Artists and tracks with different genres
       val rockGenre = GenreEntity(genre = "Rock", dateAdded = 1000L)
@@ -150,7 +172,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun search_shouldReturnMatchingArtists() {
+  fun searchShouldReturnMatchingArtists() {
     runTest(testDispatcher) {
       val artists =
         listOf(
@@ -167,7 +189,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun search_shouldReturnEmptyWhenNoMatches() {
+  fun searchShouldReturnEmptyWhenNoMatches() {
     runTest(testDispatcher) {
       val artists =
         listOf(
@@ -183,7 +205,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getById_shouldReturnArtistWhenExists() {
+  fun getByIdShouldReturnArtistWhenExists() {
     runTest(testDispatcher) {
       val artist = ArtistEntity(artist = "The Beatles", dateAdded = 1000L)
       dao.insertAll(listOf(artist))
@@ -198,7 +220,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getById_shouldReturnNullWhenNotExists() {
+  fun getByIdShouldReturnNullWhenNotExists() {
     runTest(testDispatcher) {
       val result = repository.getById(999L)
 
@@ -207,7 +229,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldFetchAndStoreNewArtists() {
+  fun getRemoteShouldFetchAndStoreNewArtists() {
     runTest(testDispatcher) {
       val remoteArtists =
         listOf(
@@ -226,7 +248,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldUpdateExistingArtists() {
+  fun getRemoteShouldUpdateExistingArtists() {
     runTest(testDispatcher) {
       val existingArtist = ArtistEntity(artist = "Existing Artist", dateAdded = 500L)
       dao.insertAll(listOf(existingArtist))
@@ -246,7 +268,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldRemovePreviousEntries() {
+  fun getRemoteShouldRemovePreviousEntries() {
     runTest(testDispatcher) {
       val oldArtist = ArtistEntity(artist = "Old Artist", dateAdded = 500L)
       dao.insertAll(listOf(oldArtist))
@@ -265,7 +287,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldHandleProgressCallback() {
+  fun getRemoteShouldHandleProgressCallback() {
     runTest(testDispatcher) {
       val progress: Progress = mockk(relaxed = true)
       val remoteArtists = listOf(ArtistDto(artist = "Artist"))
@@ -281,7 +303,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getAlbumArtistsOnly_shouldIncludeCompilationAlbumArtists() {
+  fun getAlbumArtistsOnlyShouldIncludeCompilationAlbumArtists() {
     runTest {
       // Given: Compilation album with different track artists and album artist
       val albumArtist = "Various Artists"
@@ -326,7 +348,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getAlbumArtistsOnly_shouldExcludeTrackOnlyArtists() {
+  fun getAlbumArtistsOnlyShouldExcludeTrackOnlyArtists() {
     runTest {
       // Given: Regular album where track artist matches album artist,
       // and another track where artist doesn't match album artist
@@ -372,7 +394,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getAllArtists_shouldSortIgnoringThePrefix() {
+  fun getAllArtistsShouldSortIgnoringThePrefix() {
     runTest {
       // Given: Artists with and without "the" prefix
       val artists =
@@ -405,7 +427,7 @@ class ArtistRepositoryTest {
   }
 
   @Test
-  fun getAlbumArtistsOnly_shouldSortIgnoringThePrefix() {
+  fun getAlbumArtistsOnlyShouldSortIgnoringThePrefix() {
     runTest {
       // Given: Album artists with "the" prefix
       val tracks =

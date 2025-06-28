@@ -4,18 +4,39 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
-class MoveManagerImplTest {
-  private lateinit var moveManager: MoveManagerImpl
+class MoveManagerImplTest : KoinTest {
   private val onMoveSubmit: (Int, Int) -> Unit = mockk(relaxed = true)
+
+  private val testModule =
+    module {
+      singleOf(::MoveManagerImpl) {
+        bind<MoveManager>()
+      }
+    }
+
+  private val moveManager: MoveManager by inject()
 
   @Before
   fun setUp() {
-    moveManager = MoveManagerImpl()
+    startKoin { modules(listOf(testModule)) }
+  }
+
+  @After
+  fun tearDown() {
+    stopKoin()
   }
 
   @Test

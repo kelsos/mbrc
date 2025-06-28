@@ -23,11 +23,18 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.get
+import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
-class TrackRepositoryTest {
+class TrackRepositoryTest : KoinTest {
   private lateinit var database: Database
-  private lateinit var repository: TrackRepository
   private lateinit var dao: TrackDao
   private val api: ApiBase = mockk()
 
@@ -37,22 +44,37 @@ class TrackRepositoryTest {
     const val OLDER_DATE_ADDED = 500L
   }
 
+  private val testModule =
+    module {
+      single { api }
+      single { testDispatchers }
+      single {
+        Room
+          .inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            Database::class.java,
+          ).allowMainThreadQueries()
+          .build()
+      }
+      single { get<Database>().trackDao() }
+      singleOf(::TrackRepositoryImpl) {
+        bind<TrackRepository>()
+      }
+    }
+
+  private val repository: TrackRepository by inject()
+
   @Before
   fun setUp() {
-    database =
-      Room
-        .inMemoryDatabaseBuilder(
-          ApplicationProvider.getApplicationContext(),
-          Database::class.java,
-        ).allowMainThreadQueries()
-        .build()
-    dao = database.trackDao()
-    repository = TrackRepositoryImpl(dao, api, testDispatchers)
+    startKoin { modules(listOf(testModule)) }
+    database = get()
+    dao = get()
   }
 
   @After
   fun tearDown() {
     database.close()
+    stopKoin()
   }
 
   // Helper methods for creating test data
@@ -103,7 +125,7 @@ class TrackRepositoryTest {
     )
 
   @Test
-  fun count_shouldReturnCorrectCount() {
+  fun countShouldReturnCorrectCount() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -136,7 +158,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun count_shouldReturnZeroWhenEmpty() {
+  fun countShouldReturnZeroWhenEmpty() {
     runTest(testDispatcher) {
       val count = repository.count()
 
@@ -145,7 +167,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getAll_shouldReturnAllTracksSorted() {
+  fun getAllShouldReturnAllTracksSorted() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -179,7 +201,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getAll_shouldReturnEmptyWhenNoTracks() {
+  fun getAllShouldReturnEmptyWhenNoTracks() {
     runTest(testDispatcher) {
       val result = repository.getAll().asSnapshot()
 
@@ -188,7 +210,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getTracks_shouldReturnAlbumTracks() {
+  fun getTracksShouldReturnAlbumTracks() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -224,7 +246,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getTracks_shouldReturnNonAlbumTracks() {
+  fun getTracksShouldReturnNonAlbumTracks() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -259,7 +281,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun search_shouldReturnMatchingTracks() {
+  fun searchShouldReturnMatchingTracks() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -290,7 +312,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun search_shouldReturnEmptyWhenNoMatches() {
+  fun searchShouldReturnEmptyWhenNoMatches() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -315,7 +337,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getTrackPaths_shouldReturnAllTrackPaths() {
+  fun getTrackPathsShouldReturnAllTrackPaths() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -341,7 +363,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getTrackPaths_shouldReturnGenreTrackPaths() {
+  fun getTrackPathsShouldReturnGenreTrackPaths() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -374,7 +396,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getTrackPaths_shouldReturnArtistTrackPaths() {
+  fun getTrackPathsShouldReturnArtistTrackPaths() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -409,7 +431,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getTrackPaths_shouldReturnAlbumTrackPaths() {
+  fun getTrackPathsShouldReturnAlbumTrackPaths() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -443,7 +465,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getById_shouldReturnTrackWhenExists() {
+  fun getByIdShouldReturnTrackWhenExists() {
     runTest(testDispatcher) {
       val track =
         createTrackEntity(
@@ -464,7 +486,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getById_shouldReturnNullWhenNotExists() {
+  fun getByIdShouldReturnNullWhenNotExists() {
     runTest(testDispatcher) {
       val result = repository.getById(999L)
 
@@ -473,7 +495,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldFetchAndStoreNewTracks() {
+  fun getRemoteShouldFetchAndStoreNewTracks() {
     runTest(testDispatcher) {
       val remoteTracks =
         listOf(
@@ -504,7 +526,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldUpdateExistingTracks() {
+  fun getRemoteShouldUpdateExistingTracks() {
     runTest(testDispatcher) {
       val existingTrack =
         createTrackEntity(
@@ -543,7 +565,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldRemovePreviousEntries() {
+  fun getRemoteShouldRemovePreviousEntries() {
     runTest(testDispatcher) {
       val oldTrack =
         createTrackEntity(
@@ -581,7 +603,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldHandleProgressCallback() {
+  fun getRemoteShouldHandleProgressCallback() {
     runTest(testDispatcher) {
       val progress: Progress = mockk(relaxed = true)
       val remoteTracks =
@@ -605,7 +627,7 @@ class TrackRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldHandleMixOfNewAndExistingTracks() {
+  fun getRemoteShouldHandleMixOfNewAndExistingTracks() {
     runTest(testDispatcher) {
       val existingTracks =
         listOf(

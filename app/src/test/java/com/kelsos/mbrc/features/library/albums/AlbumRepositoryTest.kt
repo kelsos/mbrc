@@ -25,36 +25,59 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.get
+import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
-class AlbumRepositoryTest {
+class AlbumRepositoryTest : KoinTest {
   private lateinit var database: Database
-  private lateinit var repository: AlbumRepository
   private lateinit var dao: AlbumDao
   private lateinit var trackDao: TrackDao
   private val api: ApiBase = mockk()
 
+  private val testModule =
+    module {
+      single { api }
+      single { testDispatchers }
+      single {
+        Room
+          .inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            Database::class.java,
+          ).allowMainThreadQueries()
+          .build()
+      }
+      single { get<Database>().albumDao() }
+      single { get<Database>().trackDao() }
+      singleOf(::AlbumRepositoryImpl) {
+        bind<AlbumRepository>()
+      }
+    }
+
+  private val repository: AlbumRepository by inject()
+
   @Before
   fun setUp() {
-    database =
-      Room
-        .inMemoryDatabaseBuilder(
-          ApplicationProvider.getApplicationContext(),
-          Database::class.java,
-        ).allowMainThreadQueries()
-        .build()
-    dao = database.albumDao()
-    trackDao = database.trackDao()
-    repository = AlbumRepositoryImpl(dao, api, testDispatchers)
+    startKoin { modules(listOf(testModule)) }
+    database = get()
+    dao = get()
+    trackDao = get()
   }
 
   @After
   fun tearDown() {
     database.close()
+    stopKoin()
   }
 
   @Test
-  fun count_shouldReturnCorrectCount() {
+  fun countShouldReturnCorrectCount() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -71,7 +94,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun count_shouldReturnZeroWhenEmpty() {
+  fun countShouldReturnZeroWhenEmpty() {
     runTest(testDispatcher) {
       val count = repository.count()
 
@@ -80,7 +103,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getAll_shouldReturnAllAlbumsSorted() {
+  fun getAllShouldReturnAllAlbumsSorted() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -97,7 +120,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getAll_shouldReturnEmptyWhenNoAlbums() {
+  fun getAllShouldReturnEmptyWhenNoAlbums() {
     runTest(testDispatcher) {
       val result = repository.getAll().asSnapshot()
 
@@ -106,7 +129,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun search_shouldReturnMatchingAlbums() {
+  fun searchShouldReturnMatchingAlbums() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -125,7 +148,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun search_shouldReturnEmptyWhenNoMatches() {
+  fun searchShouldReturnEmptyWhenNoMatches() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -141,7 +164,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun search_shouldBeCaseInsensitive() {
+  fun searchShouldBeCaseInsensitive() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -158,7 +181,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getById_shouldReturnAlbumWhenExists() {
+  fun getByIdShouldReturnAlbumWhenExists() {
     runTest(testDispatcher) {
       val album = AlbumEntity(artist = "Artist1", album = "Album1", dateAdded = 1000L)
       dao.insert(listOf(album))
@@ -173,7 +196,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getById_shouldReturnNullWhenNotExists() {
+  fun getByIdShouldReturnNullWhenNotExists() {
     runTest(testDispatcher) {
       val result = repository.getById(999L)
 
@@ -182,7 +205,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getAlbumsByArtist_shouldReturnAlbumsForArtist() {
+  fun getAlbumsByArtistShouldReturnAlbumsForArtist() {
     runTest(testDispatcher) {
       // Given: Albums for different artists
       val albums =
@@ -229,7 +252,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getAlbumsByArtist_shouldReturnEmptyWhenNoMatches() {
+  fun getAlbumsByArtistShouldReturnEmptyWhenNoMatches() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -245,7 +268,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldFetchAndStoreNewAlbums() {
+  fun getRemoteShouldFetchAndStoreNewAlbums() {
     runTest(testDispatcher) {
       val remoteAlbums =
         listOf(
@@ -264,7 +287,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldUpdateExistingAlbums() {
+  fun getRemoteShouldUpdateExistingAlbums() {
     runTest(testDispatcher) {
       val existingAlbum = AlbumEntity(artist = "Artist1", album = "Album1", dateAdded = 500L)
       dao.insert(listOf(existingAlbum))
@@ -285,7 +308,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldRemovePreviousEntries() {
+  fun getRemoteShouldRemovePreviousEntries() {
     runTest(testDispatcher) {
       val oldAlbum = AlbumEntity(artist = "OldArtist", album = "OldAlbum", dateAdded = 500L)
       dao.insert(listOf(oldAlbum))
@@ -304,7 +327,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldHandleProgressCallback() {
+  fun getRemoteShouldHandleProgressCallback() {
     runTest(testDispatcher) {
       val progress: Progress = mockk(relaxed = true)
       val remoteAlbums = listOf(AlbumDto(artist = "Artist1", album = "Album1"))
@@ -320,7 +343,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldHandleMixOfNewAndExistingAlbums() {
+  fun getRemoteShouldHandleMixOfNewAndExistingAlbums() {
     runTest(testDispatcher) {
       val existingAlbums =
         listOf(
@@ -349,7 +372,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun updateCovers_shouldUpdateAlbumCovers() {
+  fun updateCoversShouldUpdateAlbumCovers() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -373,7 +396,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun updateCovers_shouldSkipNullOrEmptyHashes() {
+  fun updateCoversShouldSkipNullOrEmptyHashes() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -397,7 +420,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getCovers_shouldReturnAllCovers() {
+  fun getCoversShouldReturnAllCovers() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -414,7 +437,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun getCovers_shouldReturnEmptyWhenNoCovers() {
+  fun getCoversShouldReturnEmptyWhenNoCovers() {
     runTest(testDispatcher) {
       val covers = repository.getCovers()
 
@@ -423,7 +446,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun coverCount_shouldReturnCorrectCount() {
+  fun coverCountShouldReturnCorrectCount() {
     runTest(testDispatcher) {
       val albums =
         listOf(
@@ -440,7 +463,7 @@ class AlbumRepositoryTest {
   }
 
   @Test
-  fun coverCount_shouldReturnZeroWhenNoCovers() {
+  fun coverCountShouldReturnZeroWhenNoCovers() {
     runTest(testDispatcher) {
       val albums =
         listOf(

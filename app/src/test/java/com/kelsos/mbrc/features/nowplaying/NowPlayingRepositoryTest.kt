@@ -1,6 +1,5 @@
 package com.kelsos.mbrc.features.nowplaying
 
-import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.paging.testing.asSnapshot
 import androidx.room.Room
@@ -20,13 +19,40 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.get
+import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
-class NowPlayingRepositoryTest {
-  private lateinit var repository: NowPlayingRepositoryImpl
+class NowPlayingRepositoryTest : KoinTest {
   private lateinit var db: Database
   private lateinit var dao: NowPlayingDao
   private val api: ApiBase = mockk(relaxed = true)
+
+  private val testModule =
+    module {
+      single { api }
+      single { testDispatchers }
+      single {
+        Room
+          .inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            Database::class.java,
+          ).allowMainThreadQueries()
+          .build()
+      }
+      single { get<Database>().nowPlayingDao() }
+      singleOf(::NowPlayingRepositoryImpl) {
+        bind<NowPlayingRepository>()
+      }
+    }
+
+  private val repository: NowPlayingRepository by inject()
 
   val fakeAlbumQueue =
     listOf(
@@ -117,14 +143,9 @@ class NowPlayingRepositoryTest {
 
   @Before
   fun setUp() {
-    val context = ApplicationProvider.getApplicationContext<Context>()
-    db =
-      Room
-        .inMemoryDatabaseBuilder(context, Database::class.java)
-        .allowMainThreadQueries()
-        .build()
-    dao = db.nowPlayingDao()
-    repository = NowPlayingRepositoryImpl(api, dao, testDispatchers)
+    startKoin { modules(listOf(testModule)) }
+    db = get()
+    dao = get()
     dao.deleteAll()
     dao.insertAll(fakeAlbumQueue)
   }
@@ -132,6 +153,7 @@ class NowPlayingRepositoryTest {
   @After
   fun tearDown() {
     db.close()
+    stopKoin()
   }
 
   @Test

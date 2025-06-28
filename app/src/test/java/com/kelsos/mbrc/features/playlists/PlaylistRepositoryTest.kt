@@ -23,11 +23,18 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.get
+import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
-class PlaylistRepositoryTest {
+class PlaylistRepositoryTest : KoinTest {
   private lateinit var database: Database
-  private lateinit var repository: PlaylistRepository
   private lateinit var dao: PlaylistDao
   private val api: ApiBase = mockk()
 
@@ -37,22 +44,37 @@ class PlaylistRepositoryTest {
     const val OLDER_DATE_ADDED = 500L
   }
 
+  private val testModule =
+    module {
+      single { api }
+      single { testDispatchers }
+      single {
+        Room
+          .inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            Database::class.java,
+          ).allowMainThreadQueries()
+          .build()
+      }
+      single { get<Database>().playlistDao() }
+      singleOf(::PlaylistRepositoryImpl) {
+        bind<PlaylistRepository>()
+      }
+    }
+
+  private val repository: PlaylistRepository by inject()
+
   @Before
   fun setUp() {
-    database =
-      Room
-        .inMemoryDatabaseBuilder(
-          ApplicationProvider.getApplicationContext(),
-          Database::class.java,
-        ).allowMainThreadQueries()
-        .build()
-    dao = database.playlistDao()
-    repository = PlaylistRepositoryImpl(dao, api, testDispatchers)
+    startKoin { modules(listOf(testModule)) }
+    database = get()
+    dao = get()
   }
 
   @After
   fun tearDown() {
     database.close()
+    stopKoin()
   }
 
   // Helper methods for creating test data
@@ -79,7 +101,7 @@ class PlaylistRepositoryTest {
     )
 
   @Test
-  fun count_shouldReturnCorrectCount() {
+  fun countShouldReturnCorrectCount() {
     runTest(testDispatcher) {
       val playlists =
         listOf(
@@ -105,7 +127,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun count_shouldReturnZeroWhenEmpty() {
+  fun countShouldReturnZeroWhenEmpty() {
     runTest(testDispatcher) {
       val count = repository.count()
 
@@ -114,7 +136,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun getAll_shouldReturnAllPlaylists() {
+  fun getAllShouldReturnAllPlaylists() {
     runTest(testDispatcher) {
       val playlists =
         listOf(
@@ -141,7 +163,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun getAll_shouldReturnEmptyWhenNoPlaylists() {
+  fun getAllShouldReturnEmptyWhenNoPlaylists() {
     runTest(testDispatcher) {
       val result = repository.getAll().asSnapshot()
 
@@ -150,7 +172,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun search_shouldReturnMatchingPlaylists() {
+  fun searchShouldReturnMatchingPlaylists() {
     runTest(testDispatcher) {
       val playlists =
         listOf(
@@ -177,7 +199,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun search_shouldReturnEmptyWhenNoMatches() {
+  fun searchShouldReturnEmptyWhenNoMatches() {
     runTest(testDispatcher) {
       val playlists =
         listOf(
@@ -199,7 +221,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun getById_shouldReturnPlaylistWhenExists() {
+  fun getByIdShouldReturnPlaylistWhenExists() {
     runTest(testDispatcher) {
       val playlist =
         createPlaylistEntity(
@@ -219,7 +241,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun getById_shouldReturnNullWhenNotExists() {
+  fun getByIdShouldReturnNullWhenNotExists() {
     runTest(testDispatcher) {
       val result = repository.getById(999L)
 
@@ -228,7 +250,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldFetchAndStoreNewPlaylists() {
+  fun getRemoteShouldFetchAndStoreNewPlaylists() {
     runTest(testDispatcher) {
       val remotePlaylists =
         listOf(
@@ -254,7 +276,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldUpdateExistingPlaylists() {
+  fun getRemoteShouldUpdateExistingPlaylists() {
     runTest(testDispatcher) {
       val existingPlaylist =
         createPlaylistEntity(
@@ -290,7 +312,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldRemovePreviousEntries() {
+  fun getRemoteShouldRemovePreviousEntries() {
     runTest(testDispatcher) {
       val oldPlaylist =
         createPlaylistEntity(
@@ -321,7 +343,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldHandleProgressCallback() {
+  fun getRemoteShouldHandleProgressCallback() {
     runTest(testDispatcher) {
       val progress: Progress = mockk(relaxed = true)
       val remotePlaylists =
@@ -343,7 +365,7 @@ class PlaylistRepositoryTest {
   }
 
   @Test
-  fun getRemote_shouldHandleMixOfNewAndExistingPlaylists() {
+  fun getRemoteShouldHandleMixOfNewAndExistingPlaylists() {
     runTest(testDispatcher) {
       val existingPlaylists =
         listOf(

@@ -23,6 +23,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
@@ -42,8 +44,8 @@ class RemoteServiceDiscoveryImplTest : KoinTest {
       single { mockWifiManager }
       single { mockConnectivityManager }
       single { Moshi.Builder().build() }
-      single<RemoteServiceDiscovery> {
-        RemoteServiceDiscoveryImpl(get(), get(), get())
+      singleOf(::RemoteServiceDiscoveryImpl) {
+        bind<RemoteServiceDiscovery>()
       }
     }
 

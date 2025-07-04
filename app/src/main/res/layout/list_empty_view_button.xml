@@ -13,7 +13,7 @@
     style="@style/empty_view_image"
     android:layout_below="@+id/list_empty_title"
     android:contentDescription="@string/content_description__empty_warning"
-    android:src="@drawable/ic_music_note_black_80dp" />
+    android:src="@drawable/baseline_music_note_80" />
 
   <TextView
     android:id="@+id/list_empty_title"

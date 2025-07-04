@@ -24,7 +24,7 @@ class ArtistEntryAdapter : PagingDataAdapter<Artist, ArtistEntryAdapter.ViewHold
     viewType: Int,
   ): ViewHolder {
     val inflater: LayoutInflater = LayoutInflater.from(parent.context)
-    val view = inflater.inflate(R.layout.listitem_single, parent, false)
+    val view = inflater.inflate(R.layout.item_single, parent, false)
     val holder = ViewHolder(view)
 
     holder.indicator.setOnClickListener {

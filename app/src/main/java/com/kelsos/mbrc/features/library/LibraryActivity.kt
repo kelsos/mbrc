@@ -7,7 +7,6 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
-import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -155,12 +154,6 @@ class LibraryActivity :
     albumArtistOnly = menu.findItem(R.id.library_album_artist)
     searchView = searchMenuItem?.actionView as SearchView
 
-    // Apply tint to menu icons for day/night theme
-    val menuIconTint = ContextCompat.getColor(this, R.color.menu_icon_tint)
-    menu.findItem(R.id.library_search_clear)?.icon?.setTint(menuIconTint)
-    menu.findItem(R.id.library_search_item)?.icon?.setTint(menuIconTint)
-    menu.findItem(R.id.library_refresh_item)?.icon?.setTint(menuIconTint)
-
     val search = requireNotNull(searchView)
 
     search.queryHint = getString(R.string.library_search_hint)
@@ -205,7 +198,7 @@ class LibraryActivity :
     val dialog =
       MaterialAlertDialogBuilder(this)
         .setTitle(R.string.library_stats__title)
-        .setView(R.layout.library_stats__layout)
+        .setView(R.layout.dialog_stats)
         .setPositiveButton(android.R.string.ok) { md, _ -> md.dismiss() }
         .show()
 

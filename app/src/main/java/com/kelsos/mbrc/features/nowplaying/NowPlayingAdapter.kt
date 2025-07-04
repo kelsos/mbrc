@@ -80,7 +80,7 @@ class NowPlayingAdapter :
     viewType: Int,
   ): TrackHolder {
     val inflater = LayoutInflater.from(parent.context)
-    val inflatedView = inflater.inflate(R.layout.ui_list_track_item, parent, false)
+    val inflatedView = inflater.inflate(R.layout.item_track, parent, false)
     val holder =
       TrackHolder(inflatedView) {
         dragListener.onDragComplete()
@@ -171,7 +171,7 @@ class NowPlayingAdapter :
 
     fun setPlaying(playing: Boolean) {
       if (playing) {
-        trackPlaying.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+        trackPlaying.setImageResource(R.drawable.baseline_play_arrow_24)
       } else {
         trackPlaying.setImageResource(android.R.color.transparent)
       }

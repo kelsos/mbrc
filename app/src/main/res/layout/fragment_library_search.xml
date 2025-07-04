@@ -16,7 +16,7 @@
       android:paddingTop="@dimen/small_margin"
       android:paddingBottom="@dimen/small_margin"
       android:scrollbars="none"
-      tools:listitem="@layout/listitem_single" />
+      tools:listitem="@layout/item_single" />
   </RelativeLayout>
 
 

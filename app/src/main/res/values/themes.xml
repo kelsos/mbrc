@@ -2,14 +2,15 @@
 <resources>
 
   <style name="Theme.App" parent="Theme.MaterialComponents.DayNight">
-    <item name="colorPrimary">@color/primary</item>
-    <item name="colorPrimaryVariant">@color/primary_dark</item>
-    <item name="colorSecondary">@color/accent</item>
-    <item name="android:colorBackground">@color/background_light</item>
-    <item name="android:textColorPrimary">@color/primary_text</item>
-    <item name="android:textColor">@color/secondary_text</item>
-    <item name="android:statusBarColor">@color/primary_dark</item>
-    <item name="android:navigationBarColor">@color/primary_dark</item>
+    <item name="colorPrimary">@color/md_color_primary</item>
+    <item name="colorPrimaryVariant">@color/md_color_primary_variant</item>
+    <item name="colorPrimaryDark">@color/md_color_primary_dark</item>
+    <item name="colorSecondary">@color/md_color_secondary</item>
+    <item name="colorSurface">@color/md_color_surface</item>
+    <item name="colorSurfaceVariant">@color/md_color_surface_variant</item>
+    <item name="colorOnPrimary">@color/md_color_on_primary</item>
+    <item name="colorOnSurface">@color/md_color_on_surface</item>
+    <item name="colorOnSurfaceVariant">@color/md_color_on_surface_variant</item>
     <item name="android:windowNoTitle">true</item>
     <item name="windowActionBar">false</item>
     <item name="windowNoTitle">true</item>
@@ -21,8 +22,5 @@
     <item name="android:windowSharedElementExitTransition">@android:transition/move</item>
   </style>
 
-  <color name="background">#121212</color>
-
-  <style name="Theme.App.Starting" parent="Theme.App">
-  </style>
+  <style name="Theme.App.Starting" parent="Theme.App" />
 </resources>

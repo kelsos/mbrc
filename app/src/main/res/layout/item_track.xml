@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/track_container"
+  android:layout_width="match_parent"
+  android:layout_height="@dimen/list_item_height"
+  android:foreground="?attr/selectableItemBackground">
+
+  <ImageView
+    android:id="@+id/track_indicator_view"
+    android:layout_width="24dp"
+    android:layout_height="match_parent"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="8dp"
+    android:clickable="false"
+    android:contentDescription="@string/now_playing_indicator"
+    android:scaleType="fitCenter"
+    android:src="@drawable/baseline_play_arrow_24"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:tint="?attr/colorControlNormal"
+    tools:visibility="visible" />
+
+  <LinearLayout
+    android:id="@+id/drag_handle"
+    android:layout_width="48dp"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:paddingLeft="@dimen/small_margin"
+    android:paddingRight="@dimen/small_margin"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <ImageView
+      android:layout_width="@dimen/mbrc_list_drag_icon"
+      android:layout_height="@dimen/mbrc_list_drag_icon"
+      android:contentDescription="@string/drag_n_drop_description"
+      android:src="@drawable/baseline_drag_handle_24"
+      app:tint="?attr/colorOnSurface" />
+  </LinearLayout>
+
+  <TextView
+    android:id="@+id/track_title"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="8dp"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:textColor="?attr/colorOnSurface"
+    android:textSize="@dimen/dual_list_title"
+    app:layout_constraintBottom_toTopOf="@id/track_artist"
+    app:layout_constraintEnd_toStartOf="@id/track_indicator_view"
+    app:layout_constraintStart_toEndOf="@+id/drag_handle"
+    app:layout_constraintTop_toTopOf="parent"
+    tools:text="Track title" />
+
+  <TextView
+    android:id="@+id/track_artist"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="8dp"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:textColor="?attr/colorOnSurfaceVariant"
+    android:textSize="@dimen/dual_list_subtitle"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toStartOf="@id/track_indicator_view"
+    app:layout_constraintStart_toEndOf="@+id/drag_handle"
+    app:layout_constraintTop_toBottomOf="@id/track_title"
+    tools:text="Artist Name" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

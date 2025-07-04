@@ -1,7 +1,6 @@
 package com.kelsos.mbrc.features.settings
 
 import android.os.Bundle
-import android.view.MenuItem
 import android.widget.Button
 import androidx.core.view.isGone
 import androidx.lifecycle.Lifecycle
@@ -9,32 +8,29 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
+import com.kelsos.mbrc.CommonToolbarActivity
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.networking.discovery.DiscoveryStop
 import kotlinx.coroutines.launch
-import org.koin.androidx.scope.ScopeActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ConnectionManagerActivity :
-  ScopeActivity(),
+  CommonToolbarActivity(R.layout.activity_connection_manager),
   SettingsDialogFragment.SettingsSaveListener,
   ConnectionChangeListener {
   private val viewModel: ConnectionManagerViewModel by viewModel()
 
   private lateinit var recyclerView: RecyclerView
-  private lateinit var toolbar: MaterialToolbar
   private lateinit var scanButton: Button
 
   private val adapter: ConnectionAdapter = ConnectionAdapter()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.ui_activity_connection_manager)
+
     recyclerView = findViewById(R.id.connection_list)
-    toolbar = findViewById(R.id.toolbar)
     scanButton = findViewById(R.id.connection_scan)
     findViewById<Button>(R.id.connection_add).setOnClickListener {
       val settingsDialog = SettingsDialogFragment()
@@ -46,14 +42,12 @@ class ConnectionManagerActivity :
       viewModel.actions.startDiscovery()
     }
 
-    setSupportActionBar(toolbar)
     recyclerView.setHasFixedSize(true)
     val layoutManager = LinearLayoutManager(this)
     recyclerView.layoutManager = layoutManager
     adapter.setChangeListener(this)
     recyclerView.adapter = adapter
-    supportActionBar?.setDisplayHomeAsUpEnabled(true)
-    supportActionBar?.setTitle(R.string.connection_manager_title)
+    setToolbarTitle(R.string.connection_manager_title)
 
     lifecycleScope.launch {
       repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -70,14 +64,6 @@ class ConnectionManagerActivity :
         }
       }
     }
-  }
-
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    when (item.itemId) {
-      android.R.id.home -> onBackPressedDispatcher.onBackPressed()
-      else -> return false
-    }
-    return true
   }
 
   override fun onSave(settings: ConnectionSettings) {

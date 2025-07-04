@@ -21,17 +21,16 @@
       app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <com.google.android.material.appbar.AppBarLayout
+      android:id="@+id/app_bar_layout"
+      style="@style/Theme.App.AppBarLayout"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:theme="@style/Theme.App.AppBarOverlay">
+      android:layout_height="wrap_content">
 
       <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
-        style="@style/Widget.MaterialComponents.Toolbar.Primary"
+        style="@style/Theme.App.Toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="?attr/actionBarSize"
-        tools:showIn="@layout/activity_library" />
+        android:layout_height="?attr/actionBarSize" />
 
       <com.google.android.material.tabs.TabLayout
         android:id="@+id/pager_tab_strip"
@@ -44,31 +43,39 @@
         style="@style/TextAppearance.MaterialComponents.Caption"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/colorSurfaceVariant"
         android:paddingStart="16dp"
         android:paddingTop="4dp"
         android:paddingEnd="16dp"
         android:paddingBottom="4dp"
         android:text="@string/library_sync_in_progress"
         android:textAlignment="center"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:visibility="gone"
         tools:visibility="visible" />
 
-      <com.google.android.material.progressindicator.LinearProgressIndicator
-        android:id="@+id/sync_progress"
-        style="@style/Widget.MaterialComponents.LinearProgressIndicator"
+      <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:layout_gravity="start"
-        android:layout_marginTop="2dp"
-        android:progress="70"
-        android:visibility="gone"
-        tools:visibility="visible" />
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface">
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+          android:id="@+id/sync_progress"
+          android:layout_width="match_parent"
+          android:layout_height="2dp"
+          android:layout_gravity="start"
+          android:layout_marginTop="1dp"
+          android:progress="70"
+          android:visibility="gone"
+          tools:visibility="visible" />
+
+      </FrameLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <include
       android:id="@+id/library_mini_control"
-      layout="@layout/mini_control_layout"
+      layout="@layout/layout_mini_control"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"
@@ -84,7 +91,7 @@
     android:layout_gravity="start"
     android:fitsSystemWindows="true"
     app:elevation="@dimen/drawer_elevation"
-    app:headerLayout="@layout/nav_header_main"
+    app:headerLayout="@layout/header_main"
     app:menu="@menu/activity_main_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

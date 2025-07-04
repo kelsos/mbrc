@@ -56,7 +56,7 @@ class RadioActivity :
     swipeLayout.setOnRefreshListener(this)
     swipeLayout.setSwipeableChildren(R.id.radio_list, R.id.empty_view)
     emptyViewTitle.setText(R.string.radio__no_radio_stations)
-    emptyViewIcon.setImageResource(R.drawable.ic_radio_black_80dp)
+    emptyViewIcon.setImageResource(R.drawable.baseline_radio_80)
     radioView.adapter = adapter
     radioView.emptyView = emptyView
     radioView.layoutManager = LinearLayoutManager(this)

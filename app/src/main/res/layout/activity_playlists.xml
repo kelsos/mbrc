@@ -14,17 +14,16 @@
     tools:context=".ui.activities.nav.PlaylistActivity">
 
     <com.google.android.material.appbar.AppBarLayout
+      android:id="@+id/app_bar_layout"
+      style="@style/Theme.App.AppBarLayout"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:theme="@style/Theme.App.AppBarOverlay">
+      android:layout_height="wrap_content">
 
       <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
-        style="@style/Widget.MaterialComponents.Toolbar.Primary"
+        style="@style/Theme.App.Toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="?attr/actionBarSize"
-        tools:showIn="@layout/activity_playlists" />
+        android:layout_height="?attr/actionBarSize" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -45,7 +44,7 @@
           android:layout_width="match_parent"
           android:layout_height="match_parent"
           android:paddingTop="@dimen/list_padding_top"
-          tools:listitem="@layout/listitem_single" />
+          tools:listitem="@layout/item_single" />
 
         <include
           layout="@layout/list_empty_view"
@@ -58,7 +57,7 @@
 
     <include
       android:id="@+id/playlist_mini_control"
-      layout="@layout/mini_control_layout"
+      layout="@layout/layout_mini_control"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"
@@ -74,7 +73,7 @@
     android:layout_gravity="start"
     android:fitsSystemWindows="true"
     app:elevation="@dimen/drawer_elevation"
-    app:headerLayout="@layout/nav_header_main"
+    app:headerLayout="@layout/header_main"
     app:menu="@menu/activity_main_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="1"
-        android:textColor="?android:attr/textColorPrimary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="@dimen/widget_normal_text"
         android:textStyle="bold"
         tools:text="Rock it for me" />
@@ -52,7 +52,7 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="1"
-        android:textColor="?android:attr/textColorSecondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="@dimen/widget_small_text"
         tools:text="Caravan Palace" />
 
@@ -62,7 +62,7 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="1"
-        android:textColor="?android:attr/textColorSecondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="@dimen/widget_small_text"
         tools:text="Panic" />
 
@@ -82,39 +82,39 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="?attr/colorPrimary"
+        android:background="?attr/colorSurface"
         android:contentDescription="@string/main_button_previous_description"
         android:focusable="true"
         android:padding="0dp"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_baseline_skip_previous_24"
-        app:tint="?attr/colorOnPrimary" />
+        android:src="@drawable/baseline_skip_previous_24"
+        app:tint="?attr/colorOnSurface" />
 
       <ImageButton
         android:id="@+id/widget_normal_play"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="?attr/colorPrimary"
+        android:background="?attr/colorSurface"
         android:contentDescription="@string/main_button_play_pause_description"
         android:focusable="true"
         android:padding="0dp"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_baseline_play_arrow_24"
-        app:tint="?attr/colorOnPrimary" />
+        android:src="@drawable/baseline_play_arrow_24"
+        app:tint="?attr/colorOnSurface" />
 
       <ImageButton
         android:id="@+id/widget_normal_next"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="?attr/colorPrimary"
+        android:background="?attr/colorSurface"
         android:contentDescription="@string/main_button_next_description"
         android:focusable="true"
         android:padding="0dp"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_baseline_skip_next_24"
-        app:tint="?attr/colorOnPrimary" />
+        android:src="@drawable/baseline_skip_next_24"
+        app:tint="?attr/colorOnSurface" />
 
     </LinearLayout>
 

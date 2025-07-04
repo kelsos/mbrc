@@ -19,7 +19,7 @@
       <size
         android:width="32dp"
         android:height="32dp" />
-      <solid android:color="@color/light_gray" />
+      <solid android:color="#bdbdbd" />
       <corners android:radius="1dp" />
     </shape>
   </item>

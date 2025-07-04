@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <!-- Dark theme colors (keep original yellow/orange) -->
-  <color name="primary">#FFC107</color>
-  <color name="primary_dark">#FF8F00</color>
-  <color name="primary_light">#FFECB3</color>
-  <color name="accent">#FF5722</color>
-  <color name="primary_text">#FFFFFF</color>
-  <color name="secondary_text">#b2ffffff</color>
-  <color name="progress_tint">#FFFFFF</color>
-  <color name="menu_icon_tint">#212121</color>
-  <color name="background_light">#121212</color>
+  <color name="md_color_primary">#FFC107</color>
+  <color name="md_color_primary_dark">#edb100</color>
+  <color name="md_color_primary_variant">#FFECB3</color>
+  <color name="md_color_secondary">#FF5722</color>
+  <color name="md_color_on_surface">#FFFFFF</color>
+  <color name="md_color_on_surface_variant">#b2ffffff</color>
+  <color name="md_color_surface">#121212</color>
+  <color name="md_color_surface_variant">#1E1E1E</color>
+  <color name="md_color_on_primary">#000000</color>
   <!-- Widget colors for dark mode -->
   <color name="widget_background">#121212</color>
   <color name="widget_text_primary">#FFFFFF</color>

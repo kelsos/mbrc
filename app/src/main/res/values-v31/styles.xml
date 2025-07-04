@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-  <!-- For Android 12+: Use dynamic colors without overrides -->
-  <style name="WidgetTheme" parent="Theme.Material3.DynamicColors.DayNight" />
-</resources>

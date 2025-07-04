@@ -26,7 +26,7 @@ class NotificationActionManager(
     val previousAction =
       Action
         .Builder(
-          R.drawable.ic_baseline_skip_previous_24,
+          R.drawable.baseline_skip_previous_24,
           context.getString(R.string.action_previous),
           getPendingIntent(RemoteIntentCode.Previous, context),
         ).build()
@@ -34,9 +34,9 @@ class NotificationActionManager(
 
     val playPauseIcon =
       if (playerState == PlayerState.Playing) {
-        R.drawable.ic_baseline_pause_24
+        R.drawable.baseline_pause_24
       } else {
-        R.drawable.ic_baseline_play_arrow_24
+        R.drawable.baseline_play_arrow_24
       }
     val playPauseText =
       if (playerState == PlayerState.Playing) {
@@ -56,7 +56,7 @@ class NotificationActionManager(
     val nextAction =
       Action
         .Builder(
-          R.drawable.ic_baseline_skip_next_24,
+          R.drawable.baseline_skip_next_24,
           context.getString(R.string.action_next),
           getPendingIntent(RemoteIntentCode.Next, context),
         ).build()
@@ -72,7 +72,7 @@ class NotificationActionManager(
     val cancelIntent = getPendingIntent(RemoteIntentCode.Cancel, context)
     return Action
       .Builder(
-        R.drawable.ic_close_black_24dp,
+        R.drawable.baseline_close_24,
         getString(context, android.R.string.cancel),
         cancelIntent,
       ).build()

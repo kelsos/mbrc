@@ -3,8 +3,21 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:fitsSystemWindows="true">
+  android:layout_height="match_parent">
+
+  <com.google.android.material.appbar.AppBarLayout
+    android:id="@+id/app_bar_layout"
+    style="@style/Theme.App.AppBarLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.google.android.material.appbar.MaterialToolbar
+      android:id="@+id/toolbar"
+      style="@style/Theme.App.Toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="?attr/actionBarSize" />
+
+  </com.google.android.material.appbar.AppBarLayout>
 
   <androidx.constraintlayout.widget.ConstraintLayout
     android:id="@+id/relativeLayout2"
@@ -20,14 +33,14 @@
       android:background="?attr/selectableItemBackgroundBorderless"
       android:contentDescription="@string/album_tracks__play__content_description"
       android:scaleType="fitCenter"
-      android:src="@drawable/ic_play_circle_filled_black_24dp"
+      android:src="@drawable/baseline_play_circle_filled_24"
       android:text="@string/album_tracks__play"
       app:layout_constraintBottom_toTopOf="@id/details_container"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintHorizontal_bias="0.927"
       app:layout_constraintStart_toEndOf="@id/album_tracks__cover"
       app:layout_constraintTop_toBottomOf="@id/album_tracks__artist"
-      app:tint="@color/accent" />
+      app:tint="?attr/colorSecondary" />
 
     <ImageView
       android:id="@+id/album_tracks__cover"
@@ -50,7 +63,7 @@
       android:layout_marginEnd="16dp"
       android:layout_marginBottom="8dp"
       android:gravity="start"
-      android:textColor="@color/secondary_text"
+      android:textColor="?attr/colorOnSurfaceVariant"
       android:textSize="14sp"
       app:layout_constraintBottom_toTopOf="@id/play_album"
       app:layout_constraintEnd_toEndOf="parent"
@@ -67,7 +80,7 @@
       android:layout_marginTop="8dp"
       android:layout_marginEnd="16dp"
       android:gravity="start"
-      android:textColor="?android:attr/textColorPrimary"
+      android:textColor="?attr/colorOnSurface"
       android:textSize="20sp"
       app:layout_constraintBottom_toTopOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
@@ -91,9 +104,9 @@
         android:id="@+id/details_recycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:listitem="@layout/listitem_single" />
+        tools:listitem="@layout/item_single" />
 
-      <include layout="@layout/empty_list" />
+      <include layout="@layout/list_empty" />
     </RelativeLayout>
 
     <androidx.constraintlayout.widget.Group
@@ -103,20 +116,6 @@
       app:constraint_referenced_ids="play_album" />
 
   </androidx.constraintlayout.widget.ConstraintLayout>
-
-  <com.google.android.material.appbar.AppBarLayout
-    android:id="@+id/app_bar_layout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:theme="@style/ThemeOverlay.MaterialComponents.ActionBar">
-
-    <com.google.android.material.appbar.MaterialToolbar
-      android:id="@+id/toolbar"
-      style="@style/Widget.MaterialComponents.Toolbar.Primary"
-      android:layout_width="match_parent"
-      android:layout_height="?attr/actionBarSize" />
-
-  </com.google.android.material.appbar.AppBarLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

@@ -40,7 +40,7 @@ class MiniControlFragment : ScopeFragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?,
   ): View? {
-    val view = inflater.inflate(R.layout.ui_fragment_mini_control, container, false)
+    val view = inflater.inflate(R.layout.fragment_mini_control, container, false)
 
     trackArtist = view.findViewById(R.id.mc_track_artist)
     trackTitle = view.findViewById(R.id.mc_track_title)
@@ -67,8 +67,8 @@ class MiniControlFragment : ScopeFragment() {
           trackTitle.text = state.playingTrack.title
 
           when (state.playingState) {
-            PlayerState.Playing -> playPause.setImageResource(R.drawable.ic_baseline_pause_24)
-            else -> playPause.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+            PlayerState.Playing -> playPause.setImageResource(R.drawable.baseline_pause_24)
+            else -> playPause.setImageResource(R.drawable.baseline_play_arrow_24)
           }
 
           updateCover(state.playingTrack.coverUrl)

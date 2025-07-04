@@ -69,7 +69,7 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
 
   private var menu: Menu? = null
 
-  private val activeColor by lazy { ContextCompat.getColor(this, R.color.accent) }
+  private val activeColor by lazy { ContextCompat.getColor(this, R.color.md_color_secondary) }
   private val inactiveColor by lazy {
     return@lazy MaterialColors.getColor(
       this@PlayerActivity,
@@ -208,12 +208,6 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
     menuInflater.inflate(R.menu.menu, menu)
     this.menu = menu
 
-    // Apply tint to menu icons for day/night theme
-    val menuIconTint = ContextCompat.getColor(this, R.color.menu_icon_tint)
-    menu.findItem(R.id.menu_rating_dialog)?.icon?.setTint(menuIconTint)
-    menu.findItem(R.id.menu_lastfm_love)?.icon?.setTint(menuIconTint)
-    menu.findItem(R.id.actionbar_share)?.icon?.setTint(menuIconTint)
-
     val shareItem = menu.findItem(R.id.actionbar_share)
     val shareActionProvider = ShareActionProvider(this)
     MenuItemCompat.setActionProvider(shareItem, shareActionProvider)
@@ -268,16 +262,16 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
     val shuffle = ShuffleMode.Off != shuffleModel
     val autoDj = ShuffleMode.AutoDJ == shuffleModel
     shuffleButton.imageTintList = ColorStateList.valueOf(if (shuffle) activeColor else inactiveColor)
-    shuffleButton.setImageResource(if (autoDj) R.drawable.ic_headset_black_24dp else R.drawable.ic_shuffle_black_24dp)
+    shuffleButton.setImageResource(if (autoDj) R.drawable.baseline_headset_24 else R.drawable.baseline_shuffle_24)
   }
 
   private fun updateRepeat(mode: Repeat) {
     var color = activeColor
 
-    @DrawableRes var resId = R.drawable.ic_repeat_black_24dp
+    @DrawableRes var resId = R.drawable.baseline_repeat_24
 
     when (mode) {
-      Repeat.One -> resId = R.drawable.ic_repeat_one_black_24dp
+      Repeat.One -> resId = R.drawable.baseline_repeat_one_24
       else -> color = inactiveColor
     }
 
@@ -291,7 +285,7 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
   ) {
     volumeBar.progress = if (mute) 0 else volume
     muteButton.imageTintList = ColorStateList.valueOf(inactiveColor)
-    muteButton.setImageResource(if (mute) R.drawable.ic_volume_off_black_24dp else R.drawable.ic_volume_up_black_24dp)
+    muteButton.setImageResource(if (mute) R.drawable.baseline_volume_off_24 else R.drawable.baseline_volume_up_24)
   }
 
   private fun updatePlayState(state: PlayerState) {
@@ -303,8 +297,8 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
     }
     @DrawableRes val resId: Int =
       when (state) {
-        PlayerState.Playing -> R.drawable.ic_pause_circle_filled_black_24dp
-        else -> R.drawable.ic_play_circle_filled_black_24dp
+        PlayerState.Playing -> R.drawable.baseline_pause_circle_filled_24
+        else -> R.drawable.baseline_play_circle_filled_24
       }
 
     playPauseButton.imageTintList = ColorStateList.valueOf(accentColor)
@@ -335,13 +329,9 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
     val favoriteMenuItem = menu.findItem(R.id.menu_lastfm_love) ?: return
 
     when (rating) {
-      LfmRating.Loved -> favoriteMenuItem.setIcon(R.drawable.ic_favorite_black_24dp)
-      else -> favoriteMenuItem.setIcon(R.drawable.ic_favorite_border_black_24dp)
+      LfmRating.Loved -> favoriteMenuItem.setIcon(R.drawable.baseline_favorite_24)
+      else -> favoriteMenuItem.setIcon(R.drawable.baseline_favorite_border_24)
     }
-
-    // Apply tint after setting the icon
-    val menuIconTint = ContextCompat.getColor(this, R.color.menu_icon_tint)
-    favoriteMenuItem.icon?.setTint(menuIconTint)
   }
 
   override fun onDestroy() {

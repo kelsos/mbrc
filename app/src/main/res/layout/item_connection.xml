@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="@dimen/list_dual_item_height"
+  android:foreground="?attr/selectableItemBackground">
+
+  <ImageView
+    android:id="@+id/imageView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:contentDescription="@string/description_computer_icon"
+    android:padding="@dimen/normal_margin"
+    android:scaleType="center"
+    android:src="@drawable/baseline_desktop_windows_24"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:tint="?attr/colorOnSurfaceVariant" />
+
+  <ImageView
+    android:id="@+id/cs_list_default"
+    android:layout_width="20dp"
+    android:layout_height="20dp"
+    android:contentDescription="@string/connection_default_description"
+    android:enabled="false"
+    android:scaleType="centerInside"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toStartOf="@id/cs_list_overflow"
+    app:layout_constraintStart_toEndOf="@id/cs_list_name"
+    app:layout_constraintTop_toTopOf="parent"
+    tools:layout_editor_absoluteX="327dp" />
+
+  <LinearLayout
+    android:id="@+id/cs_list_overflow"
+    android:layout_width="wrap_content"
+    android:layout_height="0dp"
+    android:background="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:padding="@dimen/normal_margin"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="1.0"
+    app:layout_constraintStart_toEndOf="@+id/cs_list_default"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.0">
+
+    <ImageView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical"
+      android:contentDescription="@string/menu_overflow_description"
+      android:src="@drawable/baseline_more_vert_24"
+      app:tint="?attr/colorOnBackground" />
+  </LinearLayout>
+
+  <TextView
+    android:id="@+id/textView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/semicolon"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toEndOf="@id/cs_list_host"
+    app:layout_constraintTop_toTopOf="@id/cs_list_host"
+    app:layout_constraintVertical_bias="0.0" />
+
+  <TextView
+    android:id="@+id/cs_list_port"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:textColor="?attr/colorOnSurfaceVariant"
+    android:textSize="@dimen/text_body_size"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toStartOf="@+id/cs_list_default"
+    app:layout_constraintHorizontal_bias="0.0"
+    app:layout_constraintStart_toEndOf="@+id/textView"
+    app:layout_constraintTop_toTopOf="@+id/textView"
+    app:layout_constraintVertical_bias="0.0"
+    tools:text="3132" />
+
+  <TextView
+    android:id="@+id/cs_list_name"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="8dp"
+    android:lines="1"
+    android:linksClickable="false"
+    android:textColor="?attr/colorOnSurface"
+    android:textSize="@dimen/text_subhead_size"
+    app:layout_constraintBottom_toTopOf="@id/cs_list_host"
+    app:layout_constraintEnd_toStartOf="@+id/cs_list_default"
+    app:layout_constraintStart_toEndOf="@+id/imageView"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="1.0"
+    tools:text="Computer Name" />
+
+  <TextView
+    android:id="@+id/cs_list_host"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginBottom="8dp"
+    android:textColor="?attr/colorOnSurfaceVariant"
+    android:textSize="@dimen/text_body_size"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toStartOf="@+id/textView"
+    app:layout_constraintHorizontal_bias="0.0"
+    app:layout_constraintStart_toEndOf="@+id/imageView"
+    app:layout_constraintTop_toBottomOf="@+id/cs_list_name"
+    app:layout_constraintVertical_bias="0.0"
+    tools:text="192.168.100.10" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

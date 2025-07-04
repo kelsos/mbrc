@@ -145,17 +145,17 @@ abstract class BaseActivity(
     when (event) {
       ConnectionStatus.Offline -> {
         resId = R.string.drawer_connection_status_off
-        colorId = R.color.black
+        colorId = R.color.connection_neutral
       }
 
       ConnectionStatus.Authenticating -> {
         resId = R.string.drawer_connection_status_on
-        colorId = R.color.accent
+        colorId = R.color.md_color_secondary
       }
 
       ConnectionStatus.Connected -> {
         resId = R.string.drawer_connection_status_active
-        colorId = R.color.power_on
+        colorId = R.color.connection_on
       }
     }
 

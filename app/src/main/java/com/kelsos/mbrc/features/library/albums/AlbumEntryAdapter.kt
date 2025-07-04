@@ -29,7 +29,7 @@ class AlbumEntryAdapter : PagingDataAdapter<Album, AlbumEntryAdapter.ViewHolder>
     viewType: Int,
   ): ViewHolder {
     val inflater: LayoutInflater = LayoutInflater.from(parent.context)
-    val view = inflater.inflate(R.layout.ui_list_dual, parent, false)
+    val view = inflater.inflate(R.layout.item_album, parent, false)
     val holder = ViewHolder(view)
     holder.indicator.setOnClickListener {
       it.popupMenu(R.menu.popup_album) {

@@ -15,7 +15,7 @@ class LyricsAdapter : ListAdapter<String, LyricsAdapter.ViewHolder>(DIFF_CALLBAC
     viewType: Int,
   ): ViewHolder {
     val inflater = LayoutInflater.from(parent.context)
-    val view = inflater.inflate(R.layout.ui_list_lyrics_item, parent, false)
+    val view = inflater.inflate(R.layout.item_lyrics, parent, false)
     return ViewHolder(view)
   }
 

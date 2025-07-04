@@ -14,15 +14,16 @@
     tools:context=".ui.activities.nav.MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
+      android:id="@+id/app_bar_layout"
+      style="@style/Theme.App.AppBarLayout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content">
 
       <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
-        style="@style/Widget.MaterialComponents.Toolbar.Primary"
+        style="@style/Theme.App.Toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:showIn="@layout/activity_main" />
+        android:layout_height="?attr/actionBarSize" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -37,7 +38,7 @@
     android:layout_gravity="start"
     android:fitsSystemWindows="true"
     app:elevation="@dimen/drawer_elevation"
-    app:headerLayout="@layout/nav_header_main"
+    app:headerLayout="@layout/header_main"
     app:menu="@menu/activity_main_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

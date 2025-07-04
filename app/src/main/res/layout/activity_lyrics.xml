@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/content_description__empty_warning"
-        android:src="@drawable/ic_view_headline_black_120dp"
+        android:src="@drawable/baseline_view_headline_120"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,7 +39,7 @@
         android:layout_marginTop="16dp"
         android:fontFamily="sans-serif-medium"
         android:maxLines="1"
-        android:textColor="?android:attr/textColorPrimary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="22sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -70,26 +70,27 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/ui_list_lyrics_item" />
+        tools:listitem="@layout/item_lyrics" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.appbar.AppBarLayout
+      android:id="@+id/app_bar_layout"
+      style="@style/Theme.App.AppBarLayout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content">
 
       <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
-        style="@style/Widget.MaterialComponents.Toolbar.Primary"
+        style="@style/Theme.App.Toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="?attr/actionBarSize" />
+        android:layout_height="?attr/actionBarSize" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <include
       android:id="@+id/lyrics_control"
-      layout="@layout/mini_control_layout"
+      layout="@layout/layout_mini_control"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"
@@ -104,7 +105,7 @@
     android:layout_height="match_parent"
     android:layout_gravity="start"
     app:elevation="@dimen/drawer_elevation"
-    app:headerLayout="@layout/nav_header_main"
+    app:headerLayout="@layout/header_main"
     app:menu="@menu/activity_main_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -18,7 +18,7 @@ class RadioAdapter : PagingDataAdapter<RadioStation, RadioAdapter.ViewHolder>(DI
     viewType: Int,
   ): ViewHolder {
     val inflater = LayoutInflater.from(parent.context)
-    val view = inflater.inflate(R.layout.listitem_single, parent, false)
+    val view = inflater.inflate(R.layout.item_single, parent, false)
     val viewHolder = ViewHolder(view)
 
     viewHolder.itemView.setOnClickListener {

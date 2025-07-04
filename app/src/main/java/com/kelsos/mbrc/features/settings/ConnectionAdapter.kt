@@ -34,7 +34,7 @@ class ConnectionAdapter : PagingDataAdapter<ConnectionSettings, ConnectionAdapte
     position: Int,
   ): ConnectionViewHolder {
     val inflater = LayoutInflater.from(viewGroup.context)
-    val view = inflater.inflate(R.layout.ui_list_connection_settings, viewGroup, false)
+    val view = inflater.inflate(R.layout.item_connection, viewGroup, false)
     val holder = ConnectionViewHolder(view)
 
     holder.overflow.setOnClickListener {
@@ -70,7 +70,7 @@ class ConnectionAdapter : PagingDataAdapter<ConnectionSettings, ConnectionAdapte
             android.R.attr.colorControlNormal,
             Color.GRAY,
           )
-        holder.defaultSettings.setImageResource(R.drawable.ic_check_black_24dp)
+        holder.defaultSettings.setImageResource(R.drawable.baseline_check_24)
         holder.defaultSettings.setColorFilter(controlColor)
       }
     }

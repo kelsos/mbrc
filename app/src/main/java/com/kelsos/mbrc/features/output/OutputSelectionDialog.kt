@@ -69,7 +69,7 @@ class OutputSelectionDialog :
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val context = requireContext()
-    val view = layoutInflater.inflate(R.layout.dialog__output_selection, null, false)
+    val view = layoutInflater.inflate(R.layout.dialog_output_selection, null, false)
 
     availableOutputs = view.findViewById(R.id.output_selection__available_outputs)
     loadingProgress = view.findViewById(R.id.output_selection__loading_outputs)
@@ -129,7 +129,7 @@ class OutputSelectionDialog :
     val outputAdapter =
       ArrayAdapter(
         requireContext(),
-        R.layout.item__output_device,
+        R.layout.item_output_device,
         R.id.output_selection__output_device,
         data,
       )

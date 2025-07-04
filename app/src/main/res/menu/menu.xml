@@ -10,20 +10,20 @@
 
   <item
     android:id="@+id/menu_rating_dialog"
-    android:icon="@drawable/ic_star_black_24dp"
+    android:icon="@drawable/baseline_star_24"
     android:title="@string/rate_the_playing_track"
     app:showAsAction="always" />
 
   <item
     android:id="@+id/menu_lastfm_love"
-    android:icon="@drawable/ic_favorite_border_black_24dp"
+    android:icon="@drawable/baseline_favorite_border_24"
     android:title="@string/lastfm_love"
     app:showAsAction="always"
     tools:ignore="AlwaysShowAction" />
 
   <item
     android:id="@+id/actionbar_share"
-    android:icon="@drawable/ic_share_black_24dp"
+    android:icon="@drawable/baseline_share_24"
     android:title="@string/main_menu_title_share"
     app:actionProviderClass="androidx.appcompat.widget.ShareActionProvider"
     app:showAsAction="ifRoom" />

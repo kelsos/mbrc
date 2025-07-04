@@ -1,17 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <style name="Theme.App.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Light">
-    <item name="autoCompleteTextViewStyle">@style/Widget.App.AutoCompleteTextView.SearchView</item>
+  <style name="Theme.App.AppBarLayout" parent="Widget.MaterialComponents.AppBarLayout.Primary">
+    <item name="android:background">?attr/colorPrimaryDark</item>
+    <item name="android:elevation">4dp</item>
+    <item name="elevation">4dp</item>
+    <item name="android:theme">@style/ThemeOverlay.MaterialComponents.Dark.ActionBar</item>
   </style>
 
-  <style name="Widget.App.AutoCompleteTextView.SearchView" parent="Widget.AppCompat.AutoCompleteTextView">
-    <item name="android:textColorHint">?android:attr/textColorSecondaryInverse</item>
-    <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
+  <style name="Theme.App.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary">
+    <item name="android:background">?attr/colorPrimary</item>
+    <item name="titleTextColor">?attr/colorOnPrimary</item>
+    <item name="subtitleTextColor">?attr/colorOnPrimary</item>
+    <item name="android:theme">@style/ThemeOverlay.MaterialComponents.Dark.ActionBar</item>
+    <item name="popupTheme">@style/ThemeOverlay.MaterialComponents.Light</item>
+    <item name="navigationIconTint">?attr/colorOnPrimary</item>
+    <item name="android:minHeight">?attr/actionBarSize</item>
   </style>
 
   <style name="empty_view_image">
-    <item name="android:tint">@color/empty_view_icon_tint</item>
+    <item name="android:tint">?attr/colorOnSurfaceVariant</item>
     <item name="android:layout_marginTop">@dimen/empty_view_icon_margin_top</item>
     <item name="android:layout_marginBottom">@dimen/empty_view_icon_margin_bottom</item>
     <item name="android:layout_centerHorizontal">true</item>
@@ -19,7 +27,7 @@
     <item name="android:layout_height">@dimen/empty_view_icon_size</item>
   </style>
 
-  <style name="WidgetTheme" parent="Theme.Material3.DynamicColors.DayNight">
+  <style name="WidgetTheme" parent="Theme.App">
     <item name="android:colorBackground">@color/widget_background</item>
     <item name="android:textColorPrimary">@color/widget_text_primary</item>
     <item name="android:textColorSecondary">@color/widget_text_secondary</item>

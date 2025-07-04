@@ -24,7 +24,7 @@ class GenreEntryAdapter : PagingDataAdapter<Genre, GenreEntryAdapter.ViewHolder>
     viewType: Int,
   ): ViewHolder {
     val inflater: LayoutInflater = LayoutInflater.from(parent.context)
-    val view = inflater.inflate(R.layout.listitem_single, parent, false)
+    val view = inflater.inflate(R.layout.item_single, parent, false)
     return ViewHolder(view)
   }
 

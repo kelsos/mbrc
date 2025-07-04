@@ -26,7 +26,7 @@ class RatingDialogFragment :
     val dialog =
       MaterialAlertDialogBuilder(requireContext())
         .setTitle(R.string.rate_the_playing_track)
-        .setView(R.layout.ui_dialog_rating)
+        .setView(R.layout.dialog_rating)
         .show()
 
     ratingBar = dialog.findViewById(R.id.ratingBar)

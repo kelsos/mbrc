@@ -201,9 +201,9 @@ abstract class WidgetBase : AppWidgetProvider() {
     widget.setImageViewResource(
       config.playButtonId,
       if (PlayerState.PLAYING == state) {
-        R.drawable.ic_baseline_pause_24
+        R.drawable.baseline_pause_24
       } else {
-        R.drawable.ic_baseline_play_arrow_24
+        R.drawable.baseline_play_arrow_24
       },
     )
 

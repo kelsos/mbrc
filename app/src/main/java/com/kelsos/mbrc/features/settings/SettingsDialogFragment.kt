@@ -33,7 +33,7 @@ class SettingsDialogFragment : DialogFragment() {
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val dialog =
       MaterialAlertDialogBuilder(requireActivity())
-        .setView(R.layout.ui_dialog_settings)
+        .setView(R.layout.dialog_settings)
         .setTitle(if (edit) R.string.common_edit else R.string.common_add)
         .setPositiveButton(if (edit) R.string.settings_dialog_save else R.string.common_add) { dialog, _ ->
           var shouldIClose = true

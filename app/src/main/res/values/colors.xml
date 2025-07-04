@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <!-- Light theme colors (better contrast for accessibility) -->
-  <color name="primary">#E65100</color>
-  <color name="primary_dark">#BF360C</color>
-  <color name="primary_light">#FF8F00</color>
-  <color name="accent">#BF360C</color>
-  <color name="background_light">#FEFEFE</color>
-  <color name="primary_text">#212121</color>
-  <color name="secondary_text">#757575</color>
-  <color name="black">#000</color>
-  <color name="power_on">#33A328</color>
-  <color name="empty_view_icon_tint">#bdbdbd</color>
-  <color name="light_gray">#bdbdbd</color>
-  <color name="progress_tint">#212121</color>
-  <color name="menu_icon_tint">#FFFFFF</color>
+  <color name="md_color_primary">#E65100</color>
+  <color name="md_color_primary_dark">#BF360C</color>
+  <color name="md_color_primary_variant">#FF8F00</color>
+  <color name="md_color_secondary">#BF360C</color>
+  <color name="md_color_surface">#FEFEFE</color>
+  <color name="md_color_surface_variant">#F5F5F5</color>
+  <color name="md_color_on_primary">#fff</color>
+  <color name="md_color_on_surface">#212121</color>
+  <color name="md_color_on_surface_variant">#757575</color>
+  <color name="connection_neutral">#000</color>
+  <color name="connection_on">#33A328</color>
   <!-- Widget colors for light mode -->
   <color name="widget_background">#FEFEFE</color>
   <color name="widget_text_primary">#212121</color>

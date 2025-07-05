@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+  android:duration="300"
+  android:interpolator="@android:interpolator/fast_out_slow_in">
+  
+  <!-- Slide in from right with alpha fade -->
+  <translate
+    android:fromXDelta="100%p"
+    android:toXDelta="0" />
+    
+  <alpha
+    android:fromAlpha="0.0"
+    android:toAlpha="1.0"
+    android:duration="150"
+    android:startOffset="75" />
+    
+  <!-- Subtle scale for depth -->
+  <scale
+    android:fromXScale="0.95"
+    android:fromYScale="0.95"
+    android:toXScale="1.0"
+    android:toYScale="1.0"
+    android:pivotX="50%"
+    android:pivotY="50%" />
+</set>

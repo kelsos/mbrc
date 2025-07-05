@@ -1,5 +1,6 @@
 package com.kelsos.mbrc
 
+import android.app.Activity
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
 import android.content.res.Configuration
@@ -268,11 +269,26 @@ abstract class BaseActivity(
     val builder = TaskStackBuilder.create(this)
     builder.addNextIntentWithParentStack(intent)
     builder.startActivities()
+    applyActivityTransition()
+  }
+
+  private fun applyActivityTransition() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-      overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.slide_in, R.anim.slide_out)
+      // Modern API with enhanced animations
+      overrideActivityTransition(
+        Activity.OVERRIDE_TRANSITION_OPEN,
+        R.anim.activity_enter,
+        R.anim.activity_exit,
+      )
+      overrideActivityTransition(
+        Activity.OVERRIDE_TRANSITION_CLOSE,
+        R.anim.activity_pop_enter,
+        R.anim.activity_pop_exit,
+      )
     } else {
+      // Legacy API with enhanced animations
       @Suppress("DEPRECATION")
-      overridePendingTransition(R.anim.slide_in, R.anim.slide_out)
+      overridePendingTransition(R.anim.activity_enter, R.anim.activity_exit)
     }
   }
 

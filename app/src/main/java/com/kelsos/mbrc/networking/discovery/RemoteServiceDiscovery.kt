@@ -183,6 +183,10 @@ class RemoteServiceDiscoveryImpl(
     val byteSource = buffer.inputStream(0, packet.length).source().buffer()
     val discoveryMessage = adapter.fromJson(byteSource)
     Timber.v("Discovery parsed -> $discoveryMessage (from %s:%d)", packet.address?.hostAddress, packet.port)
+    if (discoveryMessage != null && discoveryMessage.address.isEmpty()) {
+      Timber.w("Received discovery message with empty address, using sender address")
+      return discoveryMessage.copy(address = packet.address?.hostAddress.orEmpty())
+    }
     return discoveryMessage
   }
 

@@ -8,4 +8,12 @@ sealed class NowPlayingUiMessages : UiMessageBase {
   ) : NowPlayingUiMessages()
 
   object RefreshSucceeded : NowPlayingUiMessages()
+
+  object NetworkUnavailable : NowPlayingUiMessages()
+
+  object PlayFailed : NowPlayingUiMessages()
+
+  object RemoveFailed : NowPlayingUiMessages()
+
+  object MoveFailed : NowPlayingUiMessages()
 }

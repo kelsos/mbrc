@@ -50,6 +50,7 @@ class BrowseAlbumFragment :
             is AlbumUiMessage.OpenAlbumTracks -> requireContext().openAlbumDetails(event.album)
             AlbumUiMessage.QueueFailed -> queue(false, 0)
             is AlbumUiMessage.QueueSuccess -> queue(true, event.tracksCount)
+            AlbumUiMessage.NetworkUnavailable -> networkUnavailable()
           }
         }
       }

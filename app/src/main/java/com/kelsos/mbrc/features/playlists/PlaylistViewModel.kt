@@ -5,6 +5,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.kelsos.mbrc.common.mvvm.BaseViewModel
 import com.kelsos.mbrc.common.mvvm.UiMessageBase
+import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.networking.protocol.Protocol
 import com.kelsos.mbrc.networking.protocol.UserActionUseCase
@@ -19,12 +20,18 @@ sealed class PlaylistUiMessages : UiMessageBase {
   object RefreshFailed : PlaylistUiMessages()
 
   object RefreshSuccess : PlaylistUiMessages()
+
+  object NetworkUnavailable : PlaylistUiMessages()
+
+  object PlayFailed : PlaylistUiMessages()
 }
 
 interface IPlaylistActions {
   fun play(path: String)
 
   fun reload()
+
+  fun reload(showUserMessage: Boolean)
 }
 
 class PlaylistActions(
@@ -32,25 +39,50 @@ class PlaylistActions(
   private val dispatchers: AppCoroutineDispatchers,
   private val repository: PlaylistRepository,
   private val userActionUseCase: UserActionUseCase,
+  private val connectionStateFlow: ConnectionStateFlow,
   private val emit: suspend (uiMessage: PlaylistUiMessages) -> Unit,
 ) : IPlaylistActions {
   override fun play(path: String) {
     scope.launch(dispatchers.network) {
-      userActionUseCase.performUserAction(Protocol.PlaylistPlay, path)
+      val result =
+        if (!connectionStateFlow.isConnected()) {
+          PlaylistUiMessages.NetworkUnavailable
+        } else {
+          try {
+            userActionUseCase.performUserAction(Protocol.PlaylistPlay, path)
+            return@launch // Don't emit anything on success for play action
+          } catch (e: IOException) {
+            Timber.e(e)
+            PlaylistUiMessages.PlayFailed
+          }
+        }
+      emit(result)
     }
   }
 
   override fun reload() {
+    reload(showUserMessage = true)
+  }
+
+  override fun reload(showUserMessage: Boolean) {
     scope.launch(dispatchers.network) {
+      if (!connectionStateFlow.isConnected()) {
+        if (showUserMessage) {
+          emit(PlaylistUiMessages.NetworkUnavailable)
+        }
+        return@launch
+      }
+
       val result =
         try {
           repository.getRemote()
-          PlaylistUiMessages.RefreshSuccess
+          if (showUserMessage) PlaylistUiMessages.RefreshSuccess else null
         } catch (e: IOException) {
           Timber.e(e)
-          PlaylistUiMessages.RefreshFailed
+          if (showUserMessage) PlaylistUiMessages.RefreshFailed else null
         }
-      emit(result)
+
+      result?.let { emit(it) }
     }
   }
 }
@@ -59,6 +91,7 @@ class PlaylistViewModel(
   repository: PlaylistRepository,
   dispatchers: AppCoroutineDispatchers,
   userActionsUseCase: UserActionUseCase,
+  connectionStateFlow: ConnectionStateFlow,
 ) : BaseViewModel<PlaylistUiMessages>() {
   val playlists: Flow<PagingData<Playlist>> = repository.getAll().cachedIn(viewModelScope)
   val actions: PlaylistActions =
@@ -67,6 +100,7 @@ class PlaylistViewModel(
       dispatchers = dispatchers,
       repository = repository,
       userActionUseCase = userActionsUseCase,
+      connectionStateFlow = connectionStateFlow,
       emit = this::emit,
     )
 }

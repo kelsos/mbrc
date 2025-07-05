@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.library.tracks
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.BaseLibraryViewModel
 import com.kelsos.mbrc.features.queue.Queue
 import com.kelsos.mbrc.features.queue.QueueHandler
@@ -12,7 +13,8 @@ import kotlinx.coroutines.launch
 abstract class BaseTrackViewModel(
   private val queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
-) : BaseLibraryViewModel<TrackUiMessage>(settingsHelper) {
+  connectionStateFlow: ConnectionStateFlow,
+) : BaseLibraryViewModel<TrackUiMessage>(settingsHelper, connectionStateFlow) {
   abstract val tracks: Flow<PagingData<Track>>
 
   fun queue(
@@ -22,11 +24,16 @@ abstract class BaseTrackViewModel(
     val queueAction = getQueueAction(action)
 
     viewModelScope.launch {
+      if (!checkConnection()) {
+        emit(TrackUiMessage.NetworkUnavailable)
+        return@launch
+      }
+
       val result =
-        if (queueAction == Queue.Default) {
-          queueHandler.queueTrack(track = track, queueAction)
+        if (action == Queue.Default) {
+          queueHandler.queueTrack(track = track, type = queueAction)
         } else {
-          queueHandler.queueTrack(track = track)
+          queueHandler.queueTrack(track = track, type = action)
         }
 
       val message =

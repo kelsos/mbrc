@@ -82,6 +82,7 @@ class AlbumTracksActivity :
           when (event) {
             TrackUiMessage.QueueFailed -> queue(false, 0)
             is TrackUiMessage.QueueSuccess -> queue(true, event.tracksCount)
+            TrackUiMessage.NetworkUnavailable -> networkUnavailable()
           }
         }
       }

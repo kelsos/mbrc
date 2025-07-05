@@ -1,6 +1,7 @@
 package com.kelsos.mbrc.features.library.tracks
 
 import androidx.lifecycle.viewModelScope
+import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.albums.AlbumInfo
 import com.kelsos.mbrc.features.queue.Queue
 import com.kelsos.mbrc.features.queue.QueueHandler
@@ -13,7 +14,8 @@ class AlbumTracksViewModel(
   private val repository: TrackRepository,
   private val queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
-) : BaseTrackViewModel(queueHandler, settingsHelper) {
+  connectionStateFlow: ConnectionStateFlow,
+) : BaseTrackViewModel(queueHandler, settingsHelper, connectionStateFlow) {
   private val albumInfo = MutableSharedFlow<AlbumInfo>(replay = 1)
 
   override val tracks =
@@ -35,6 +37,10 @@ class AlbumTracksViewModel(
 
   fun queueAlbum(album: AlbumInfo) {
     viewModelScope.launch {
+      if (!checkConnection()) {
+        emit(TrackUiMessage.NetworkUnavailable)
+        return@launch
+      }
       queueHandler.queueAlbum(
         type = Queue.Now,
         album = album.album,

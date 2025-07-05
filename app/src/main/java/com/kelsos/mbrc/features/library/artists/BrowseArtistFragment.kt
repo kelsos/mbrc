@@ -50,6 +50,7 @@ class BrowseArtistFragment :
             is ArtistUiMessage.QueueFailed -> queue(false, 0)
             is ArtistUiMessage.QueueSuccess -> queue(true, event.tracksCount)
             is ArtistUiMessage.OpenArtistAlbums -> requireContext().openArtistDetails(event.artist)
+            ArtistUiMessage.NetworkUnavailable -> networkUnavailable()
           }
         }
       }

@@ -179,7 +179,7 @@
   <string name="settings_title_license">License</string>
   <string name="settings_version">settings_version</string>
   <string name="settings_version_number">v%1$s</string>
-  
+
   <!-- Theme settings -->
   <string name="setting_appearance_theme">Theme</string>
   <string name="setting_appearance_theme_summary">Choose your preferred theme appearance</string>
@@ -188,7 +188,7 @@
   <string name="theme_system">Follow System</string>
   <string name="theme_light">Light</string>
   <string name="theme_dark">Dark</string>
-  
+
   <string name="swipe_to_refresh">Swipe to refresh the list.</string>
   <string name="sync_notification__channel_description">Shows the progress of the library metadata sync</string>
   <string name="sync_notification__channel_name">Library Metadata Sync</string>
@@ -196,4 +196,5 @@
   <string name="title_activity_radios">Radios</string>
   <string name="unknown_artist">Unknown artist</string>
   <string name="update_required__content_description">Update icon</string>
+  <string name="action_failed">Oops! Something went wrong with playback. Give it another try.</string>
 </resources>

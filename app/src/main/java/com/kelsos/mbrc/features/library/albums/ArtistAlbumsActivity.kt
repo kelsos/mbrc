@@ -59,6 +59,7 @@ class ArtistAlbumsActivity :
             is AlbumUiMessage.OpenAlbumTracks -> openAlbumDetails(event.album)
             AlbumUiMessage.QueueFailed -> queue(false, 0)
             is AlbumUiMessage.QueueSuccess -> queue(true, event.tracksCount)
+            AlbumUiMessage.NetworkUnavailable -> networkUnavailable()
           }
         }
       }

@@ -26,7 +26,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.koin.core.context.GlobalContext.startKoin
+import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
@@ -37,6 +37,19 @@ import java.net.SocketTimeoutException
 
 @RunWith(AndroidJUnit4::class)
 class LibrarySyncUseCaseImplTest : KoinTest {
+  private val testModule =
+    module {
+      includes(testDispatcherModule, parserModule)
+
+      singleOf(::LibrarySyncUseCaseImpl) { bind<LibrarySyncUseCase>() }
+      single<GenreRepository> { mockk() }
+      single<ArtistRepository> { mockk() }
+      single<AlbumRepository> { mockk() }
+      single<TrackRepository> { mockk() }
+      single<PlaylistRepository> { mockk() }
+      single<CoverCache> { mockk(relaxed = true) }
+    }
+
   private val genreRepository: GenreRepository by inject()
   private val artistRepository: ArtistRepository by inject()
   private val albumRepository: AlbumRepository by inject()
@@ -44,24 +57,9 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   private val playlistRepository: PlaylistRepository by inject()
   private val sync: LibrarySyncUseCase by inject()
 
-  private val testModule =
-    module {
-      includes(testDispatcherModule, parserModule)
-
-      singleOf(::LibrarySyncUseCaseImpl) { bind<LibrarySyncUseCase>() }
-      single { mockk<GenreRepository>() }
-      single { mockk<ArtistRepository>() }
-      single { mockk<AlbumRepository>() }
-      single { mockk<TrackRepository>() }
-      single { mockk<PlaylistRepository>() }
-      single { mockk<CoverCache>(relaxed = true) }
-    }
-
   @Before
   fun setUp() {
-    startKoin {
-      modules(listOf(testModule))
-    }
+    startKoin { modules(listOf(testModule)) }
   }
 
   @After

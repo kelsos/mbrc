@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.library.albums
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.BaseLibraryViewModel
 import com.kelsos.mbrc.features.queue.Queue
 import com.kelsos.mbrc.features.queue.QueueHandler
@@ -12,7 +13,8 @@ import kotlinx.coroutines.launch
 abstract class BaseAlbumViewModel(
   private val queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
-) : BaseLibraryViewModel<AlbumUiMessage>(settingsHelper) {
+  connectionStateFlow: ConnectionStateFlow,
+) : BaseLibraryViewModel<AlbumUiMessage>(settingsHelper, connectionStateFlow) {
   abstract val albums: Flow<PagingData<Album>>
 
   fun queue(
@@ -25,6 +27,11 @@ abstract class BaseAlbumViewModel(
     }
 
     viewModelScope.launch {
+      if (!checkConnection()) {
+        emit(AlbumUiMessage.NetworkUnavailable)
+        return@launch
+      }
+
       val result = queueHandler.queueAlbum(queue, album.album, album.artist)
 
       val message =

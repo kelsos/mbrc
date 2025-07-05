@@ -7,6 +7,7 @@ import android.net.wifi.WifiManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.networking.connections.toConnection
+import com.kelsos.mbrc.utils.testDispatcherModule
 import com.squareup.moshi.Moshi
 import io.mockk.Runs
 import io.mockk.clearAllMocks
@@ -33,16 +34,16 @@ import java.io.IOException
 @RunWith(AndroidJUnit4::class)
 class RemoteServiceDiscoveryImplTest : KoinTest {
   private val testDispatcher = StandardTestDispatcher()
-  private val mockWifiManager: WifiManager = mockk(relaxed = true)
-  private val mockConnectivityManager: ConnectivityManager = mockk(relaxed = true)
-  private val mockMulticastLock: WifiManager.MulticastLock = mockk(relaxed = true)
-  private val mockNetwork: Network = mockk()
-  private val mockNetworkCapabilities: NetworkCapabilities = mockk()
+  private val wifiManager: WifiManager = mockk(relaxed = true)
+  private val connectivityManager: ConnectivityManager = mockk(relaxed = true)
+  private val multicastLock: WifiManager.MulticastLock = mockk(relaxed = true)
+  private val network: Network = mockk()
+  private val networkCapabilities: NetworkCapabilities = mockk()
 
   private val testModule =
     module {
-      single { mockWifiManager }
-      single { mockConnectivityManager }
+      single { wifiManager }
+      single { connectivityManager }
       single { Moshi.Builder().build() }
       singleOf(::RemoteServiceDiscoveryImpl) {
         bind<RemoteServiceDiscovery>()
@@ -53,14 +54,14 @@ class RemoteServiceDiscoveryImplTest : KoinTest {
 
   @Before
   fun setUp() {
-    startKoin { modules(listOf(testModule)) }
+    startKoin { modules(listOf(testModule, testDispatcherModule)) }
 
     // Setup default WiFi manager mocks
-    every { mockWifiManager.createMulticastLock(any()) } returns mockMulticastLock
-    every { mockMulticastLock.setReferenceCounted(any()) } just Runs
-    every { mockMulticastLock.acquire() } just Runs
-    every { mockMulticastLock.release() } just Runs
-    every { mockMulticastLock.isHeld } returns true
+    every { wifiManager.createMulticastLock(any()) } returns multicastLock
+    every { multicastLock.setReferenceCounted(any()) } just Runs
+    every { multicastLock.acquire() } just Runs
+    every { multicastLock.release() } just Runs
+    every { multicastLock.isHeld } returns true
   }
 
   @After
@@ -87,7 +88,7 @@ class RemoteServiceDiscoveryImplTest : KoinTest {
   fun testNoActiveNetworkReturnNoWifi() {
     runTest(testDispatcher) {
       // Given: No active network
-      every { mockConnectivityManager.activeNetwork } returns null
+      every { connectivityManager.activeNetwork } returns null
 
       // When: discovery is performed
       val result = discovery.discover()
@@ -101,8 +102,8 @@ class RemoteServiceDiscoveryImplTest : KoinTest {
   fun testNoNetworkCapabilitiesReturnNoWifi() {
     runTest(testDispatcher) {
       // Given: Active network but no capabilities
-      every { mockConnectivityManager.activeNetwork } returns mockNetwork
-      every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns null
+      every { connectivityManager.activeNetwork } returns network
+      every { connectivityManager.getNetworkCapabilities(network) } returns null
 
       // When: discovery is performed
       val result = discovery.discover()
@@ -116,9 +117,9 @@ class RemoteServiceDiscoveryImplTest : KoinTest {
   fun testNonWifiTransportReturnNoWifi() {
     runTest(testDispatcher) {
       // Given: Active network with non-WiFi transport
-      every { mockConnectivityManager.activeNetwork } returns mockNetwork
-      every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
-      every { mockNetworkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) } returns false
+      every { connectivityManager.activeNetwork } returns network
+      every { connectivityManager.getNetworkCapabilities(network) } returns networkCapabilities
+      every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) } returns false
 
       // When: discovery is performed
       val result = discovery.discover()
@@ -146,9 +147,9 @@ class RemoteServiceDiscoveryImplTest : KoinTest {
       }
 
       // Then: multicast lock should be properly managed
-      verify { mockWifiManager.createMulticastLock("locked") }
-      verify { mockMulticastLock.acquire() }
-      verify { mockMulticastLock.release() }
+      verify { wifiManager.createMulticastLock("locked") }
+      verify { multicastLock.acquire() }
+      verify { multicastLock.release() }
     }
   }
 
@@ -210,14 +211,14 @@ class RemoteServiceDiscoveryImplTest : KoinTest {
   }
 
   private fun setupNoWiFi() {
-    every { mockConnectivityManager.activeNetwork } returns mockNetwork
-    every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
-    every { mockNetworkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) } returns false
+    every { connectivityManager.activeNetwork } returns network
+    every { connectivityManager.getNetworkCapabilities(network) } returns networkCapabilities
+    every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) } returns false
   }
 
   private fun setupWifiConnected() {
-    every { mockConnectivityManager.activeNetwork } returns mockNetwork
-    every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
-    every { mockNetworkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) } returns true
+    every { connectivityManager.activeNetwork } returns network
+    every { connectivityManager.getNetworkCapabilities(network) } returns networkCapabilities
+    every { networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) } returns true
   }
 }

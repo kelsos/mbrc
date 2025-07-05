@@ -3,6 +3,7 @@ package com.kelsos.mbrc.features.library.genres
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.BaseLibraryViewModel
 import com.kelsos.mbrc.features.library.LibrarySearchModel
 import com.kelsos.mbrc.features.library.LibrarySyncUseCase
@@ -20,7 +21,8 @@ class BrowseGenreViewModel(
   private val queueHandler: QueueHandler,
   searchModel: LibrarySearchModel,
   settingsHelper: BasicSettingsHelper,
-) : BaseLibraryViewModel<GenreUiMessage>(settingsHelper) {
+  connectionStateFlow: ConnectionStateFlow,
+) : BaseLibraryViewModel<GenreUiMessage>(settingsHelper, connectionStateFlow) {
   val genres: Flow<PagingData<Genre>> =
     searchModel.term
       .flatMapMerge { term ->
@@ -35,6 +37,10 @@ class BrowseGenreViewModel(
 
   fun sync() {
     viewModelScope.launch {
+      if (!checkConnection()) {
+        emit(GenreUiMessage.NetworkUnavailable)
+        return@launch
+      }
       librarySyncUseCase.sync()
     }
   }
@@ -49,6 +55,11 @@ class BrowseGenreViewModel(
     }
 
     viewModelScope.launch {
+      if (!checkConnection()) {
+        emit(GenreUiMessage.NetworkUnavailable)
+        return@launch
+      }
+
       val result = queueHandler.queueGenre(queue, genre.genre)
       val event =
         if (result.success) {

@@ -5,6 +5,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.kelsos.mbrc.common.mvvm.BaseViewModel
 import com.kelsos.mbrc.common.mvvm.UiMessageBase
+import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.features.queue.QueueHandler
 import kotlinx.coroutines.flow.Flow
@@ -26,12 +27,15 @@ sealed class RadioUiMessages : UiMessageBase {
   object RefreshSuccess : RadioUiMessages()
 
   object RefreshFailed : RadioUiMessages()
+
+  object NetworkUnavailable : RadioUiMessages()
 }
 
 class RadioViewModel(
   private val radioRepository: RadioRepository,
   private val queueUseCase: QueueHandler,
   private val dispatchers: AppCoroutineDispatchers,
+  private val connectionStateFlow: ConnectionStateFlow,
 ) : BaseViewModel<RadioUiMessages>() {
   val actions: RadioActions =
     object : RadioActions {
@@ -49,12 +53,16 @@ class RadioViewModel(
   fun reload() {
     viewModelScope.launch(dispatchers.network) {
       val result =
-        try {
-          radioRepository.getRemote()
-          RadioUiMessages.RefreshSuccess
-        } catch (e: IOException) {
-          Timber.e(e)
-          RadioUiMessages.RefreshFailed
+        if (!connectionStateFlow.isConnected()) {
+          RadioUiMessages.NetworkUnavailable
+        } else {
+          try {
+            radioRepository.getRemote()
+            RadioUiMessages.RefreshSuccess
+          } catch (e: IOException) {
+            Timber.e(e)
+            RadioUiMessages.RefreshFailed
+          }
         }
       emit(result)
     }
@@ -62,12 +70,16 @@ class RadioViewModel(
 
   fun play(path: String) {
     viewModelScope.launch(dispatchers.network) {
-      val response = queueUseCase.queuePath(path)
       val uiMessage =
-        if (response.success) {
-          RadioUiMessages.QueueSuccess
+        if (!connectionStateFlow.isConnected()) {
+          RadioUiMessages.NetworkUnavailable
         } else {
-          RadioUiMessages.QueueFailed
+          val response = queueUseCase.queuePath(path)
+          if (response.success) {
+            RadioUiMessages.QueueSuccess
+          } else {
+            RadioUiMessages.QueueFailed
+          }
         }
       emit(uiMessage)
     }

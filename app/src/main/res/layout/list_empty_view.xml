@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/empty_view"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:gravity="center"
   android:visibility="visible">
 
   <ProgressBar
@@ -13,41 +13,53 @@
     style="@style/Widget.MaterialComponents.CircularProgressIndicator"
     android:layout_width="60dp"
     android:layout_height="60dp"
-    android:layout_marginTop="16dp"
-    android:layout_marginBottom="16dp"
     android:visibility="visible"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
     tools:visibility="visible" />
 
   <TextView
     android:id="@+id/list_empty_title"
-    android:layout_width="wrap_content"
+    style="@style/TextAppearance.MaterialComponents.Headline5"
+    android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_centerHorizontal="true"
-    android:fontFamily="sans-serif-medium"
-    android:maxLines="1"
+    android:layout_marginHorizontal="@dimen/normal_margin"
+    android:gravity="center"
+    android:maxLines="2"
     android:text="@string/common_empty_no_tracks"
-    android:textSize="22sp"
     android:visibility="gone"
-    tools:ignore="MissingPrefix" />
+    app:layout_constraintBottom_toTopOf="@+id/list_empty_icon"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_chainStyle="packed" />
 
   <ImageView
     android:id="@+id/list_empty_icon"
     style="@style/empty_view_image"
-    android:layout_below="@+id/list_empty_title"
     android:contentDescription="@string/content_description__empty_warning"
     android:src="@drawable/baseline_music_note_80"
-    android:visibility="gone" />
+    android:visibility="gone"
+    app:layout_constraintBottom_toTopOf="@+id/list_empty_subtitle"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/list_empty_title" />
 
   <TextView
     android:id="@+id/list_empty_subtitle"
-    android:layout_width="wrap_content"
+    style="@style/TextAppearance.MaterialComponents.Body2"
+    android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_below="@+id/list_empty_icon"
-    android:layout_centerHorizontal="true"
-    android:fontFamily="sans-serif-light"
+    android:layout_marginHorizontal="@dimen/normal_margin"
+    android:gravity="center"
     android:text="@string/swipe_to_refresh"
-    android:textSize="14sp"
+    android:textColor="?attr/colorOnSurfaceVariant"
     android:visibility="gone"
-    tools:ignore="MissingPrefix" />
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/list_empty_icon" />
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

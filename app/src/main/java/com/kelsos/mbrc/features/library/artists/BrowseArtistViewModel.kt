@@ -3,6 +3,7 @@ package com.kelsos.mbrc.features.library.artists
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.LibrarySearchModel
 import com.kelsos.mbrc.features.library.LibrarySyncUseCase
 import com.kelsos.mbrc.features.queue.QueueHandler
@@ -26,7 +27,8 @@ class BrowseArtistViewModel(
   settingsManager: SettingsManager,
   queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
-) : BaseArtistViewModel(queueHandler, settingsHelper) {
+  connectionStateFlow: ConnectionStateFlow,
+) : BaseArtistViewModel(queueHandler, settingsHelper, connectionStateFlow) {
   val shouldDisplayOnlyArtists = settingsManager.shouldDisplayOnlyArtists
 
   override val artists: Flow<PagingData<Artist>> =
@@ -49,6 +51,10 @@ class BrowseArtistViewModel(
 
   fun sync() {
     viewModelScope.launch {
+      if (!checkConnection()) {
+        emit(ArtistUiMessage.NetworkUnavailable)
+        return@launch
+      }
       librarySyncUseCase.sync()
     }
   }

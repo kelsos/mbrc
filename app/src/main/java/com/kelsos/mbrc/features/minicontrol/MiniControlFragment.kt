@@ -18,6 +18,7 @@ import coil3.request.error
 import coil3.request.placeholder
 import coil3.size.Scale
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.state.PlayerState
 import com.kelsos.mbrc.extensions.getDimens
@@ -75,6 +76,21 @@ class MiniControlFragment : ScopeFragment() {
 
           progressIndicator.progress = state.playingPosition.current.toInt()
           progressIndicator.max = state.playingPosition.total.toInt()
+        }
+      }
+    }
+
+    lifecycleScope.launch {
+      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.events.collect { event ->
+          when (event) {
+            MiniControlUiMessages.NetworkUnavailable -> {
+              Snackbar.make(view, R.string.connection_error_network_unavailable, Snackbar.LENGTH_SHORT).show()
+            }
+            MiniControlUiMessages.ActionFailed -> {
+              Snackbar.make(view, R.string.action_failed, Snackbar.LENGTH_SHORT).show()
+            }
+          }
         }
       }
     }

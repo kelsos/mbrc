@@ -51,6 +51,7 @@ class BrowseGenreFragment :
             is GenreUiMessage.OpenArtists -> requireContext().openGenreDetails(event.genre)
             is GenreUiMessage.QueueSuccess -> queue(true, event.tracksCount)
             is GenreUiMessage.QueueFailed -> queue(false, 0)
+            GenreUiMessage.NetworkUnavailable -> networkUnavailable()
           }
         }
       }

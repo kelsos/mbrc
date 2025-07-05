@@ -64,7 +64,7 @@ class RadioActivity :
     lifecycleScope.launch {
       adapter.loadStateFlow.map { it.refresh }.distinctUntilChanged().collectLatest { loadState ->
         updateEmptyViewState(loadState is LoadState.Loading)
-        emptyView.isGone = loadState is LoadState.NotLoading || adapter.itemCount > 0
+        emptyView.isGone = loadState is LoadState.Loading || adapter.itemCount > 0
       }
     }
 
@@ -90,6 +90,10 @@ class RadioActivity :
               RadioUiMessages.RefreshSuccess -> {
                 swipeLayout.isRefreshing = false
                 R.string.radio__loading_success
+              }
+              RadioUiMessages.NetworkUnavailable -> {
+                swipeLayout.isRefreshing = false
+                R.string.connection_error_network_unavailable
               }
             }
           Snackbar.make(radioView, resId, Snackbar.LENGTH_SHORT).show()

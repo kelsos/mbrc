@@ -1,6 +1,6 @@
 package com.kelsos.mbrc.networking.protocol
 
-class UserAction(
+data class UserAction(
   val protocol: Protocol,
   val data: Any,
 ) {

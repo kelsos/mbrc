@@ -112,6 +112,7 @@ class LibraryActivity :
           when (event) {
             is LibraryUiEvent.LibraryStatsReady -> showStats(event.stats)
             is LibraryUiEvent.UpdateAlbumArtistOnly -> updateArtistOnlyPreference(event.enabled)
+            LibraryUiEvent.NetworkUnavailable -> showNetworkUnavailableMessage()
           }
         }
       }
@@ -248,6 +249,10 @@ class LibraryActivity :
 
   fun syncFailure() {
     Snackbar.make(pager, R.string.library__sync_failed, Snackbar.LENGTH_LONG).show()
+  }
+
+  fun showNetworkUnavailableMessage() {
+    Snackbar.make(pager, R.string.connection_error_network_unavailable, Snackbar.LENGTH_LONG).show()
   }
 
   fun getCategoryText(mediaType: LibraryMediaType): String =

@@ -95,4 +95,10 @@ abstract class BaseBrowseFragment : ScopeFragment() {
       .setText(message)
       .show()
   }
+
+  protected fun networkUnavailable() {
+    Snackbar
+      .make(recycler, R.string.connection_error_network_unavailable, Snackbar.LENGTH_SHORT)
+      .show()
+  }
 }

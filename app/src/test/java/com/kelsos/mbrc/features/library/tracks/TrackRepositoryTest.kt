@@ -12,7 +12,7 @@ import com.kelsos.mbrc.data.Database
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.protocol.Protocol
 import com.kelsos.mbrc.utils.testDispatcher
-import com.kelsos.mbrc.utils.testDispatchers
+import com.kelsos.mbrc.utils.testDispatcherModule
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify
@@ -29,15 +29,10 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
-import org.koin.test.get
 import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
 class TrackRepositoryTest : KoinTest {
-  private lateinit var database: Database
-  private lateinit var dao: TrackDao
-  private val api: ApiBase = mockk()
-
   // Constants for test data
   private companion object {
     const val DEFAULT_DATE_ADDED = 1000L
@@ -46,8 +41,7 @@ class TrackRepositoryTest : KoinTest {
 
   private val testModule =
     module {
-      single { api }
-      single { testDispatchers }
+      single<ApiBase> { mockk() }
       single {
         Room
           .inMemoryDatabaseBuilder(
@@ -62,13 +56,15 @@ class TrackRepositoryTest : KoinTest {
       }
     }
 
+  private val database: Database by inject()
+  private val dao: TrackDao by inject()
+  private val api: ApiBase by inject()
+
   private val repository: TrackRepository by inject()
 
   @Before
   fun setUp() {
-    startKoin { modules(listOf(testModule)) }
-    database = get()
-    dao = get()
+    startKoin { modules(listOf(testModule, testDispatcherModule)) }
   }
 
   @After

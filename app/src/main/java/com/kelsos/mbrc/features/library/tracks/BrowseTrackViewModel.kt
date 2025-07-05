@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.library.tracks
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
+import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.LibrarySearchModel
 import com.kelsos.mbrc.features.library.LibrarySyncUseCase
 import com.kelsos.mbrc.features.queue.QueueHandler
@@ -16,7 +17,8 @@ class BrowseTrackViewModel(
   queueHandler: QueueHandler,
   searchModel: LibrarySearchModel,
   settingsHelper: BasicSettingsHelper,
-) : BaseTrackViewModel(queueHandler, settingsHelper) {
+  connectionStateFlow: ConnectionStateFlow,
+) : BaseTrackViewModel(queueHandler, settingsHelper, connectionStateFlow) {
   override val tracks =
     searchModel.term
       .flatMapMerge {
@@ -31,6 +33,10 @@ class BrowseTrackViewModel(
 
   fun sync() {
     viewModelScope.launch {
+      if (!checkConnection()) {
+        emit(TrackUiMessage.NetworkUnavailable)
+        return@launch
+      }
       librarySyncUseCase.sync()
     }
   }

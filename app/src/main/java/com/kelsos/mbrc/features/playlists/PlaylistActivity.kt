@@ -56,7 +56,7 @@ class PlaylistActivity :
 
     observeViewModel()
 
-    viewModel.actions.reload()
+    viewModel.actions.reload(showUserMessage = false)
   }
 
   private fun observeViewModel() {
@@ -90,6 +90,8 @@ class PlaylistActivity :
       when (events) {
         PlaylistUiMessages.RefreshFailed -> R.string.playlists_load_failed
         PlaylistUiMessages.RefreshSuccess -> R.string.playlists_load_success
+        PlaylistUiMessages.NetworkUnavailable -> R.string.connection_error_network_unavailable
+        PlaylistUiMessages.PlayFailed -> R.string.radio__play_failed
       }
 
     Snackbar.make(swipeLayout, resId, Snackbar.LENGTH_SHORT).show()

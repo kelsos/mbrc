@@ -12,50 +12,116 @@ import com.kelsos.mbrc.networking.protocol.UserActionUseCase
 import com.kelsos.mbrc.networking.protocol.moveTrack
 import com.kelsos.mbrc.networking.protocol.playTrack
 import com.kelsos.mbrc.networking.protocol.removeTrack
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.io.IOException
 
-class NowPlayingViewModel(
+interface INowPlayingActions {
+  fun reload()
+
+  fun reload(showUserMessage: Boolean)
+
+  fun play(position: Int)
+
+  fun removeTrack(position: Int)
+
+  fun moveTrack(
+    from: Int,
+    to: Int,
+  )
+
+  fun move()
+
+  fun search(query: String)
+}
+
+class NowPlayingActions(
+  private val scope: CoroutineScope,
   private val dispatchers: AppCoroutineDispatchers,
   private val repository: NowPlayingRepository,
   private val moveManager: MoveManager,
   private val userActionUseCase: UserActionUseCase,
-  private val connectionState: ConnectionStateFlow,
-  appState: AppStateFlow,
-) : BaseViewModel<NowPlayingUiMessages>() {
-  val tracks: Flow<PagingData<NowPlaying>> = repository.getAll().cachedIn(viewModelScope)
-  val playingTrack = appState.playingTrack
-
-  init {
-    moveManager.onMoveCommit { originalPosition, finalPosition ->
-      viewModelScope.launch(dispatchers.network) {
-        userActionUseCase.moveTrack(NowPlayingMoveRequest(originalPosition, finalPosition))
-        repository.move(originalPosition + 1, finalPosition + 1)
-      }
-    }
+  private val connectionStateFlow: ConnectionStateFlow,
+  private val emit: suspend (uiMessage: NowPlayingUiMessages) -> Unit,
+) : INowPlayingActions {
+  override fun reload() {
+    reload(showUserMessage = true)
   }
 
-  fun reload() {
-    viewModelScope.launch(dispatchers.network) {
-      if (!connectionState.isConnected()) {
+  override fun reload(showUserMessage: Boolean) {
+    scope.launch(dispatchers.network) {
+      if (!connectionStateFlow.isConnected()) {
+        if (showUserMessage) {
+          emit(NowPlayingUiMessages.NetworkUnavailable)
+        }
         return@launch
       }
       val result =
         try {
           repository.getRemote()
-          NowPlayingUiMessages.RefreshSucceeded
+          if (showUserMessage) NowPlayingUiMessages.RefreshSucceeded else null
         } catch (e: IOException) {
-          NowPlayingUiMessages.RefreshFailed(e)
+          Timber.e(e)
+          if (showUserMessage) NowPlayingUiMessages.RefreshFailed(e) else null
         }
 
-      emit(result)
+      result?.let { emit(it) }
     }
   }
 
-  fun search(query: String) {
-    viewModelScope.launch(dispatchers.database) {
+  override fun play(position: Int) {
+    scope.launch(dispatchers.network) {
+      if (!connectionStateFlow.isConnected()) {
+        emit(NowPlayingUiMessages.NetworkUnavailable)
+        return@launch
+      }
+      try {
+        userActionUseCase.playTrack(position)
+      } catch (e: IOException) {
+        Timber.e(e)
+        emit(NowPlayingUiMessages.PlayFailed)
+      }
+    }
+  }
+
+  override fun removeTrack(position: Int) {
+    scope.launch(dispatchers.network) {
+      if (!connectionStateFlow.isConnected()) {
+        emit(NowPlayingUiMessages.NetworkUnavailable)
+        return@launch
+      }
+      try {
+        delay(REMOVE_DELAY_MS)
+        userActionUseCase.removeTrack(position)
+      } catch (e: IOException) {
+        Timber.e(e)
+        emit(NowPlayingUiMessages.RemoveFailed)
+      }
+    }
+  }
+
+  override fun moveTrack(
+    from: Int,
+    to: Int,
+  ) {
+    moveManager.move(from, to)
+  }
+
+  override fun move() {
+    scope.launch(dispatchers.network) {
+      if (!connectionStateFlow.isConnected()) {
+        emit(NowPlayingUiMessages.NetworkUnavailable)
+        return@launch
+      }
+      moveManager.commit()
+    }
+  }
+
+  override fun search(query: String) {
+    scope.launch(dispatchers.database) {
       val position = repository.findPosition(query)
       if (position > 0) {
         play(position)
@@ -63,31 +129,44 @@ class NowPlayingViewModel(
     }
   }
 
-  fun moveTrack(
-    from: Int,
-    to: Int,
-  ) {
-    moveManager.move(from, to)
-  }
-
-  fun play(position: Int) {
-    viewModelScope.launch(dispatchers.network) {
-      userActionUseCase.playTrack(position)
-    }
-  }
-
-  fun removeTrack(position: Int) {
-    viewModelScope.launch(dispatchers.network) {
-      delay(REMOVE_DELAY_MS)
-      userActionUseCase.removeTrack(position)
-    }
-  }
-
-  fun move() {
-    moveManager.commit()
-  }
-
   companion object {
     const val REMOVE_DELAY_MS = 400L
+  }
+}
+
+class NowPlayingViewModel(
+  repository: NowPlayingRepository,
+  dispatchers: AppCoroutineDispatchers,
+  moveManager: MoveManager,
+  userActionUseCase: UserActionUseCase,
+  connectionStateFlow: ConnectionStateFlow,
+  appState: AppStateFlow,
+) : BaseViewModel<NowPlayingUiMessages>() {
+  val tracks: Flow<PagingData<NowPlaying>> = repository.getAll().cachedIn(viewModelScope)
+  val playingTrack = appState.playingTrack
+  val connectionState = connectionStateFlow.connection
+  val actions: NowPlayingActions =
+    NowPlayingActions(
+      scope = viewModelScope,
+      dispatchers = dispatchers,
+      repository = repository,
+      moveManager = moveManager,
+      userActionUseCase = userActionUseCase,
+      connectionStateFlow = connectionStateFlow,
+      emit = this::emit,
+    )
+
+  init {
+    moveManager.onMoveCommit { originalPosition, finalPosition ->
+      viewModelScope.launch(dispatchers.network) {
+        try {
+          userActionUseCase.moveTrack(NowPlayingMoveRequest(originalPosition, finalPosition))
+          repository.move(originalPosition + 1, finalPosition + 1)
+        } catch (e: IOException) {
+          Timber.e(e)
+          emit(NowPlayingUiMessages.MoveFailed)
+        }
+      }
+    }
   }
 }

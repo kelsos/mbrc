@@ -3,7 +3,6 @@ package com.kelsos.mbrc.features.settings
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.paging.testing.asSnapshot
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
@@ -18,7 +17,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.startKoin
@@ -28,24 +26,15 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
-import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
 
 @RunWith(AndroidJUnit4::class)
 class ConnectionRepositoryTest : KoinTest {
   private val repository: ConnectionRepository by inject()
 
-  private lateinit var db: Database
-  private lateinit var connectionDao: ConnectionDao
+  private val db: Database by inject()
 
-  @get:Rule
-  var instantTaskExecutorRule = InstantTaskExecutorRule()
-
-  val testModule =
+  private val testModule =
     module {
-      includes(testDispatcherModule)
-
       single<SharedPreferences> {
         val defaultId = longArrayOf(-1)
         val preferences = mockk<SharedPreferences>(relaxed = true)
@@ -62,35 +51,32 @@ class ConnectionRepositoryTest : KoinTest {
 
         preferences
       }
+      single<Database> {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        Room
+          .inMemoryDatabaseBuilder(context, Database::class.java)
+          .allowMainThreadQueries()
+          .build()
+      }
       singleOf(::ConnectionRepositoryImpl) { bind<ConnectionRepository>() }
       single { mockk<RemoteServiceDiscovery>() }
-      single { connectionDao }
+      single<ConnectionDao> { get<Database>().connectionDao() }
       single<Resources> {
-        val resources = mock(Resources::class.java)
-        `when`(resources.getString(anyInt())).thenReturn("preferences_key")
+        val resources = mockk<Resources>()
+        every { resources.getString(any()) } returns "preferences_key"
         resources
       }
     }
 
   @Before
   fun setUp() {
-    val context = ApplicationProvider.getApplicationContext<Context>()
-    db =
-      Room
-        .inMemoryDatabaseBuilder(context, Database::class.java)
-        .allowMainThreadQueries()
-        .build()
-    connectionDao = db.connectionDao()
-
-    startKoin {
-      modules(listOf(testModule))
-    }
+    startKoin { modules(listOf(testModule, testDispatcherModule)) }
   }
 
   @After
   fun tearDown() {
-    stopKoin()
     db.close()
+    stopKoin()
   }
 
   @Test

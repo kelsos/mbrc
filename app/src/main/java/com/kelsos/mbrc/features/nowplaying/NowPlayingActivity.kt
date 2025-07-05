@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.BaseActivity
 import com.kelsos.mbrc.R
+import com.kelsos.mbrc.common.state.ConnectionStatus
 import com.kelsos.mbrc.common.state.PlayingTrack
 import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 import com.kelsos.mbrc.common.ui.MultiSwipeRefreshLayout
@@ -77,14 +78,14 @@ class NowPlayingActivity :
 
       override fun onDragComplete() {
         swipeLayout.isEnabled = true
-        vm.move()
+        vm.actions.move()
       }
     }
   }
 
   override fun onQueryTextSubmit(query: String): Boolean {
     closeSearch()
-    viewModel.search(query)
+    viewModel.actions.search(query)
     return true
   }
 
@@ -162,10 +163,10 @@ class NowPlayingActivity :
     adapter.setNowPlayingListener(this)
     adapter.setVisibleRangeGetter(visibleRangeGetter)
     adapter.setDragStartListener(dragStartListener)
-    swipeLayout.setOnRefreshListener { viewModel.reload() }
+    swipeLayout.setOnRefreshListener { viewModel.actions.reload() }
 
     observeViewModel()
-    viewModel.reload()
+    viewModel.actions.reload(showUserMessage = false)
   }
 
   private fun observeViewModel() {
@@ -196,6 +197,23 @@ class NowPlayingActivity :
             NowPlayingUiMessages.RefreshSucceeded -> {
               swipeLayout.isRefreshing = false
             }
+
+            NowPlayingUiMessages.NetworkUnavailable -> {
+              swipeLayout.isRefreshing = false
+              Snackbar.make(nowPlayingList, R.string.connection_error_network_unavailable, Snackbar.LENGTH_SHORT).show()
+            }
+
+            NowPlayingUiMessages.PlayFailed -> {
+              Snackbar.make(nowPlayingList, R.string.radio__play_failed, Snackbar.LENGTH_SHORT).show()
+            }
+
+            NowPlayingUiMessages.RemoveFailed -> {
+              Snackbar.make(nowPlayingList, R.string.refresh_failed, Snackbar.LENGTH_SHORT).show()
+            }
+
+            NowPlayingUiMessages.MoveFailed -> {
+              Snackbar.make(nowPlayingList, R.string.refresh_failed, Snackbar.LENGTH_SHORT).show()
+            }
           }
         }
       }
@@ -205,6 +223,14 @@ class NowPlayingActivity :
       repeatOnLifecycle(Lifecycle.State.STARTED) {
         viewModel.playingTrack.collect { track ->
           trackChanged(track, true)
+        }
+      }
+    }
+
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.connectionState.collect { status ->
+          updateNetworkState(status is ConnectionStatus.Connected)
         }
       }
     }
@@ -233,18 +259,18 @@ class NowPlayingActivity :
   }
 
   override fun onPress(position: Int) {
-    viewModel.play(position)
+    viewModel.actions.play(position)
   }
 
   override fun onMove(
     from: Int,
     to: Int,
   ) {
-    viewModel.moveTrack(from, to)
+    viewModel.actions.moveTrack(from, to)
   }
 
   override fun onDismiss(position: Int) {
-    viewModel.removeTrack(position)
+    viewModel.actions.removeTrack(position)
   }
 
   fun trackChanged(
@@ -254,6 +280,17 @@ class NowPlayingActivity :
     adapter.setPlayingTrack(playingTrack.path)
     if (scrollToTrack) {
       nowPlayingList.scrollToPosition(adapter.getPlayingTrackIndex())
+    }
+  }
+
+  private fun updateNetworkState(isConnected: Boolean) {
+    // Update ItemTouchHelper to enable/disable drag and swipe
+    if (isConnected) {
+      // Re-enable ItemTouchHelper if not already attached
+      itemTouchHelper?.attachToRecyclerView(nowPlayingList)
+    } else {
+      // Disable ItemTouchHelper to prevent drag and swipe
+      itemTouchHelper?.attachToRecyclerView(null)
     }
   }
 }

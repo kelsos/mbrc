@@ -1,6 +1,5 @@
 package com.kelsos.mbrc.features.nowplaying
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.paging.testing.asSnapshot
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
@@ -9,14 +8,13 @@ import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.data.Database
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.utils.testDispatcher
-import com.kelsos.mbrc.utils.testDispatchers
+import com.kelsos.mbrc.utils.testDispatcherModule
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.startKoin
@@ -25,19 +23,13 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
-import org.koin.test.get
 import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
 class NowPlayingRepositoryTest : KoinTest {
-  private lateinit var db: Database
-  private lateinit var dao: NowPlayingDao
-  private val api: ApiBase = mockk(relaxed = true)
-
   private val testModule =
     module {
-      single { api }
-      single { testDispatchers }
+      single<ApiBase> { mockk(relaxed = true) }
       single {
         Room
           .inMemoryDatabaseBuilder(
@@ -51,6 +43,10 @@ class NowPlayingRepositoryTest : KoinTest {
         bind<NowPlayingRepository>()
       }
     }
+
+  private val db: Database by inject()
+  private val dao: NowPlayingDao by inject()
+  private val api: ApiBase by inject()
 
   private val repository: NowPlayingRepository by inject()
 
@@ -138,14 +134,9 @@ class NowPlayingRepositoryTest : KoinTest {
       ),
     )
 
-  @get:Rule
-  var instantTaskExecutorRule = InstantTaskExecutorRule()
-
   @Before
   fun setUp() {
-    startKoin { modules(listOf(testModule)) }
-    db = get()
-    dao = get()
+    startKoin { modules(listOf(testModule, testDispatcherModule)) }
     dao.deleteAll()
     dao.insertAll(fakeAlbumQueue)
   }

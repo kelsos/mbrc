@@ -14,7 +14,7 @@ import com.kelsos.mbrc.features.library.tracks.TrackEntity
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.protocol.Protocol
 import com.kelsos.mbrc.utils.testDispatcher
-import com.kelsos.mbrc.utils.testDispatchers
+import com.kelsos.mbrc.utils.testDispatcherModule
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify
@@ -31,21 +31,14 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
-import org.koin.test.get
 import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
 class AlbumRepositoryTest : KoinTest {
-  private lateinit var database: Database
-  private lateinit var dao: AlbumDao
-  private lateinit var trackDao: TrackDao
-  private val api: ApiBase = mockk()
-
   private val testModule =
     module {
-      single { api }
-      single { testDispatchers }
-      single {
+      single<ApiBase> { mockk() }
+      single<Database> {
         Room
           .inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
@@ -53,21 +46,23 @@ class AlbumRepositoryTest : KoinTest {
           ).allowMainThreadQueries()
           .build()
       }
-      single { get<Database>().albumDao() }
-      single { get<Database>().trackDao() }
+      single<AlbumDao> { get<Database>().albumDao() }
+      single<TrackDao> { get<Database>().trackDao() }
       singleOf(::AlbumRepositoryImpl) {
         bind<AlbumRepository>()
       }
     }
 
+  private val database: Database by inject()
+  private val dao: AlbumDao by inject()
+  private val trackDao: TrackDao by inject()
+  private val api: ApiBase by inject()
+
   private val repository: AlbumRepository by inject()
 
   @Before
   fun setUp() {
-    startKoin { modules(listOf(testModule)) }
-    database = get()
-    dao = get()
-    trackDao = get()
+    startKoin { modules(listOf(testModule, testDispatcherModule)) }
   }
 
   @After

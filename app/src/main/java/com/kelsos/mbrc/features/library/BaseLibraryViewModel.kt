@@ -3,12 +3,14 @@ package com.kelsos.mbrc.features.library
 import androidx.lifecycle.viewModelScope
 import com.kelsos.mbrc.common.mvvm.BaseViewModel
 import com.kelsos.mbrc.common.mvvm.UiMessageBase
+import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.queue.Queue
 import com.kelsos.mbrc.features.settings.BasicSettingsHelper
 import kotlinx.coroutines.launch
 
 open class BaseLibraryViewModel<T : UiMessageBase>(
   private val settingsHelper: BasicSettingsHelper,
+  private val connectionStateFlow: ConnectionStateFlow,
 ) : BaseViewModel<T>() {
   protected fun getQueueAction(action: Queue): Queue =
     if (action == Queue.Default) {
@@ -22,4 +24,6 @@ open class BaseLibraryViewModel<T : UiMessageBase>(
       emit(event)
     }
   }
+
+  protected suspend fun checkConnection(): Boolean = connectionStateFlow.isConnected()
 }

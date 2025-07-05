@@ -1,6 +1,7 @@
 package com.kelsos.mbrc.features.nowplaying
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.kelsos.mbrc.utils.testDispatcherModule
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
@@ -31,7 +32,7 @@ class MoveManagerImplTest : KoinTest {
 
   @Before
   fun setUp() {
-    startKoin { modules(listOf(testModule)) }
+    startKoin { modules(listOf(testModule, testDispatcherModule)) }
   }
 
   @After

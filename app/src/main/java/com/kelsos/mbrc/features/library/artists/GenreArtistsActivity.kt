@@ -60,6 +60,7 @@ class GenreArtistsActivity :
             is ArtistUiMessage.OpenArtistAlbums -> openArtistDetails(event.artist)
             is ArtistUiMessage.QueueFailed -> queue(false, 0)
             is ArtistUiMessage.QueueSuccess -> queue(true, event.tracksCount)
+            ArtistUiMessage.NetworkUnavailable -> networkUnavailable()
           }
         }
       }

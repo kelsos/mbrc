@@ -42,7 +42,7 @@ class ArtistRepositoryTest : KoinTest {
         Room
           .inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            Database::class.java,
+            Database::class.java
           ).allowMainThreadQueries()
           .build()
       }
@@ -76,7 +76,7 @@ class ArtistRepositoryTest : KoinTest {
         listOf(
           ArtistEntity(artist = "Artist 1", dateAdded = 1000L),
           ArtistEntity(artist = "Artist 2", dateAdded = 1000L),
-          ArtistEntity(artist = "Artist 3", dateAdded = 1000L),
+          ArtistEntity(artist = "Artist 3", dateAdded = 1000L)
         )
       dao.insertAll(artists)
 
@@ -121,7 +121,7 @@ class ArtistRepositoryTest : KoinTest {
         listOf(
           ArtistEntity(artist = "Rock Artist 1", dateAdded = 1000L),
           ArtistEntity(artist = "Rock Artist 2", dateAdded = 1000L),
-          ArtistEntity(artist = "Pop Artist", dateAdded = 1000L),
+          ArtistEntity(artist = "Pop Artist", dateAdded = 1000L)
         )
       dao.insertAll(artists)
 
@@ -132,22 +132,22 @@ class ArtistRepositoryTest : KoinTest {
             title = "Rock Track 1",
             album = "Rock Album 1",
             genre = "Rock",
-            dateAdded = 1000L,
+            dateAdded = 1000L
           ),
           TrackEntity(
             artist = "Rock Artist 2",
             title = "Rock Track 2",
             album = "Rock Album 2",
             genre = "Rock",
-            dateAdded = 1000L,
+            dateAdded = 1000L
           ),
           TrackEntity(
             artist = "Pop Artist",
             title = "Pop Track",
             album = "Pop Album",
             genre = "Pop",
-            dateAdded = 1000L,
-          ),
+            dateAdded = 1000L
+          )
         )
       database.trackDao().insertAll(tracks)
 
@@ -174,7 +174,7 @@ class ArtistRepositoryTest : KoinTest {
         listOf(
           ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
           ArtistEntity(artist = "The Beach Boys", dateAdded = 1000L),
-          ArtistEntity(artist = "Queen", dateAdded = 1000L),
+          ArtistEntity(artist = "Queen", dateAdded = 1000L)
         )
       dao.insertAll(artists)
 
@@ -190,7 +190,7 @@ class ArtistRepositoryTest : KoinTest {
       val artists =
         listOf(
           ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
-          ArtistEntity(artist = "Queen", dateAdded = 1000L),
+          ArtistEntity(artist = "Queen", dateAdded = 1000L)
         )
       dao.insertAll(artists)
 
@@ -230,7 +230,7 @@ class ArtistRepositoryTest : KoinTest {
       val remoteArtists =
         listOf(
           ArtistDto(artist = "Remote Artist 1"),
-          ArtistDto(artist = "Remote Artist 2"),
+          ArtistDto(artist = "Remote Artist 2")
         )
       coEvery {
         api.getAllPages(Protocol.LibraryBrowseArtists, ArtistDto::class, any())
@@ -239,7 +239,11 @@ class ArtistRepositoryTest : KoinTest {
       repository.getRemote(null)
 
       val storedArtists = dao.all()
-      assertThat(storedArtists.map { it.artist }).containsExactly("Remote Artist 1", "Remote Artist 2")
+      assertThat(
+        storedArtists.map {
+          it.artist
+        }
+      ).containsExactly("Remote Artist 1", "Remote Artist 2")
     }
   }
 
@@ -311,7 +315,7 @@ class ArtistRepositoryTest : KoinTest {
             album = "Compilation Album",
             albumArtist = albumArtist,
             src = "track1.mp3",
-            dateAdded = 1000L,
+            dateAdded = 1000L
           ),
           TrackEntity(
             artist = "Artist 2",
@@ -319,15 +323,15 @@ class ArtistRepositoryTest : KoinTest {
             album = "Compilation Album",
             albumArtist = albumArtist,
             src = "track2.mp3",
-            dateAdded = 1000L,
-          ),
+            dateAdded = 1000L
+          )
         )
 
       val artists =
         listOf(
           ArtistEntity(artist = "Artist 1", dateAdded = 1000L),
           ArtistEntity(artist = "Artist 2", dateAdded = 1000L),
-          ArtistEntity(artist = albumArtist, dateAdded = 1000L),
+          ArtistEntity(artist = albumArtist, dateAdded = 1000L)
         )
 
       // Insert test data
@@ -357,7 +361,7 @@ class ArtistRepositoryTest : KoinTest {
             album = "Regular Album",
             albumArtist = regularAlbumArtist,
             src = "track1.mp3",
-            dateAdded = 1000L,
+            dateAdded = 1000L
           ),
           TrackEntity(
             artist = "Different Artist", // This artist should not appear in album artists
@@ -365,15 +369,15 @@ class ArtistRepositoryTest : KoinTest {
             album = "Different Album",
             albumArtist = "Different Album Artist",
             src = "track2.mp3",
-            dateAdded = 1000L,
-          ),
+            dateAdded = 1000L
+          )
         )
 
       val artists =
         listOf(
           ArtistEntity(artist = regularAlbumArtist, dateAdded = 1000L),
           ArtistEntity(artist = "Different Artist", dateAdded = 1000L),
-          ArtistEntity(artist = "Different Album Artist", dateAdded = 1000L),
+          ArtistEntity(artist = "Different Album Artist", dateAdded = 1000L)
         )
 
       // Insert test data
@@ -399,7 +403,7 @@ class ArtistRepositoryTest : KoinTest {
           ArtistEntity(artist = "Adele", dateAdded = 1000L),
           ArtistEntity(artist = "The Rolling Stones", dateAdded = 1000L),
           ArtistEntity(artist = "Bob Dylan", dateAdded = 1000L),
-          ArtistEntity(artist = "The Who", dateAdded = 1000L),
+          ArtistEntity(artist = "The Who", dateAdded = 1000L)
         )
 
       // Insert test data
@@ -417,7 +421,7 @@ class ArtistRepositoryTest : KoinTest {
           "The Beatles",
           "Bob Dylan",
           "The Rolling Stones",
-          "The Who",
+          "The Who"
         ).inOrder()
     }
   }
@@ -434,7 +438,7 @@ class ArtistRepositoryTest : KoinTest {
             album = "Album 1",
             albumArtist = "The Beatles",
             src = "track1.mp3",
-            dateAdded = 1000L,
+            dateAdded = 1000L
           ),
           TrackEntity(
             artist = "Bob Dylan",
@@ -442,7 +446,7 @@ class ArtistRepositoryTest : KoinTest {
             album = "Album 2",
             albumArtist = "Bob Dylan",
             src = "track2.mp3",
-            dateAdded = 1000L,
+            dateAdded = 1000L
           ),
           TrackEntity(
             artist = "Roger Daltrey",
@@ -450,15 +454,15 @@ class ArtistRepositoryTest : KoinTest {
             album = "Album 3",
             albumArtist = "The Who",
             src = "track3.mp3",
-            dateAdded = 1000L,
-          ),
+            dateAdded = 1000L
+          )
         )
 
       val artists =
         listOf(
           ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
           ArtistEntity(artist = "Bob Dylan", dateAdded = 1000L),
-          ArtistEntity(artist = "The Who", dateAdded = 1000L),
+          ArtistEntity(artist = "The Who", dateAdded = 1000L)
         )
 
       // Insert test data
@@ -475,7 +479,7 @@ class ArtistRepositoryTest : KoinTest {
         .containsExactly(
           "The Beatles",
           "Bob Dylan",
-          "The Who",
+          "The Who"
         ).inOrder()
     }
   }

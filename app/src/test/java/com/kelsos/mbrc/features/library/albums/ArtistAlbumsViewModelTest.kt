@@ -72,7 +72,7 @@ class ArtistAlbumsViewModelTest : KoinTest {
           id = 1,
           artist = "Test Artist",
           album = "Test Album",
-          cover = null,
+          cover = null
         )
 
       // When & Then
@@ -99,10 +99,11 @@ class ArtistAlbumsViewModelTest : KoinTest {
           id = 1,
           artist = "Test Artist",
           album = "Test Album",
-          cover = null,
+          cover = null
         )
       val queueResult = QueueResult(success = true, tracks = 10)
-      coEvery { queueHandler.queueAlbum(Queue.Next, "Test Album", "Test Artist") } returns queueResult
+      coEvery { queueHandler.queueAlbum(Queue.Next, "Test Album", "Test Artist") } returns
+        queueResult
 
       // When & Then
       viewModel.events.test {
@@ -128,10 +129,11 @@ class ArtistAlbumsViewModelTest : KoinTest {
           id = 1,
           artist = "Test Artist",
           album = "Test Album",
-          cover = null,
+          cover = null
         )
       val queueResult = QueueResult(success = false, tracks = 0)
-      coEvery { queueHandler.queueAlbum(Queue.Next, "Test Album", "Test Artist") } returns queueResult
+      coEvery { queueHandler.queueAlbum(Queue.Next, "Test Album", "Test Artist") } returns
+        queueResult
 
       // When & Then
       viewModel.events.test {
@@ -156,7 +158,7 @@ class ArtistAlbumsViewModelTest : KoinTest {
           id = 1,
           artist = "Test Artist",
           album = "Test Album",
-          cover = null,
+          cover = null
         )
 
       // When & Then
@@ -183,10 +185,11 @@ class ArtistAlbumsViewModelTest : KoinTest {
           id = 1,
           artist = "Test Artist",
           album = "Test Album",
-          cover = null,
+          cover = null
         )
       val queueResult = QueueResult(success = true, tracks = 10)
-      coEvery { queueHandler.queueAlbum(any<Queue>(), any<String>(), any<String>()) } returns queueResult
+      coEvery { queueHandler.queueAlbum(any<Queue>(), any<String>(), any<String>()) } returns
+        queueResult
 
       // When & Then - First call should succeed, second should fail
       viewModel.events.test {

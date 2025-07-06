@@ -16,10 +16,7 @@ object RemoteViewIntentBuilder {
   const val PREVIOUS_PRESSED = "com.kelsos.mbrc.notification.previous"
   const val CANCELLED_NOTIFICATION = "com.kelsos.mbrc.notification.cancel"
 
-  fun getPendingIntent(
-    remoteIntentCode: RemoteIntentCode,
-    context: Context,
-  ): PendingIntent {
+  fun getPendingIntent(remoteIntentCode: RemoteIntentCode, context: Context): PendingIntent {
     val code = remoteIntentCode.code
     val flag = FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE
 

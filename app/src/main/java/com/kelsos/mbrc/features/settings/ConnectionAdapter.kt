@@ -22,17 +22,15 @@ interface ConnectionChangeListener {
   fun onDefault(settings: ConnectionSettings)
 }
 
-class ConnectionAdapter : PagingDataAdapter<ConnectionSettings, ConnectionAdapter.ConnectionViewHolder>(DIFF_CALLBACK) {
+class ConnectionAdapter :
+  PagingDataAdapter<ConnectionSettings, ConnectionAdapter.ConnectionViewHolder>(DIFF_CALLBACK) {
   private var changeListener: ConnectionChangeListener? = null
 
   fun setChangeListener(changeListener: ConnectionChangeListener) {
     this.changeListener = changeListener
   }
 
-  override fun onCreateViewHolder(
-    viewGroup: ViewGroup,
-    position: Int,
-  ): ConnectionViewHolder {
+  override fun onCreateViewHolder(viewGroup: ViewGroup, position: Int): ConnectionViewHolder {
     val inflater = LayoutInflater.from(viewGroup.context)
     val view = inflater.inflate(R.layout.item_connection, viewGroup, false)
     val holder = ConnectionViewHolder(view)
@@ -53,10 +51,7 @@ class ConnectionAdapter : PagingDataAdapter<ConnectionSettings, ConnectionAdapte
     return holder
   }
 
-  override fun onBindViewHolder(
-    holder: ConnectionViewHolder,
-    position: Int,
-  ) {
+  override fun onBindViewHolder(holder: ConnectionViewHolder, position: Int) {
     getItem(position)?.let { settings ->
       holder.computerName.text = settings.name
       holder.hostname.text = settings.address
@@ -68,7 +63,7 @@ class ConnectionAdapter : PagingDataAdapter<ConnectionSettings, ConnectionAdapte
           MaterialColors.getColor(
             holder.itemView.context,
             android.R.attr.colorControlNormal,
-            Color.GRAY,
+            Color.GRAY
           )
         holder.defaultSettings.setImageResource(R.drawable.baseline_check_24)
         holder.defaultSettings.setColorFilter(controlColor)
@@ -76,10 +71,7 @@ class ConnectionAdapter : PagingDataAdapter<ConnectionSettings, ConnectionAdapte
     }
   }
 
-  private fun showPopup(
-    settings: ConnectionSettings,
-    v: View,
-  ) {
+  private fun showPopup(settings: ConnectionSettings, v: View) {
     val popupMenu = PopupMenu(v.context, v)
     popupMenu.menuInflater.inflate(R.menu.connection_popup, popupMenu.menu)
     popupMenu.setOnMenuItemClickListener {
@@ -98,9 +90,7 @@ class ConnectionAdapter : PagingDataAdapter<ConnectionSettings, ConnectionAdapte
     popupMenu.show()
   }
 
-  inner class ConnectionViewHolder(
-    itemView: View,
-  ) : RecyclerView.ViewHolder(itemView) {
+  inner class ConnectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val hostname: TextView = itemView.findViewById(R.id.cs_list_host)
     val portNum: TextView = itemView.findViewById(R.id.cs_list_port)
     val computerName: TextView = itemView.findViewById(R.id.cs_list_name)
@@ -113,12 +103,12 @@ class ConnectionAdapter : PagingDataAdapter<ConnectionSettings, ConnectionAdapte
       object : DiffUtil.ItemCallback<ConnectionSettings>() {
         override fun areItemsTheSame(
           oldItem: ConnectionSettings,
-          newItem: ConnectionSettings,
+          newItem: ConnectionSettings
         ): Boolean = oldItem.id == newItem.id
 
         override fun areContentsTheSame(
           oldItem: ConnectionSettings,
-          newItem: ConnectionSettings,
+          newItem: ConnectionSettings
         ): Boolean = oldItem == newItem
       }
   }

@@ -13,10 +13,7 @@ import com.kelsos.mbrc.R
 class PlaylistAdapter : PagingDataAdapter<Playlist, PlaylistAdapter.ViewHolder>(DIFF_CALLBACK) {
   private var playlistPressedListener: OnPlaylistPressedListener? = null
 
-  override fun onCreateViewHolder(
-    parent: ViewGroup,
-    viewType: Int,
-  ): ViewHolder {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
     val inflater = LayoutInflater.from(parent.context)
     val view = inflater.inflate(R.layout.item_single, parent, false)
     val viewHolder = ViewHolder(view)
@@ -31,10 +28,7 @@ class PlaylistAdapter : PagingDataAdapter<Playlist, PlaylistAdapter.ViewHolder>(
     return viewHolder
   }
 
-  override fun onBindViewHolder(
-    holder: ViewHolder,
-    position: Int,
-  ) {
+  override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     val playlist = getItem(position)
     if (playlist != null) {
       holder.name.text = playlist.name
@@ -50,9 +44,7 @@ class PlaylistAdapter : PagingDataAdapter<Playlist, PlaylistAdapter.ViewHolder>(
     fun playlistPressed(path: String)
   }
 
-  class ViewHolder(
-    itemView: View,
-  ) : RecyclerView.ViewHolder(itemView) {
+  class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val name: TextView = itemView.findViewById(R.id.line_one)
     val context: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
   }
@@ -60,15 +52,11 @@ class PlaylistAdapter : PagingDataAdapter<Playlist, PlaylistAdapter.ViewHolder>(
   companion object {
     private val DIFF_CALLBACK =
       object : DiffUtil.ItemCallback<Playlist>() {
-        override fun areContentsTheSame(
-          oldItem: Playlist,
-          newItem: Playlist,
-        ): Boolean = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Playlist, newItem: Playlist): Boolean =
+          oldItem.id == newItem.id
 
-        override fun areItemsTheSame(
-          oldItem: Playlist,
-          newItem: Playlist,
-        ): Boolean = oldItem == newItem
+        override fun areItemsTheSame(oldItem: Playlist, newItem: Playlist): Boolean =
+          oldItem == newItem
       }
   }
 }

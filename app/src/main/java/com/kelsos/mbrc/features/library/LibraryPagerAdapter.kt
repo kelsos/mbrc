@@ -8,17 +8,14 @@ import com.kelsos.mbrc.features.library.artists.BrowseArtistFragment
 import com.kelsos.mbrc.features.library.genres.BrowseGenreFragment
 import com.kelsos.mbrc.features.library.tracks.BrowseTrackFragment
 
-class LibraryPagerAdapter(
-  activity: FragmentActivity,
-) : FragmentStateAdapter(activity) {
-  override fun createFragment(position: Int): Fragment =
-    when (position) {
-      PagePosition.GENRES -> BrowseGenreFragment()
-      PagePosition.ARTISTS -> BrowseArtistFragment()
-      PagePosition.ALBUMS -> BrowseAlbumFragment()
-      PagePosition.TRACKS -> BrowseTrackFragment()
-      else -> error("invalid position")
-    }
+class LibraryPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
+  override fun createFragment(position: Int): Fragment = when (position) {
+    PagePosition.GENRES -> BrowseGenreFragment()
+    PagePosition.ARTISTS -> BrowseArtistFragment()
+    PagePosition.ALBUMS -> BrowseAlbumFragment()
+    PagePosition.TRACKS -> BrowseTrackFragment()
+    else -> error("invalid position")
+  }
 
   override fun getItemCount(): Int = COUNT
 

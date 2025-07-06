@@ -14,7 +14,7 @@ class AlbumTracksViewModel(
   private val repository: TrackRepository,
   private val queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
-  connectionStateFlow: ConnectionStateFlow,
+  connectionStateFlow: ConnectionStateFlow
 ) : BaseTrackViewModel(queueHandler, settingsHelper, connectionStateFlow) {
   private val albumInfo = MutableSharedFlow<AlbumInfo>(replay = 1)
 
@@ -44,7 +44,7 @@ class AlbumTracksViewModel(
       queueHandler.queueAlbum(
         type = Queue.Now,
         album = album.album,
-        artist = album.artist,
+        artist = album.artist
       )
     }
   }

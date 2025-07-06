@@ -16,6 +16,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.io.IOException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -29,7 +30,6 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
-import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
 class NowPlayingViewModelTest : KoinTest {
@@ -149,7 +149,7 @@ class NowPlayingViewModelTest : KoinTest {
   }
 
   @Test
-  fun reloadShouldEmitRefreshFailedWhenConnectedButRepositoryThrowsIOExceptionAndShowUserMessageTrue() {
+  fun reloadShouldEmitRefreshFailedWhenConnectedButRepositoryThrowsAndShowUserMessageTrue() {
     runTest(testDispatcher) {
       // Given
       val ioException = IOException("Network error")
@@ -320,7 +320,9 @@ class NowPlayingViewModelTest : KoinTest {
       }
 
       // Verify user action was called with correct parameters
-      coVerify(exactly = 1) { userActionUseCase.perform(UserAction(Protocol.NowPlayingListPlay, 5)) }
+      coVerify(exactly = 1) {
+        userActionUseCase.perform(UserAction(Protocol.NowPlayingListPlay, 5))
+      }
     }
   }
 
@@ -341,7 +343,9 @@ class NowPlayingViewModelTest : KoinTest {
       }
 
       // Verify user action was called
-      coVerify(exactly = 1) { userActionUseCase.perform(UserAction(Protocol.NowPlayingListPlay, 5)) }
+      coVerify(exactly = 1) {
+        userActionUseCase.perform(UserAction(Protocol.NowPlayingListPlay, 5))
+      }
     }
   }
 
@@ -382,7 +386,9 @@ class NowPlayingViewModelTest : KoinTest {
       }
 
       // Verify user action was called with correct parameters
-      coVerify(exactly = 1) { userActionUseCase.perform(UserAction(Protocol.NowPlayingListRemove, 3)) }
+      coVerify(exactly = 1) {
+        userActionUseCase.perform(UserAction(Protocol.NowPlayingListRemove, 3))
+      }
     }
   }
 
@@ -403,7 +409,9 @@ class NowPlayingViewModelTest : KoinTest {
       }
 
       // Verify user action was called
-      coVerify(exactly = 1) { userActionUseCase.perform(UserAction(Protocol.NowPlayingListRemove, 3)) }
+      coVerify(exactly = 1) {
+        userActionUseCase.perform(UserAction(Protocol.NowPlayingListRemove, 3))
+      }
     }
   }
 
@@ -429,7 +437,9 @@ class NowPlayingViewModelTest : KoinTest {
       // Verify repository search was called
       coVerify(exactly = 1) { repository.findPosition(query) }
       // Verify play was called with found position
-      coVerify(exactly = 1) { userActionUseCase.perform(UserAction(Protocol.NowPlayingListPlay, foundPosition)) }
+      coVerify(exactly = 1) {
+        userActionUseCase.perform(UserAction(Protocol.NowPlayingListPlay, foundPosition))
+      }
     }
   }
 

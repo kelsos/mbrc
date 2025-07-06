@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class RatingDialogViewModel(
   private val userActionUseCase: UserActionUseCase,
-  appState: AppStateFlow,
+  appState: AppStateFlow
 ) : ViewModel() {
   private val _rating: MutableStateFlow<Float> = MutableStateFlow(0f)
   val rating: Flow<Float> get() = _rating

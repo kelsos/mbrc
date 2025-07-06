@@ -6,7 +6,7 @@ import com.kelsos.mbrc.R
 
 class BasicSettingsHelper(
   private val preferences: SharedPreferences,
-  private var resources: Resources,
+  private var resources: Resources
 ) {
   val defaultAction: String
     get() {

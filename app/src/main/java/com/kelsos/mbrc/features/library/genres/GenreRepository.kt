@@ -17,14 +17,13 @@ interface GenreRepository : Repository<Genre>
 class GenreRepositoryImpl(
   private val api: ApiBase,
   private val dao: GenreDao,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : GenreRepository {
   override suspend fun count(): Long = withContext(dispatchers.database) { dao.count() }
 
-  override fun getAll(): Flow<PagingData<Genre>> =
-    paged({ dao.getAll() }) {
-      it.toGenre()
-    }
+  override fun getAll(): Flow<PagingData<Genre>> = paged({ dao.getAll() }) {
+    it.toGenre()
+  }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -37,7 +36,7 @@ class GenreRepositoryImpl(
         api.getAllPages(
           Protocol.LibraryBrowseGenres,
           GenreDto::class,
-          progress,
+          progress
         )
 
       allPages
@@ -63,10 +62,9 @@ class GenreRepositoryImpl(
     }
   }
 
-  override fun search(term: String): Flow<PagingData<Genre>> =
-    paged({ dao.search(term) }) {
-      it.toGenre()
-    }
+  override fun search(term: String): Flow<PagingData<Genre>> = paged({ dao.search(term) }) {
+    it.toGenre()
+  }
 
   override suspend fun getById(id: Long): Genre? {
     return withContext(dispatchers.database) {

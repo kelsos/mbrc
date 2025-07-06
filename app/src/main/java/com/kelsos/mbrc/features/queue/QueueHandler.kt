@@ -8,21 +8,17 @@ import com.kelsos.mbrc.features.player.CoverPayload
 import com.kelsos.mbrc.features.settings.BasicSettingsHelper
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.protocol.Protocol
+import java.io.IOException
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.io.IOException
 
 class QueueHandler(
   private val settings: BasicSettingsHelper,
   private val trackRepository: TrackRepository,
   private val service: ApiBase,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) {
-  private suspend fun queue(
-    type: Queue,
-    tracks: List<String>,
-    play: String? = null,
-  ): Boolean {
+  private suspend fun queue(type: Queue, tracks: List<String>, play: String? = null): Boolean {
     return withContext(dispatchers.io) {
       Timber.v("Queueing ${tracks.size} $type")
       try {
@@ -30,7 +26,7 @@ class QueueHandler(
           service.getItem(
             Protocol.NowPlayingQueue,
             QueueResponse::class,
-            QueuePayload(type.action, tracks, play),
+            QueuePayload(type.action, tracks, play)
           )
 
         return@withContext response.code == CoverPayload.SUCCESS
@@ -41,11 +37,7 @@ class QueueHandler(
     }
   }
 
-  suspend fun queueAlbum(
-    type: Queue,
-    album: String,
-    artist: String,
-  ): QueueResult {
+  suspend fun queueAlbum(type: Queue, album: String, artist: String): QueueResult {
     var tracks = 0
     var success = false
     try {
@@ -61,10 +53,7 @@ class QueueHandler(
     return QueueResult(success, tracks)
   }
 
-  suspend fun queueArtist(
-    type: Queue,
-    artist: String,
-  ): QueueResult {
+  suspend fun queueArtist(type: Queue, artist: String): QueueResult {
     var tracks = 0
     var success = false
     try {
@@ -80,10 +69,7 @@ class QueueHandler(
     return QueueResult(success, tracks)
   }
 
-  suspend fun queueGenre(
-    type: Queue,
-    genre: String,
-  ): QueueResult {
+  suspend fun queueGenre(type: Queue, genre: String): QueueResult {
     var tracks = 0
     var success = false
     try {
@@ -109,11 +95,7 @@ class QueueHandler(
     return QueueResult(success, 1)
   }
 
-  suspend fun queueTrack(
-    track: Track,
-    type: Queue,
-    queueAlbum: Boolean = false,
-  ): QueueResult {
+  suspend fun queueTrack(track: Track, type: Queue, queueAlbum: Boolean = false): QueueResult {
     val trackSource: List<String>
     val path: String?
     val success: Boolean
@@ -151,8 +133,6 @@ class QueueHandler(
     return QueueResult(success, tracks)
   }
 
-  suspend fun queueTrack(
-    track: Track,
-    queueAlbum: Boolean = false,
-  ): QueueResult = queueTrack(track, Queue.fromString(settings.defaultAction), queueAlbum)
+  suspend fun queueTrack(track: Track, queueAlbum: Boolean = false): QueueResult =
+    queueTrack(track, Queue.fromString(settings.defaultAction), queueAlbum)
 }

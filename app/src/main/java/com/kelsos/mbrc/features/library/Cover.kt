@@ -10,5 +10,5 @@ data class Cover(
   @Json(name = "cover")
   val cover: String?,
   @Json(name = "hash")
-  val hash: String?,
+  val hash: String?
 )

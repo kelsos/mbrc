@@ -3,19 +3,16 @@ package com.kelsos.mbrc.changelog
 import android.content.Context
 import android.util.Xml
 import androidx.annotation.RawRes
-import org.xmlpull.v1.XmlPullParser
-import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.io.InputStream
+import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserException
 
-class ChangelogParser(
-  private val context: Context,
-) {
+class ChangelogParser(private val context: Context) {
   private val ns: String? = null
 
-  fun changelog(
-    @RawRes resId: Int,
-  ): List<ChangeLogEntry> = parse(context.resources.openRawResource(resId))
+  fun changelog(@RawRes resId: Int): List<ChangeLogEntry> =
+    parse(context.resources.openRawResource(resId))
 
   @Throws(XmlPullParserException::class, IOException::class)
   private fun parse(inputStream: InputStream): List<ChangeLogEntry> {
@@ -63,7 +60,7 @@ class ChangelogParser(
       when (val name = parser.name) {
         TAG_BUG,
         TAG_FEATURE,
-        TAG_REMOVED,
+        TAG_REMOVED
         -> {
           val text = readEntry(parser, name)
           val element = ChangeLogEntry.Entry(text, getType(name))
@@ -77,10 +74,7 @@ class ChangelogParser(
 
   // Processes summary tags in the feed.
   @Throws(IOException::class, XmlPullParserException::class)
-  private fun readEntry(
-    parser: XmlPullParser,
-    name: String,
-  ): String {
+  private fun readEntry(parser: XmlPullParser, name: String): String {
     parser.require(XmlPullParser.START_TAG, ns, name)
     val text =
       readText(parser)
@@ -124,12 +118,11 @@ class ChangelogParser(
     private const val ATTRIBUTE_VERSION = "version"
     private const val ATTRIBUTE_RELEASE = "release"
 
-    fun getType(type: String): EntryType =
-      when (type) {
-        TAG_REMOVED -> EntryType.REMOVED
-        TAG_FEATURE -> EntryType.FEATURE
-        TAG_BUG -> EntryType.BUG
-        else -> throw IllegalArgumentException("$type is not supported")
-      }
+    fun getType(type: String): EntryType = when (type) {
+      TAG_REMOVED -> EntryType.REMOVED
+      TAG_FEATURE -> EntryType.FEATURE
+      TAG_BUG -> EntryType.BUG
+      else -> throw IllegalArgumentException("$type is not supported")
+    }
   }
 }

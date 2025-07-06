@@ -16,7 +16,7 @@ interface TrackDao {
     """
     select * from track
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
-    """,
+    """
   )
   fun getAll(): PagingSource<Int, TrackEntity>
 
@@ -24,7 +24,7 @@ interface TrackDao {
     """
     select * from track
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
-    """,
+    """
   )
   fun all(): List<TrackEntity>
 
@@ -33,7 +33,7 @@ interface TrackDao {
     select * from track
     where title LIKE '%' || :term || '%'
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
-    """,
+    """
   )
   fun search(term: String): PagingSource<Int, TrackEntity>
 
@@ -41,18 +41,15 @@ interface TrackDao {
     """
     select * from track where album = :album and album_artist = :artist
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
-    """,
+    """
   )
-  fun getAlbumTracks(
-    album: String,
-    artist: String,
-  ): PagingSource<Int, TrackEntity>
+  fun getAlbumTracks(album: String, artist: String): PagingSource<Int, TrackEntity>
 
   @Query(
     """
     select * from track where album = '' and album_artist = :artist
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
-    """,
+    """
   )
   fun getNonAlbumTracks(artist: String): PagingSource<Int, TrackEntity>
 
@@ -60,7 +57,7 @@ interface TrackDao {
     """
     select src from track where genre = :genre
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
-    """,
+    """
   )
   fun getGenreTrackPaths(genre: String): List<String>
 
@@ -68,7 +65,7 @@ interface TrackDao {
     """
     select src from track where artist = :artist or album_artist = :artist
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
-    """,
+    """
   )
   fun getArtistTrackPaths(artist: String): List<String>
 
@@ -77,18 +74,15 @@ interface TrackDao {
     select src from track
     where (album_artist = :artist or artist = :artist) and album = :album
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
-    """,
+    """
   )
-  fun getAlbumTrackPaths(
-    album: String,
-    artist: String,
-  ): List<String>
+  fun getAlbumTrackPaths(album: String, artist: String): List<String>
 
   @Query(
     """
     select src from track
     order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
-    """,
+    """
   )
   fun getAllTrackPaths(): List<String>
 

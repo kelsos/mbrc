@@ -20,7 +20,7 @@ import timber.log.Timber
 class RemoteBroadcastReceiver(
   private val settingsManager: SettingsManager,
   private val userActionUseCase: UserActionUseCase,
-  private val volumeModifyUseCase: VolumeModifyUseCase,
+  private val volumeModifyUseCase: VolumeModifyUseCase
 ) : BroadcastReceiver() {
   /**
    * Initialized and installs the IntentFilter listening for the SONG_CHANGED
@@ -29,7 +29,8 @@ class RemoteBroadcastReceiver(
    */
   fun filter(context: Context): IntentFilter {
     val hasPermission =
-      context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+      context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) ==
+        PackageManager.PERMISSION_GRANTED
     val handleCallAction = settingsManager.getCallAction() != CallAction.None
 
     return IntentFilter().apply {
@@ -44,10 +45,7 @@ class RemoteBroadcastReceiver(
     }
   }
 
-  override fun onReceive(
-    context: Context,
-    intent: Intent,
-  ) {
+  override fun onReceive(context: Context, intent: Intent) {
     Timber.v("Incoming %s", intent)
     when (intent.action) {
       TelephonyManager.ACTION_PHONE_STATE_CHANGED -> {

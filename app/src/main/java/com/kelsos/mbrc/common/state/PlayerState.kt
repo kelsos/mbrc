@@ -1,8 +1,6 @@
 package com.kelsos.mbrc.common.state
 
-sealed class PlayerState(
-  val state: String,
-) {
+sealed class PlayerState(val state: String) {
   object Playing : PlayerState(PLAYING)
 
   object Paused : PlayerState(PAUSED)
@@ -17,12 +15,11 @@ sealed class PlayerState(
     const val STOPPED = "stopped"
     const val UNDEFINED = "undefined"
 
-    fun fromString(state: String?): PlayerState =
-      when (state?.lowercase()) {
-        PLAYING -> Playing
-        PAUSED -> Paused
-        STOPPED -> Stopped
-        else -> Undefined
-      }
+    fun fromString(state: String?): PlayerState = when (state?.lowercase()) {
+      PLAYING -> Playing
+      PAUSED -> Paused
+      STOPPED -> Stopped
+      else -> Undefined
+    }
   }
 }

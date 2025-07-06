@@ -31,7 +31,7 @@ interface NowPlayingDao {
       select * from now_playing
       where title like '%' || :term || '%'
       or artist like '%' || :term || '%'
-      """,
+      """
   )
   fun search(term: String): PagingSource<Int, NowPlayingEntity>
 
@@ -40,7 +40,7 @@ interface NowPlayingDao {
       select * from now_playing
       where title like '%' || :term || '%'
       or artist like '%' || :term || '%'
-      """,
+      """
   )
   fun simpleSearch(term: String): List<NowPlayingEntity>
 
@@ -67,40 +67,28 @@ interface NowPlayingDao {
   fun findIdByPosition(position: Int): Long
 
   @Query("update now_playing set position = :position where id = :id")
-  fun updatePosition(
-    id: Long,
-    position: Int,
-  )
+  fun updatePosition(id: Long, position: Int)
 
   @Query(
     """
     update now_playing set position = position - 1
     where position > :from
     and position <= :to
-    """,
+    """
   )
-  fun updateMovedDown(
-    from: Int,
-    to: Int,
-  ): Int
+  fun updateMovedDown(from: Int, to: Int): Int
 
   @Query(
     """
     update now_playing set position = position + 1
     where position < :from
     and position >= :to
-    """,
+    """
   )
-  fun updateMovedUp(
-    from: Int,
-    to: Int,
-  ): Int
+  fun updateMovedUp(from: Int, to: Int): Int
 
   @Transaction
-  fun move(
-    from: Int,
-    to: Int,
-  ) {
+  fun move(from: Int, to: Int) {
     val fromId = findIdByPosition(from)
     if (from < to) {
       updateMovedDown(from, to)
@@ -116,7 +104,7 @@ interface NowPlayingDao {
         select position from now_playing
         where title like '%' || :query || '%'
         or artist like '%' || :query || '%'
-        """,
+        """
   )
   fun findPositionByQuery(query: String): Int?
 

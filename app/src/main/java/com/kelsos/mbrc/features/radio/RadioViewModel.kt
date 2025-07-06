@@ -8,10 +8,10 @@ import com.kelsos.mbrc.common.mvvm.UiMessageBase
 import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.features.queue.QueueHandler
+import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.IOException
 
 interface RadioActions {
   fun play(path: String)
@@ -35,7 +35,7 @@ class RadioViewModel(
   private val radioRepository: RadioRepository,
   private val queueUseCase: QueueHandler,
   private val dispatchers: AppCoroutineDispatchers,
-  private val connectionStateFlow: ConnectionStateFlow,
+  private val connectionStateFlow: ConnectionStateFlow
 ) : BaseViewModel<RadioUiMessages>() {
   val actions: RadioActions =
     object : RadioActions {

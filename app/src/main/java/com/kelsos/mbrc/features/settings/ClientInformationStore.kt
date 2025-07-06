@@ -8,9 +8,8 @@ fun interface ClientInformationStore {
   suspend fun getClientId(): String
 }
 
-class ClientInformationStoreImpl(
-  private val sharedPreference: SharedPreferences,
-) : ClientInformationStore {
+class ClientInformationStoreImpl(private val sharedPreference: SharedPreferences) :
+  ClientInformationStore {
   override suspend fun getClientId(): String {
     val uuid = sharedPreference.getString(UUID_KEY, "").orEmpty()
 

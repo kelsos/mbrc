@@ -25,16 +25,15 @@ interface AlbumRepository : Repository<Album> {
 class AlbumRepositoryImpl(
   private val dao: AlbumDao,
   private val api: ApiBase,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : AlbumRepository {
   override suspend fun count(): Long = withContext(dispatchers.database) { dao.count() }
 
-  override fun getAlbumsByArtist(artist: String): Flow<PagingData<Album>> =
-    paged({
-      dao.getAlbumsByArtist(artist)
-    }) {
-      it.toAlbum()
-    }
+  override fun getAlbumsByArtist(artist: String): Flow<PagingData<Album>> = paged({
+    dao.getAlbumsByArtist(artist)
+  }) {
+    it.toAlbum()
+  }
 
   override fun getAll(): Flow<PagingData<Album>> = paged({ dao.getAll() }) { it.toAlbum() }
 
@@ -50,7 +49,7 @@ class AlbumRepositoryImpl(
         api.getAllPages(
           Protocol.LibraryBrowseAlbums,
           AlbumDto::class,
-          progress,
+          progress
         )
 
       allPages
@@ -68,7 +67,7 @@ class AlbumRepositoryImpl(
                 dto.toEntity().copy(
                   dateAdded = added,
                   id = cachedAlbum.id,
-                  cover = cachedAlbum.cover,
+                  cover = cachedAlbum.cover
                 )
               } else {
                 dto.toEntity().copy(dateAdded = added)
@@ -81,7 +80,9 @@ class AlbumRepositoryImpl(
     }
   }
 
-  override fun search(term: String): Flow<PagingData<Album>> = paged({ dao.search(term) }) { it.toAlbum() }
+  override fun search(term: String): Flow<PagingData<Album>> = paged({
+    dao.search(term)
+  }) { it.toAlbum() }
 
   override suspend fun updateCovers(updated: List<AlbumCover>) {
     dao.updateCovers(updated)

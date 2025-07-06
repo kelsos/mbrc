@@ -19,13 +19,13 @@ class WidgetNormal : WidgetBase() {
       imageSize = R.dimen.widget_normal_height,
       imageId = R.id.widget_normal_image,
       playButtonId = R.id.widget_normal_play,
-      widgetClass = WidgetNormal::class,
+      widgetClass = WidgetNormal::class
     )
 
   override fun setupActionIntents(
     views: RemoteViews,
     pendingIntent: PendingIntent,
-    context: Context,
+    context: Context
   ) {
     Timber.v("Setting up action intents for $type widget")
     views.setOnClickPendingIntent(R.id.widget_normal_image, pendingIntent)
@@ -33,14 +33,11 @@ class WidgetNormal : WidgetBase() {
     views.setOnClickPendingIntent(R.id.widget_normal_next, getPendingIntent(Next, context))
     views.setOnClickPendingIntent(
       R.id.widget_normal_previous,
-      getPendingIntent(RemoteIntentCode.Previous, context),
+      getPendingIntent(RemoteIntentCode.Previous, context)
     )
   }
 
-  override fun setupTrackInfo(
-    views: RemoteViews,
-    info: PlayingTrack,
-  ) {
+  override fun setupTrackInfo(views: RemoteViews, info: PlayingTrack) {
     views.setTextViewText(R.id.widget_normal_line_one, info.title)
     views.setTextViewText(R.id.widget_normal_line_two, info.artist)
     views.setTextViewText(R.id.widget_normal_line_three, info.album)

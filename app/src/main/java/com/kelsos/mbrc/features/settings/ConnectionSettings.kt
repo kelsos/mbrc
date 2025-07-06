@@ -9,23 +9,22 @@ data class ConnectionSettings(
   val port: Int,
   val name: String,
   val isDefault: Boolean,
-  val id: Long,
+  val id: Long
 ) {
   companion object {
-    fun default(): ConnectionSettings =
-      ConnectionSettings(
-        address = "",
-        port = 3000,
-        name = "",
-        isDefault = false,
-        id = 0,
-      )
+    fun default(): ConnectionSettings = ConnectionSettings(
+      address = "",
+      port = 3000,
+      name = "",
+      isDefault = false,
+      id = 0
+    )
   }
 }
 
 @Entity(
   tableName = "settings",
-  indices = [],
+  indices = []
 )
 data class ConnectionSettingsEntity(
   @ColumnInfo(name = "address")
@@ -35,5 +34,5 @@ data class ConnectionSettingsEntity(
   @ColumnInfo(name = "name")
   val name: String? = null,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null,
+  val id: Long? = null
 )

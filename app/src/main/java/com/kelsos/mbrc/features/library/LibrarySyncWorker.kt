@@ -29,7 +29,7 @@ data class LibrarySyncProgress(
   val category: LibraryMediaType,
   val current: Int,
   val total: Int,
-  val running: Boolean,
+  val running: Boolean
 )
 
 interface LibrarySyncWorkHandler {
@@ -40,12 +40,14 @@ interface LibrarySyncWorkHandler {
   fun syncProgress(): Flow<LibrarySyncProgress>
 }
 
-class LibrarySyncWorkHandlerImpl(
-  private val workManager: WorkManager,
-) : LibrarySyncWorkHandler {
+class LibrarySyncWorkHandlerImpl(private val workManager: WorkManager) : LibrarySyncWorkHandler {
   override fun sync(auto: Boolean) {
     val workRequest = LibrarySyncWorker.createWorkRequest(auto)
-    workManager.enqueueUniqueWork(LibrarySyncWorker.SYNC_WORK_TAG, ExistingWorkPolicy.REPLACE, workRequest)
+    workManager.enqueueUniqueWork(
+      LibrarySyncWorker.SYNC_WORK_TAG,
+      ExistingWorkPolicy.REPLACE,
+      workRequest
+    )
   }
 
   override fun syncResults(): Flow<SyncResult> {
@@ -76,7 +78,9 @@ class LibrarySyncWorkHandlerImpl(
   }
 
   override fun syncProgress(): Flow<LibrarySyncProgress> {
-    return workManager.getWorkInfosForUniqueWorkFlow(LibrarySyncWorker.SYNC_WORK_TAG).map { progress ->
+    return workManager.getWorkInfosForUniqueWorkFlow(
+      LibrarySyncWorker.SYNC_WORK_TAG
+    ).map { progress ->
       if (progress.isEmpty()) {
         return@map LibrarySyncProgress(LibraryMediaType.Genres, 0, 0, false)
       }
@@ -86,7 +90,7 @@ class LibrarySyncWorkHandlerImpl(
         LibraryMediaType.fromCode(workProgress.getInt(CATEGORY, LibraryMediaType.Genres.code)),
         workProgress.getInt(CURRENT, 0),
         workProgress.getInt(TOTAL, 0),
-        workInfo.state === WorkInfo.State.RUNNING,
+        workInfo.state === WorkInfo.State.RUNNING
       )
     }
   }
@@ -96,7 +100,7 @@ class LibrarySyncWorker(
   context: Context,
   params: WorkerParameters,
   private val librarySyncUseCase: LibrarySyncUseCase,
-  private val notificationManager: NotificationManager,
+  private val notificationManager: NotificationManager
 ) : CoroutineWorker(context, params) {
   private fun createSyncNotificationChannel() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -105,11 +109,12 @@ class LibrarySyncWorker(
       NotificationChannel(
         NOTIFICATION_CHANNEL_ID,
         applicationContext.getString(R.string.sync_notification__channel_name),
-        NotificationManager.IMPORTANCE_DEFAULT,
+        NotificationManager.IMPORTANCE_DEFAULT
       )
 
     channel.apply {
-      this.description = applicationContext.getString(R.string.sync_notification__channel_description)
+      this.description =
+        applicationContext.getString(R.string.sync_notification__channel_description)
       enableLights(false)
       enableVibration(false)
       setSound(null, null)
@@ -141,11 +146,7 @@ class LibrarySyncWorker(
     }
   }
 
-  private fun updateProgress(
-    category: LibraryMediaType,
-    current: Int,
-    total: Int,
-  ) {
+  private fun updateProgress(category: LibraryMediaType, current: Int, total: Int) {
     val title = applicationContext.getString(R.string.notification__sync_title)
     val contextText = applicationContext.getString(category.nameRes, current, total)
     val builder =
@@ -172,8 +173,8 @@ class LibrarySyncWorker(
           workDataOf(
             CURRENT to current,
             TOTAL to total,
-            CATEGORY to category.code,
-          ),
+            CATEGORY to category.code
+          )
         )
       }
 

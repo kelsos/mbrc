@@ -3,17 +3,17 @@ package com.kelsos.mbrc.features.output
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
+import java.net.SocketException
+import java.net.SocketTimeoutException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import okio.IOException
 import timber.log.Timber
-import java.net.SocketException
-import java.net.SocketTimeoutException
 
 class OutputSelectionViewModel(
   private val outputApi: OutputApi,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : ViewModel() {
   private val backingOutputs = MutableSharedFlow<OutputResponse>()
   private val backingEvents = MutableSharedFlow<OutputSelectionResult>()

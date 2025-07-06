@@ -8,5 +8,5 @@ class GenericSocketMessage<T>(
   @Json(name = "context")
   val context: String,
   @Json(name = "data")
-  val data: T,
+  val data: T
 ) where T : Any

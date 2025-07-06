@@ -19,7 +19,7 @@ class BrowseAlbumViewModel(
   queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
   connectionStateFlow: ConnectionStateFlow,
-  searchModel: LibrarySearchModel,
+  searchModel: LibrarySearchModel
 ) : BaseAlbumViewModel(queueHandler, settingsHelper, connectionStateFlow) {
   override val albums: Flow<PagingData<Album>> =
     searchModel.term

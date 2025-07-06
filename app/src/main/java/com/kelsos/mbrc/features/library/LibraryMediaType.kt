@@ -3,10 +3,7 @@ package com.kelsos.mbrc.features.library
 import androidx.annotation.StringRes
 import com.kelsos.mbrc.R
 
-sealed class LibraryMediaType(
-  val code: Int,
-  @StringRes val nameRes: Int = 0,
-) {
+sealed class LibraryMediaType(val code: Int, @StringRes val nameRes: Int = 0) {
   object Genres : LibraryMediaType(GENRES, R.string.media__genres)
 
   object Artists : LibraryMediaType(ARTISTS, R.string.media__artists)
@@ -27,15 +24,14 @@ sealed class LibraryMediaType(
     const val PLAYLISTS = 5
     const val COVERS = 6
 
-    fun fromCode(code: Int): LibraryMediaType =
-      when (code) {
-        GENRES -> Genres
-        ARTISTS -> Artists
-        ALBUMS -> Albums
-        TRACKS -> Tracks
-        PLAYLISTS -> Playlists
-        COVERS -> Covers
-        else -> throw IllegalArgumentException("Unknown media type code: $code")
-      }
+    fun fromCode(code: Int): LibraryMediaType = when (code) {
+      GENRES -> Genres
+      ARTISTS -> Artists
+      ALBUMS -> Albums
+      TRACKS -> Tracks
+      PLAYLISTS -> Playlists
+      COVERS -> Covers
+      else -> throw IllegalArgumentException("Unknown media type code: $code")
+    }
   }
 }

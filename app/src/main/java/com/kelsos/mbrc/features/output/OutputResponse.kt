@@ -8,5 +8,5 @@ data class OutputResponse(
   @Json(name = "devices")
   val devices: List<String> = emptyList(),
   @Json(name = "active")
-  val active: String = "",
+  val active: String = ""
 )

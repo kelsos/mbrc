@@ -154,6 +154,7 @@ import com.kelsos.mbrc.platform.mediasession.NotificationActionManager
 import com.kelsos.mbrc.platform.mediasession.NotificationBuilder
 import com.kelsos.mbrc.platform.mediasession.NotificationChannelManager
 import com.squareup.moshi.Moshi
+import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
@@ -165,17 +166,19 @@ import org.koin.core.module.dsl.scopedOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
-import java.util.concurrent.Executors
 
-private fun createDispatcher(
-  name: String,
-  threads: Int = 1,
-): ExecutorCoroutineDispatcher {
+private fun createDispatcher(name: String, threads: Int = 1): ExecutorCoroutineDispatcher {
   var threadId = 1
 
   return Executors
     .newFixedThreadPool(threads) { runnable ->
-      val threadName = if (threads == 1) "${name}Dispatcher" else "${name}Dispatcher-worker-${threadId++}"
+      val threadName = if (threads ==
+        1
+      ) {
+        "${name}Dispatcher"
+      } else {
+        "${name}Dispatcher-worker-${threadId++}"
+      }
       Thread(runnable, threadName)
     }.asCoroutineDispatcher()
 }

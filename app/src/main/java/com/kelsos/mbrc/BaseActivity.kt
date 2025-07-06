@@ -49,9 +49,8 @@ import timber.log.Timber
 
 private const val NAVIGATION_DELAY = 250L
 
-abstract class BaseActivity(
-  @LayoutRes val contentLayoutId: Int,
-) : ScopeActivity(contentLayoutId),
+abstract class BaseActivity(@LayoutRes val contentLayoutId: Int) :
+  ScopeActivity(contentLayoutId),
   NavigationView.OnNavigationItemSelectedListener {
   private val serviceChecker: ServiceChecker by inject()
   private val connectionUseCase: ClientConnectionUseCase by inject()
@@ -128,15 +127,11 @@ abstract class BaseActivity(
     toggle.syncState()
   }
 
-  override fun onKeyUp(
-    keyCode: Int,
-    event: KeyEvent,
-  ): Boolean =
-    when (keyCode) {
-      KeyEvent.KEYCODE_VOLUME_UP -> true
-      KeyEvent.KEYCODE_VOLUME_DOWN -> true
-      else -> super.onKeyUp(keyCode, event)
-    }
+  override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean = when (keyCode) {
+    KeyEvent.KEYCODE_VOLUME_UP -> true
+    KeyEvent.KEYCODE_VOLUME_DOWN -> true
+    else -> super.onKeyUp(keyCode, event)
+  }
 
   private fun updateConnectionState(event: ConnectionStatus) {
     Timber.v("Handling new connection status %s", event.status)
@@ -164,10 +159,7 @@ abstract class BaseActivity(
     connect.setColorFilter(ContextCompat.getColor(this, colorId))
   }
 
-  override fun onKeyDown(
-    keyCode: Int,
-    event: KeyEvent,
-  ): Boolean {
+  override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
     val result =
       when (keyCode) {
         KeyEvent.KEYCODE_VOLUME_UP -> {
@@ -278,12 +270,12 @@ abstract class BaseActivity(
       overrideActivityTransition(
         Activity.OVERRIDE_TRANSITION_OPEN,
         R.anim.activity_enter,
-        R.anim.activity_exit,
+        R.anim.activity_exit
       )
       overrideActivityTransition(
         Activity.OVERRIDE_TRANSITION_CLOSE,
         R.anim.activity_pop_enter,
-        R.anim.activity_pop_exit,
+        R.anim.activity_pop_exit
       )
     } else {
       // Legacy API with enhanced animations
@@ -334,7 +326,7 @@ abstract class BaseActivity(
       Snackbar.make(
         navigationView,
         R.string.main__dialog_plugin_outdated_message,
-        Snackbar.LENGTH_INDEFINITE,
+        Snackbar.LENGTH_INDEFINITE
       )
     snackBar.setAction(android.R.string.ok) { snackBar.dismiss() }
     snackBar.show()
@@ -346,7 +338,7 @@ abstract class BaseActivity(
       Snackbar.make(
         navigationView,
         message,
-        Snackbar.LENGTH_LONG,
+        Snackbar.LENGTH_LONG
       )
 
     // Add retry action for retryable errors
@@ -361,39 +353,37 @@ abstract class BaseActivity(
     snackBar.show()
   }
 
-  private fun getConnectionErrorMessage(error: UiMessage.ConnectionError): String =
-    when (error) {
-      is UiMessage.ConnectionError.ServerNotFound ->
-        getString(R.string.connection_error_server_not_found)
-      is UiMessage.ConnectionError.ConnectionTimeout ->
-        getString(R.string.connection_error_timeout)
-      is UiMessage.ConnectionError.ConnectionRefused ->
-        getString(R.string.connection_error_refused)
-      is UiMessage.ConnectionError.NetworkUnavailable ->
-        getString(R.string.connection_error_network_unavailable)
-      is UiMessage.ConnectionError.AuthenticationFailed ->
-        getString(R.string.connection_error_authentication_failed)
-      is UiMessage.ConnectionError.UnsupportedProtocolVersion ->
-        getString(R.string.connection_error_unsupported_protocol)
-      is UiMessage.ConnectionError.AllRetriesExhausted ->
-        getString(R.string.connection_error_all_retries_exhausted)
-      is UiMessage.ConnectionError.UnknownConnectionError ->
-        getString(R.string.connection_error_unknown, error.message)
-    }
+  private fun getConnectionErrorMessage(error: UiMessage.ConnectionError): String = when (error) {
+    is UiMessage.ConnectionError.ServerNotFound ->
+      getString(R.string.connection_error_server_not_found)
+    is UiMessage.ConnectionError.ConnectionTimeout ->
+      getString(R.string.connection_error_timeout)
+    is UiMessage.ConnectionError.ConnectionRefused ->
+      getString(R.string.connection_error_refused)
+    is UiMessage.ConnectionError.NetworkUnavailable ->
+      getString(R.string.connection_error_network_unavailable)
+    is UiMessage.ConnectionError.AuthenticationFailed ->
+      getString(R.string.connection_error_authentication_failed)
+    is UiMessage.ConnectionError.UnsupportedProtocolVersion ->
+      getString(R.string.connection_error_unsupported_protocol)
+    is UiMessage.ConnectionError.AllRetriesExhausted ->
+      getString(R.string.connection_error_all_retries_exhausted)
+    is UiMessage.ConnectionError.UnknownConnectionError ->
+      getString(R.string.connection_error_unknown, error.message)
+  }
 
-  private fun isRetryableError(error: UiMessage.ConnectionError): Boolean =
-    when (error) {
-      is UiMessage.ConnectionError.ServerNotFound,
-      is UiMessage.ConnectionError.ConnectionTimeout,
-      is UiMessage.ConnectionError.NetworkUnavailable,
-      is UiMessage.ConnectionError.UnknownConnectionError,
-      -> true
-      is UiMessage.ConnectionError.ConnectionRefused,
-      is UiMessage.ConnectionError.AuthenticationFailed,
-      is UiMessage.ConnectionError.UnsupportedProtocolVersion,
-      is UiMessage.ConnectionError.AllRetriesExhausted,
-      -> false
-    }
+  private fun isRetryableError(error: UiMessage.ConnectionError): Boolean = when (error) {
+    is UiMessage.ConnectionError.ServerNotFound,
+    is UiMessage.ConnectionError.ConnectionTimeout,
+    is UiMessage.ConnectionError.NetworkUnavailable,
+    is UiMessage.ConnectionError.UnknownConnectionError
+    -> true
+    is UiMessage.ConnectionError.ConnectionRefused,
+    is UiMessage.ConnectionError.AuthenticationFailed,
+    is UiMessage.ConnectionError.UnsupportedProtocolVersion,
+    is UiMessage.ConnectionError.AllRetriesExhausted
+    -> false
+  }
 
   private fun setupBackButtonHandler() {
     onBackPressedDispatcher.addCallback(
@@ -406,7 +396,7 @@ abstract class BaseActivity(
             finish()
           }
         }
-      },
+      }
     )
   }
 

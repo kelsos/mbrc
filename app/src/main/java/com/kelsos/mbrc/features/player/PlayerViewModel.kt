@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 class PlayerViewModel(
   settingsManager: SettingsManager,
   appState: AppStateFlow,
-  private val userActionUseCase: UserActionUseCase,
+  private val userActionUseCase: UserActionUseCase
 ) : BaseViewModel<PlayerUiMessage>() {
   private val progressRelay: MutableSharedFlow<Int> = MutableSharedFlow()
   private val volumeRelay: MutableSharedFlow<Int> = MutableSharedFlow()
@@ -33,13 +33,13 @@ class PlayerViewModel(
       appState.playingTrack,
       appState.playerStatus,
       appState.playingTrackRating,
-      appState.playingPosition,
+      appState.playingPosition
     ) { playingTrack, playerStatus, trackRating, playingPosition ->
       PlayerStateModel(
         playingTrack = playingTrack,
         playerStatus = playerStatus,
         trackRating = trackRating,
-        playingPosition = playingPosition,
+        playingPosition = playingPosition
       )
     }
 
@@ -107,5 +107,5 @@ data class PlayerStateModel(
   val playingTrack: PlayingTrack = PlayingTrack(),
   val playingPosition: PlayingPosition = PlayingPosition(),
   val playerStatus: PlayerStatusModel = PlayerStatusModel(),
-  val trackRating: TrackRating = TrackRating(),
+  val trackRating: TrackRating = TrackRating()
 )

@@ -31,10 +31,7 @@ class TrackEntryAdapter : PagingDataAdapter<Track, TrackEntryAdapter.ViewHolder>
     this.listener = listener
   }
 
-  override fun onCreateViewHolder(
-    parent: ViewGroup,
-    viewType: Int,
-  ): ViewHolder {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
     val inflater: LayoutInflater = LayoutInflater.from(parent.context)
     val view = inflater.inflate(R.layout.item_album, parent, false)
     val holder = ViewHolder(view)
@@ -55,10 +52,7 @@ class TrackEntryAdapter : PagingDataAdapter<Track, TrackEntryAdapter.ViewHolder>
     return holder
   }
 
-  override fun onBindViewHolder(
-    holder: ViewHolder,
-    position: Int,
-  ) {
+  override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     val cache = File(holder.itemView.context.cacheDir, "covers")
     getItem(position)?.let { entry ->
       holder.title.text = entry.title
@@ -71,16 +65,14 @@ class TrackEntryAdapter : PagingDataAdapter<Track, TrackEntryAdapter.ViewHolder>
         error(R.drawable.ic_image_no_cover)
         size(
           holder.itemView.context.resources
-            .getDimensionPixelSize(R.dimen.list_album_size),
+            .getDimensionPixelSize(R.dimen.list_album_size)
         )
         scale(Scale.FILL)
       }
     }
   }
 
-  class ViewHolder(
-    itemView: View,
-  ) : RecyclerView.ViewHolder(itemView) {
+  class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val artist: TextView = itemView.findViewById(R.id.line_two)
     val title: TextView = itemView.findViewById(R.id.line_one)
     val indicator: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
@@ -91,15 +83,11 @@ class TrackEntryAdapter : PagingDataAdapter<Track, TrackEntryAdapter.ViewHolder>
   companion object {
     private val DIFF_CALLBACK =
       object : androidx.recyclerview.widget.DiffUtil.ItemCallback<Track>() {
-        override fun areItemsTheSame(
-          oldItem: Track,
-          newItem: Track,
-        ): Boolean = oldItem.id == newItem.id
+        override fun areItemsTheSame(oldItem: Track, newItem: Track): Boolean =
+          oldItem.id == newItem.id
 
-        override fun areContentsTheSame(
-          oldItem: Track,
-          newItem: Track,
-        ): Boolean = oldItem == newItem
+        override fun areContentsTheSame(oldItem: Track, newItem: Track): Boolean =
+          oldItem == newItem
       }
   }
 }

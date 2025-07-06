@@ -4,12 +4,11 @@ import android.graphics.Canvas
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 
-class SimpleItemTouchHelper(
-  private val adapter: ItemTouchHelperAdapter,
-) : ItemTouchHelper.Callback() {
+class SimpleItemTouchHelper(private val adapter: ItemTouchHelperAdapter) :
+  ItemTouchHelper.Callback() {
   override fun getMovementFlags(
     recyclerView: RecyclerView,
-    viewHolder: RecyclerView.ViewHolder,
+    viewHolder: RecyclerView.ViewHolder
   ): Int {
     val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
     val swipeFlags = ItemTouchHelper.END
@@ -19,7 +18,7 @@ class SimpleItemTouchHelper(
   override fun onMove(
     recyclerView: RecyclerView,
     viewHolder: RecyclerView.ViewHolder,
-    target: RecyclerView.ViewHolder,
+    target: RecyclerView.ViewHolder
   ): Boolean {
     if (viewHolder.itemViewType != target.itemViewType) {
       return false
@@ -30,10 +29,7 @@ class SimpleItemTouchHelper(
     return true
   }
 
-  override fun onSwiped(
-    viewHolder: RecyclerView.ViewHolder,
-    direction: Int,
-  ) {
+  override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
     adapter.onItemDismiss(viewHolder.bindingAdapterPosition)
   }
 
@@ -48,7 +44,7 @@ class SimpleItemTouchHelper(
     dX: Float,
     dY: Float,
     actionState: Int,
-    isCurrentlyActive: Boolean,
+    isCurrentlyActive: Boolean
   ) {
     if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
       // Fade out the view as it is swiped out of the parent's bounds
@@ -60,10 +56,7 @@ class SimpleItemTouchHelper(
     }
   }
 
-  override fun onSelectedChanged(
-    viewHolder: RecyclerView.ViewHolder?,
-    actionState: Int,
-  ) {
+  override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
     if (actionState != ItemTouchHelper.ACTION_STATE_IDLE && viewHolder is TouchHelperViewHolder) {
       viewHolder.onItemSelected()
     }
@@ -71,10 +64,7 @@ class SimpleItemTouchHelper(
     super.onSelectedChanged(viewHolder, actionState)
   }
 
-  override fun clearView(
-    recyclerView: RecyclerView,
-    viewHolder: RecyclerView.ViewHolder,
-  ) {
+  override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
     super.clearView(recyclerView, viewHolder)
     viewHolder.itemView.alpha = ALPHA_FULL
 

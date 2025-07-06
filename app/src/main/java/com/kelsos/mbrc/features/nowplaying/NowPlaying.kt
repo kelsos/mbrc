@@ -11,7 +11,7 @@ data class NowPlaying(
   val artist: String,
   val path: String,
   val position: Int,
-  val id: Long,
+  val id: Long
 )
 
 @JsonClass(generateAdapter = true)
@@ -23,12 +23,12 @@ data class NowPlayingDto(
   @Json(name = "path")
   val path: String = "",
   @Json(name = "position")
-  val position: Int = 0,
+  val position: Int = 0
 )
 
 @Entity(
   tableName = "now_playing",
-  indices = [],
+  indices = []
 )
 data class NowPlayingEntity(
   @ColumnInfo(name = "title")
@@ -42,11 +42,7 @@ data class NowPlayingEntity(
   @ColumnInfo(name = "date_added")
   val dateAdded: Long? = null,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null,
+  val id: Long? = null
 )
 
-data class CachedNowPlaying(
-  val id: Long,
-  val path: String,
-  val position: Int,
-)
+data class CachedNowPlaying(val id: Long, val path: String, val position: Int)

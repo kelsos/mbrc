@@ -10,18 +10,18 @@ import com.google.protobuf.InvalidProtocolBufferException
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.store.Store
 import com.kelsos.mbrc.store.Track
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
 
 internal val Context.cacheDataStore: DataStore<Store> by dataStore(
   fileName = "cache_store.db",
-  serializer = PlayerStateSerializer,
+  serializer = PlayerStateSerializer
 )
 
 interface PlayingTrackCache {
@@ -32,7 +32,7 @@ interface PlayingTrackCache {
 
 class PlayingTrackCacheImpl(
   private val context: Application,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : PlayingTrackCache {
   private val storeFlow: Flow<Store> =
     context.cacheDataStore.data
@@ -73,20 +73,19 @@ class PlayingTrackCacheImpl(
     }
   }
 
-  override suspend fun restoreInfo(): PlayingTrack =
-    withContext(dispatchers.io) {
-      val track = storeFlow.first().track
-      val cover = storeFlow.first().cover
+  override suspend fun restoreInfo(): PlayingTrack = withContext(dispatchers.io) {
+    val track = storeFlow.first().track
+    val cover = storeFlow.first().cover
 
-      return@withContext PlayingTrack(
-        artist = track.artist,
-        title = track.title,
-        album = track.album,
-        year = track.year,
-        path = track.path,
-        coverUrl = cover,
-      )
-    }
+    return@withContext PlayingTrack(
+      artist = track.artist,
+      title = track.title,
+      album = track.album,
+      year = track.year,
+      path = track.path,
+      coverUrl = cover
+    )
+  }
 }
 
 object PlayerStateSerializer : Serializer<Store> {
@@ -98,10 +97,7 @@ object PlayerStateSerializer : Serializer<Store> {
     }
   }
 
-  override suspend fun writeTo(
-    t: Store,
-    output: OutputStream,
-  ) {
+  override suspend fun writeTo(t: Store, output: OutputStream) {
     t.writeTo(output)
   }
 

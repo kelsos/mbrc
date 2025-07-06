@@ -2,16 +2,14 @@ package com.kelsos.mbrc.logging
 
 import android.content.Context
 import android.util.Log
-import timber.log.Timber
 import java.io.File
 import java.util.logging.FileHandler
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.SimpleFormatter
+import timber.log.Timber
 
-class FileLoggingTree(
-  context: Context,
-) : Timber.DebugTree() {
+class FileLoggingTree(context: Context) : Timber.DebugTree() {
   private val handler: FileHandler
   private val logger: Logger = Logger.getLogger(LOGGER_NAME)
 
@@ -32,12 +30,7 @@ class FileLoggingTree(
     logger.addHandler(handler)
   }
 
-  override fun log(
-    priority: Int,
-    tag: String?,
-    message: String,
-    t: Throwable?,
-  ) {
+  override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
     val logMessage = "[$tag]\t$message"
 
     when (priority) {

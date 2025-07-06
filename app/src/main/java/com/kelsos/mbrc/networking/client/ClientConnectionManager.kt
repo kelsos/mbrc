@@ -9,6 +9,12 @@ import com.kelsos.mbrc.networking.SocketActivityChecker
 import com.kelsos.mbrc.networking.connections.toSocketAddress
 import com.kelsos.mbrc.networking.discovery.DiscoveryStop
 import com.squareup.moshi.Moshi
+import java.io.IOException
+import java.net.Socket
+import java.net.SocketAddress
+import java.net.SocketException
+import java.net.SocketTimeoutException
+import kotlin.math.pow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
@@ -20,12 +26,6 @@ import okio.buffer
 import okio.sink
 import okio.source
 import timber.log.Timber
-import java.io.IOException
-import java.net.Socket
-import java.net.SocketAddress
-import java.net.SocketException
-import java.net.SocketTimeoutException
-import kotlin.math.pow
 
 interface ClientConnectionManager {
   fun start()
@@ -34,28 +34,20 @@ interface ClientConnectionManager {
 }
 
 sealed class NetworkError : Exception() {
-  data class ConnectionTimeout(
-    override val cause: Throwable?,
-  ) : NetworkError()
+  data class ConnectionTimeout(override val cause: Throwable?) : NetworkError()
 
-  data class ConnectionRefused(
-    override val cause: Throwable?,
-  ) : NetworkError()
+  data class ConnectionRefused(override val cause: Throwable?) : NetworkError()
 
-  data class SocketError(
-    override val cause: Throwable,
-  ) : NetworkError()
+  data class SocketError(override val cause: Throwable) : NetworkError()
 
-  data class UnknownError(
-    override val cause: Throwable,
-  ) : NetworkError()
+  data class UnknownError(override val cause: Throwable) : NetworkError()
 }
 
 data class ConnectionConfig(
   val maxRetries: Int = 3,
   val initialDelay: Long = 1000L,
   val maxDelay: Long = 30000L,
-  val backoffMultiplier: Double = 2.0,
+  val backoffMultiplier: Double = 2.0
 )
 
 class ClientConnectionManagerImpl(
@@ -65,7 +57,7 @@ class ClientConnectionManagerImpl(
   private val connectionRepository: ConnectionRepository,
   private val connectionState: ConnectionStatePublisher,
   private val dispatchers: AppCoroutineDispatchers,
-  private val uiMessageQueue: UiMessageQueue,
+  private val uiMessageQueue: UiMessageQueue
 ) : ScopeBase(dispatchers.io),
   ClientConnectionManager {
   private var connection: Connection? = null
@@ -94,10 +86,13 @@ class ClientConnectionManagerImpl(
       if (attempt > 0) {
         val delayMs =
           minOf(
-            connectionConfig.initialDelay * connectionConfig.backoffMultiplier.pow(attempt - 1).toLong(),
-            connectionConfig.maxDelay,
+            connectionConfig.initialDelay *
+              connectionConfig.backoffMultiplier.pow(attempt - 1).toLong(),
+            connectionConfig.maxDelay
           )
-        Timber.v("Retrying connection in ${delayMs}ms (attempt ${attempt + 1}/${connectionConfig.maxRetries})")
+        Timber.v(
+          "Retrying connection in ${delayMs}ms (attempt ${attempt + 1}/${connectionConfig.maxRetries})"
+        )
         delay(delayMs)
       }
 
@@ -117,23 +112,22 @@ class ClientConnectionManagerImpl(
             handleConnectionFailure(networkError)
             uiMessageQueue.messages.emit(UiMessage.ConnectionError.AllRetriesExhausted)
           }
-        },
+        }
       )
     }
   }
 
-  private fun classifyNetworkError(exception: Throwable): NetworkError =
-    when (exception) {
-      is SocketTimeoutException -> NetworkError.ConnectionTimeout(exception)
-      is SocketException ->
-        if (exception.message?.contains("refused") == true) {
-          NetworkError.ConnectionRefused(exception)
-        } else {
-          NetworkError.SocketError(exception)
-        }
-      is IOException -> NetworkError.SocketError(exception)
-      else -> NetworkError.UnknownError(exception)
-    }
+  private fun classifyNetworkError(exception: Throwable): NetworkError = when (exception) {
+    is SocketTimeoutException -> NetworkError.ConnectionTimeout(exception)
+    is SocketException ->
+      if (exception.message?.contains("refused") == true) {
+        NetworkError.ConnectionRefused(exception)
+      } else {
+        NetworkError.SocketError(exception)
+      }
+    is IOException -> NetworkError.SocketError(exception)
+    else -> NetworkError.UnknownError(exception)
+  }
 
   private suspend fun handleConnectionFailure(networkError: NetworkError) {
     connectionState.updateConnection(ConnectionStatus.Offline)
@@ -151,34 +145,36 @@ class ClientConnectionManagerImpl(
               UiMessage.ConnectionError.ServerNotFound
             else ->
               UiMessage.ConnectionError.UnknownConnectionError(
-                message ?: "Socket connection failed",
+                message ?: "Socket connection failed"
               )
           }
         }
         is NetworkError.UnknownError ->
           UiMessage.ConnectionError.UnknownConnectionError(
-            networkError.cause.message ?: "Unknown connection error",
+            networkError.cause.message ?: "Unknown connection error"
           )
       }
 
     uiMessageQueue.messages.emit(uiMessage)
   }
 
-  private suspend fun getConnectionSettings() = connectionRepository.getDefault() ?: discoverConnection()
+  private suspend fun getConnectionSettings() =
+    connectionRepository.getDefault() ?: discoverConnection()
 
-  private suspend fun discoverConnection() =
-    connectionRepository.discover().let { discoveryStop ->
-      when (discoveryStop) {
-        is DiscoveryStop.Complete -> {
-          Timber.v("Discovery detected ${discoveryStop.settings.address} will attempt to connect to it")
-          discoveryStop.settings
-        }
-        else -> {
-          Timber.v("Discovery did not complete, will not connect to any servers")
-          null
-        }
+  private suspend fun discoverConnection() = connectionRepository.discover().let { discoveryStop ->
+    when (discoveryStop) {
+      is DiscoveryStop.Complete -> {
+        Timber.v(
+          "Discovery detected ${discoveryStop.settings.address} will attempt to connect to it"
+        )
+        discoveryStop.settings
+      }
+      else -> {
+        Timber.v("Discovery did not complete, will not connect to any servers")
+        null
       }
     }
+  }
 
   private fun setupConnection(socket: Socket) {
     val connection =
@@ -208,7 +204,7 @@ class ClientConnectionManagerImpl(
               connection.cleanup()
               stop()
             }
-          },
+          }
         )
       }
     }
@@ -260,11 +256,7 @@ class ClientConnectionManagerImpl(
   }
 }
 
-class Connection(
-  private val socket: Socket,
-  moshi: Moshi,
-  dispatchers: AppCoroutineDispatchers,
-) {
+class Connection(private val socket: Socket, moshi: Moshi, dispatchers: AppCoroutineDispatchers) {
   private val sink = socket.sink().buffer()
   private val source = socket.source().buffer()
   private val adapter = moshi.adapter(SocketMessage::class.java)
@@ -304,18 +296,17 @@ class Connection(
     }.onFailure { Timber.w(it, "Failed to close socket") }
   }
 
-  fun send(message: SocketMessage) =
-    runCatching {
-      if (!isConnected) {
-        Timber.d("Socket was not connected: skipping $message")
-        return@runCatching
-      }
-      val address = socket.remoteSocketAddress
-      Timber.v("Sending to mbrc:/$address (connected: $isConnected)::$message")
-      adapter.toJson(sink, message)
-      sink.writeUtf8(NEWLINE)
-      sink.flush()
+  fun send(message: SocketMessage) = runCatching {
+    if (!isConnected) {
+      Timber.d("Socket was not connected: skipping $message")
+      return@runCatching
     }
+    val address = socket.remoteSocketAddress
+    Timber.v("Sending to mbrc:/$address (connected: $isConnected)::$message")
+    adapter.toJson(sink, message)
+    sink.writeUtf8(NEWLINE)
+    sink.flush()
+  }
 
   private fun emitMessages(rawMessage: String) {
     val replies =

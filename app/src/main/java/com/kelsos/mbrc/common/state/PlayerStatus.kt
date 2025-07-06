@@ -17,5 +17,5 @@ data class PlayerStatus(
   @Json(name = Protocol.PLAYER_SCROBBLE)
   val scrobbling: Boolean,
   @Json(name = Protocol.PLAYER_VOLUME)
-  val volume: Int,
+  val volume: Int
 )

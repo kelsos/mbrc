@@ -4,15 +4,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
-class HelpFeedbackPagerAdapter(
-  activity: FragmentActivity,
-) : FragmentStateAdapter(activity) {
-  override fun createFragment(position: Int): Fragment =
-    when (position) {
-      HELP -> HelpFragment.newInstance()
-      FEEDBACK -> FeedbackFragment.newInstance()
-      else -> throw IllegalArgumentException("invalid position")
-    }
+class HelpFeedbackPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
+  override fun createFragment(position: Int): Fragment = when (position) {
+    HELP -> HelpFragment.newInstance()
+    FEEDBACK -> FeedbackFragment.newInstance()
+    else -> throw IllegalArgumentException("invalid position")
+  }
 
   override fun getItemCount(): Int = PAGES
 

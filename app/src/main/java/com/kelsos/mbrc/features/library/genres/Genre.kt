@@ -6,22 +6,19 @@ import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
-data class Genre(
-  val genre: String,
-  val id: Long,
-)
+data class Genre(val genre: String, val id: Long)
 
 @JsonClass(generateAdapter = true)
 data class GenreDto(
   @Json(name = "genre")
   val genre: String = "",
   @Json(name = "count")
-  val count: Int = 0,
+  val count: Int = 0
 )
 
 @Entity(
   tableName = "genre",
-  indices = [],
+  indices = []
 )
 data class GenreEntity(
   @ColumnInfo
@@ -31,5 +28,5 @@ data class GenreEntity(
   @ColumnInfo(name = "date_added")
   val dateAdded: Long? = null,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null,
+  val id: Long? = null
 )

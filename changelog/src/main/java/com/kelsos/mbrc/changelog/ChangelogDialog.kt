@@ -8,10 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 object ChangelogDialog {
-  fun show(
-    context: Context,
-    @RawRes resId: Int,
-  ): AlertDialog {
+  fun show(context: Context, @RawRes resId: Int): AlertDialog {
     val parser = ChangelogParser(context)
     val dialog =
       MaterialAlertDialogBuilder(context)

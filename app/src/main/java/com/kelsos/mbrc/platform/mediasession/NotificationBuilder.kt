@@ -16,7 +16,7 @@ import com.kelsos.mbrc.platform.mediasession.RemoteViewIntentBuilder.getPendingI
  */
 class NotificationBuilder(
   private val context: Context,
-  private val actionManager: NotificationActionManager,
+  private val actionManager: NotificationActionManager
 ) {
   /**
    * Creates a notification builder for the given notification data and media session.
@@ -28,7 +28,7 @@ class NotificationBuilder(
   @OptIn(UnstableApi::class)
   fun createBuilder(
     notificationData: NotificationData,
-    mediaSession: MediaSession,
+    mediaSession: MediaSession
   ): NotificationCompat.Builder {
     val style =
       MediaStyleNotificationHelper

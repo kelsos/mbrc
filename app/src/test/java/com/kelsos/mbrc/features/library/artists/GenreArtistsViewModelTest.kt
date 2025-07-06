@@ -70,7 +70,7 @@ class GenreArtistsViewModelTest : KoinTest {
       val artist =
         Artist(
           id = 1,
-          artist = "Test Artist",
+          artist = "Test Artist"
         )
 
       // When & Then
@@ -95,7 +95,7 @@ class GenreArtistsViewModelTest : KoinTest {
       val artist =
         Artist(
           id = 1,
-          artist = "Test Artist",
+          artist = "Test Artist"
         )
       val queueResult = QueueResult(success = true, tracks = 15)
       coEvery { queueHandler.queueArtist(Queue.Next, "Test Artist") } returns queueResult
@@ -122,7 +122,7 @@ class GenreArtistsViewModelTest : KoinTest {
       val artist =
         Artist(
           id = 1,
-          artist = "Test Artist",
+          artist = "Test Artist"
         )
       val queueResult = QueueResult(success = false, tracks = 0)
       coEvery { queueHandler.queueArtist(Queue.Next, "Test Artist") } returns queueResult
@@ -148,7 +148,7 @@ class GenreArtistsViewModelTest : KoinTest {
       val artist =
         Artist(
           id = 1,
-          artist = "Test Artist",
+          artist = "Test Artist"
         )
 
       // When & Then
@@ -173,7 +173,7 @@ class GenreArtistsViewModelTest : KoinTest {
       val artist =
         Artist(
           id = 1,
-          artist = "Test Artist",
+          artist = "Test Artist"
         )
       val queueResult = QueueResult(success = true, tracks = 15)
       coEvery { queueHandler.queueArtist(any<Queue>(), any<String>()) } returns queueResult

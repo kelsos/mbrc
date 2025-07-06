@@ -18,7 +18,7 @@ class WebViewDialog : DialogFragment() {
       .setView(
         WebView(requireActivity()).apply {
           loadUrl(url)
-        },
+        }
       ).setPositiveButton(ok) { dialog, _ -> dialog.dismiss() }
       .show()
   }

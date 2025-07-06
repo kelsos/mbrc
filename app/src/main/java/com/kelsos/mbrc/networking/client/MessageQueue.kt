@@ -12,7 +12,7 @@ interface MessageQueue {
 class MessageQueueImpl : MessageQueue {
   override val messages =
     MutableSharedFlow<SocketMessage>(
-      extraBufferCapacity = EXTRA_BUFFER_CAPACITY,
+      extraBufferCapacity = EXTRA_BUFFER_CAPACITY
     )
 
   override suspend fun queue(message: SocketMessage) {

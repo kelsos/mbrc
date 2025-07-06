@@ -26,7 +26,7 @@ interface ArtistDao {
           WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
           ELSE artist.artist
         END COLLATE NOCASE ASC
-      """,
+      """
   )
   fun getArtistByGenre(genreId: Long): PagingSource<Int, ArtistEntity>
 
@@ -47,7 +47,7 @@ interface ArtistDao {
           WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
           ELSE artist.artist
         END COLLATE NOCASE ASC
-    """,
+    """
   )
   fun getAll(): PagingSource<Int, ArtistEntity>
 
@@ -59,7 +59,7 @@ interface ArtistDao {
           WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
           ELSE artist.artist
         END COLLATE NOCASE ASC
-    """,
+    """
   )
   fun all(): List<ArtistEntity>
 
@@ -73,7 +73,7 @@ interface ArtistDao {
           WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
           ELSE artist.artist
         END COLLATE NOCASE ASC
-    """,
+    """
   )
   fun getAlbumArtists(): PagingSource<Int, ArtistEntity>
 

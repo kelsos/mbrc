@@ -8,5 +8,5 @@ data class NowPlayingMoveRequest(
   @Json(name = "from")
   val from: Int,
   @Json(name = "to")
-  val to: Int,
+  val to: Int
 )

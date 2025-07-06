@@ -25,10 +25,7 @@ class BrowseAlbumFragment :
     viewModel.sync()
   }
 
-  override fun onViewCreated(
-    view: View,
-    savedInstanceState: Bundle?,
-  ) {
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     setAdapter(adapter)
     adapter.setMenuItemSelectedListener(this)
@@ -65,10 +62,7 @@ class BrowseAlbumFragment :
     }
   }
 
-  override fun onAction(
-    item: Album,
-    id: Int?,
-  ) {
+  override fun onAction(item: Album, id: Int?) {
     viewModel.queue(if (id != null) determineAlbumQueueAction(id) else Queue.Default, item)
   }
 }

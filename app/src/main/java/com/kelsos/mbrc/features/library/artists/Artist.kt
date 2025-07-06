@@ -6,22 +6,19 @@ import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
-data class Artist(
-  val artist: String,
-  val id: Long,
-)
+data class Artist(val artist: String, val id: Long)
 
 @JsonClass(generateAdapter = true)
 data class ArtistDto(
   @Json(name = "artist")
   val artist: String = "",
   @Json(name = "count")
-  val count: Int = 0,
+  val count: Int = 0
 )
 
 @Entity(
   tableName = "artist",
-  indices = [],
+  indices = []
 )
 data class ArtistEntity(
   @ColumnInfo
@@ -31,5 +28,5 @@ data class ArtistEntity(
   @ColumnInfo(name = "date_added")
   val dateAdded: Long? = null,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null,
+  val id: Long? = null
 )

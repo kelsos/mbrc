@@ -10,11 +10,11 @@ import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.networking.protocol.Protocol
 import com.kelsos.mbrc.networking.protocol.UserActionUseCase
 import com.kelsos.mbrc.networking.protocol.performUserAction
+import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.IOException
 
 sealed class PlaylistUiMessages : UiMessageBase {
   object RefreshFailed : PlaylistUiMessages()
@@ -40,7 +40,7 @@ class PlaylistActions(
   private val repository: PlaylistRepository,
   private val userActionUseCase: UserActionUseCase,
   private val connectionStateFlow: ConnectionStateFlow,
-  private val emit: suspend (uiMessage: PlaylistUiMessages) -> Unit,
+  private val emit: suspend (uiMessage: PlaylistUiMessages) -> Unit
 ) : IPlaylistActions {
   override fun play(path: String) {
     scope.launch(dispatchers.network) {
@@ -91,7 +91,7 @@ class PlaylistViewModel(
   repository: PlaylistRepository,
   dispatchers: AppCoroutineDispatchers,
   userActionsUseCase: UserActionUseCase,
-  connectionStateFlow: ConnectionStateFlow,
+  connectionStateFlow: ConnectionStateFlow
 ) : BaseViewModel<PlaylistUiMessages>() {
   val playlists: Flow<PagingData<Playlist>> = repository.getAll().cachedIn(viewModelScope)
   val actions: PlaylistActions =
@@ -101,6 +101,6 @@ class PlaylistViewModel(
       repository = repository,
       userActionUseCase = userActionsUseCase,
       connectionStateFlow = connectionStateFlow,
-      emit = this::emit,
+      emit = this::emit
     )
 }

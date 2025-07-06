@@ -7,16 +7,11 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import okio.ByteString.Companion.encodeUtf8
 
-data class Album(
-  val id: Long,
-  val artist: String,
-  val album: String,
-  val cover: String?,
-)
+data class Album(val id: Long, val artist: String, val album: String, val cover: String?)
 
 @Entity(
   tableName = "album",
-  indices = [],
+  indices = []
 )
 data class AlbumEntity(
   @ColumnInfo
@@ -30,7 +25,7 @@ data class AlbumEntity(
   @ColumnInfo(name = "count")
   val count: Int? = null,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null,
+  val id: Long? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -40,7 +35,7 @@ data class AlbumDto(
   @Json(name = "album")
   val album: String = "",
   @Json(name = "count")
-  val count: Int = 0,
+  val count: Int = 0
 )
 
 fun Album.key(): String = "${artist}_$album".encodeUtf8().sha1().hex().uppercase()

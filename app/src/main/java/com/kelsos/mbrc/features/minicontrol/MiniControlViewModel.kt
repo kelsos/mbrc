@@ -13,13 +13,13 @@ import com.kelsos.mbrc.networking.protocol.UserActionUseCase
 import com.kelsos.mbrc.networking.protocol.next
 import com.kelsos.mbrc.networking.protocol.playPause
 import com.kelsos.mbrc.networking.protocol.previous
+import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.IOException
 
 sealed class MiniControlUiMessages : UiMessageBase {
   data object NetworkUnavailable : MiniControlUiMessages()
@@ -31,18 +31,18 @@ class MiniControlViewModel(
   appState: AppStateFlow,
   private val userActionUseCase: UserActionUseCase,
   private val connectionStateFlow: ConnectionStateFlow,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : BaseViewModel<MiniControlUiMessages>() {
   val state: Flow<MiniControlState> =
     combine(
       appState.playingTrack,
       appState.playingPosition,
-      appState.playerStatus.map { it.state }.distinctUntilChanged(),
+      appState.playerStatus.map { it.state }.distinctUntilChanged()
     ) { playingTrack, playingPosition, playerState ->
       MiniControlState(
         playingTrack = playingTrack,
         playingPosition = playingPosition,
-        playingState = playerState,
+        playingState = playerState
       )
     }
 
@@ -69,5 +69,5 @@ class MiniControlViewModel(
 data class MiniControlState(
   val playingTrack: PlayingTrack = PlayingTrack(),
   val playingPosition: PlayingPosition = PlayingPosition(),
-  val playingState: PlayerState = PlayerState.Undefined,
+  val playingState: PlayerState = PlayerState.Undefined
 )

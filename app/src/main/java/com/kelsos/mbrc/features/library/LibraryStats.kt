@@ -9,25 +9,23 @@ data class LibraryStats(
   val albums: Long,
   val tracks: Long,
   val playlists: Long,
-  val covers: Long,
+  val covers: Long
 )
 
-fun LibraryStats.toWorkData(): Data =
-  workDataOf(
-    "genres" to genres,
-    "artists" to artists,
-    "albums" to albums,
-    "tracks" to tracks,
-    "playlists" to playlists,
-    "covers" to covers,
-  )
+fun LibraryStats.toWorkData(): Data = workDataOf(
+  "genres" to genres,
+  "artists" to artists,
+  "albums" to albums,
+  "tracks" to tracks,
+  "playlists" to playlists,
+  "covers" to covers
+)
 
-fun Data.toLibraryStats(): LibraryStats =
-  LibraryStats(
-    getLong("genres", 0),
-    getLong("artists", 0),
-    getLong("albums", 0),
-    getLong("tracks", 0),
-    getLong("playlists", 0),
-    getLong("covers", 0),
-  )
+fun Data.toLibraryStats(): LibraryStats = LibraryStats(
+  getLong("genres", 0),
+  getLong("artists", 0),
+  getLong("albums", 0),
+  getLong("tracks", 0),
+  getLong("playlists", 0),
+  getLong("covers", 0)
+)

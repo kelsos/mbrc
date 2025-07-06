@@ -6,11 +6,7 @@ import timber.log.Timber
 fun SeekBar.listen(onSeek: (Int) -> Unit) {
   setOnSeekBarChangeListener(
     object : SeekBar.OnSeekBarChangeListener {
-      override fun onProgressChanged(
-        seekBar: SeekBar?,
-        progress: Int,
-        fromUser: Boolean,
-      ) {
+      override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         if (fromUser) onSeek(progress)
       }
 
@@ -21,7 +17,7 @@ fun SeekBar.listen(onSeek: (Int) -> Unit) {
       override fun onStopTrackingTouch(seekBar: SeekBar?) {
         Timber.d("onStopTrackingTouch")
       }
-    },
+    }
   )
 }
 

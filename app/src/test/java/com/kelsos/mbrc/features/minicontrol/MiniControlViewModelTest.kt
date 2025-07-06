@@ -19,6 +19,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.io.IOException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -31,7 +32,6 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
-import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
 class MiniControlViewModelTest : KoinTest {
@@ -61,14 +61,14 @@ class MiniControlViewModelTest : KoinTest {
         title = "Test Title",
         album = "Test Album",
         path = "test/path",
-        coverUrl = "test/cover/url",
+        coverUrl = "test/cover/url"
       )
     val playingPosition = PlayingPosition(current = 30, total = 100)
     val playerStatus =
       PlayerStatusModel(
         mute = false,
         state = PlayerState.Playing,
-        volume = 50,
+        volume = 50
       )
 
     every { appStateFlow.playingTrack } returns MutableStateFlow(playingTrack)
@@ -92,14 +92,14 @@ class MiniControlViewModelTest : KoinTest {
           title = "Title",
           album = "Album",
           path = "path",
-          coverUrl = "cover",
+          coverUrl = "cover"
         )
       val expectedPosition = PlayingPosition(current = 50, total = 200)
       val expectedPlayerStatus =
         PlayerStatusModel(
           mute = false,
           state = PlayerState.Paused,
-          volume = 50,
+          volume = 50
         )
 
       every { appStateFlow.playingTrack } returns MutableStateFlow(expectedTrack)

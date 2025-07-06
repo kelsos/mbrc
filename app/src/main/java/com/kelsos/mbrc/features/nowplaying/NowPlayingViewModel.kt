@@ -12,12 +12,12 @@ import com.kelsos.mbrc.networking.protocol.UserActionUseCase
 import com.kelsos.mbrc.networking.protocol.moveTrack
 import com.kelsos.mbrc.networking.protocol.playTrack
 import com.kelsos.mbrc.networking.protocol.removeTrack
+import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.IOException
 
 interface INowPlayingActions {
   fun reload()
@@ -28,10 +28,7 @@ interface INowPlayingActions {
 
   fun removeTrack(position: Int)
 
-  fun moveTrack(
-    from: Int,
-    to: Int,
-  )
+  fun moveTrack(from: Int, to: Int)
 
   fun move()
 
@@ -45,7 +42,7 @@ class NowPlayingActions(
   private val moveManager: MoveManager,
   private val userActionUseCase: UserActionUseCase,
   private val connectionStateFlow: ConnectionStateFlow,
-  private val emit: suspend (uiMessage: NowPlayingUiMessages) -> Unit,
+  private val emit: suspend (uiMessage: NowPlayingUiMessages) -> Unit
 ) : INowPlayingActions {
   override fun reload() {
     reload(showUserMessage = true)
@@ -103,10 +100,7 @@ class NowPlayingActions(
     }
   }
 
-  override fun moveTrack(
-    from: Int,
-    to: Int,
-  ) {
+  override fun moveTrack(from: Int, to: Int) {
     moveManager.move(from, to)
   }
 
@@ -140,7 +134,7 @@ class NowPlayingViewModel(
   moveManager: MoveManager,
   userActionUseCase: UserActionUseCase,
   connectionStateFlow: ConnectionStateFlow,
-  appState: AppStateFlow,
+  appState: AppStateFlow
 ) : BaseViewModel<NowPlayingUiMessages>() {
   val tracks: Flow<PagingData<NowPlaying>> = repository.getAll().cachedIn(viewModelScope)
   val playingTrack = appState.playingTrack
@@ -153,7 +147,7 @@ class NowPlayingViewModel(
       moveManager = moveManager,
       userActionUseCase = userActionUseCase,
       connectionStateFlow = connectionStateFlow,
-      emit = this::emit,
+      emit = this::emit
     )
 
   init {

@@ -11,11 +11,10 @@ sealed class LfmRating {
     private const val LOVE = "Love"
     private const val BAN = "Ban"
 
-    fun fromString(value: String?): LfmRating =
-      when (value) {
-        LOVE -> Loved
-        BAN -> Banned
-        else -> Normal
-      }
+    fun fromString(value: String?): LfmRating = when (value) {
+      LOVE -> Loved
+      BAN -> Banned
+      else -> Normal
+    }
   }
 }

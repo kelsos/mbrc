@@ -20,6 +20,7 @@ import com.kelsos.mbrc.features.library.MenuItemSelectedListener
 import com.kelsos.mbrc.features.library.albumInfo
 import com.kelsos.mbrc.features.library.albums.AlbumInfo
 import com.kelsos.mbrc.features.queue.Queue
+import java.io.File
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -27,7 +28,6 @@ import kotlinx.coroutines.launch
 import okio.ByteString.Companion.encodeUtf8
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.io.File
 
 class AlbumTracksActivity :
   BaseDetailsActivity(R.layout.activity_album_tracks),
@@ -91,10 +91,7 @@ class AlbumTracksActivity :
     viewModel.load(info)
   }
 
-  private fun loadCover(
-    artist: String,
-    album: String,
-  ) {
+  private fun loadCover(artist: String, album: String) {
     val image = findViewById<ImageView>(R.id.album_tracks__cover)
     val cache = File(cacheDir, "covers")
     val coverFile = File(cache, "${artist}_$album".encodeUtf8().sha1().hex().uppercase())
@@ -108,10 +105,7 @@ class AlbumTracksActivity :
     }
   }
 
-  override fun onAction(
-    item: Track,
-    id: Int?,
-  ) {
+  override fun onAction(item: Track, id: Int?) {
     val action = if (id != null) determineTrackQueueAction(id) else Queue.Default
     viewModel.queue(action, item)
   }

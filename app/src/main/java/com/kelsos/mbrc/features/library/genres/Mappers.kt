@@ -7,11 +7,10 @@ object GenreDtoMapper : Mapper<GenreDto, GenreEntity> {
 }
 
 object GenreEntityMapper : Mapper<GenreEntity, Genre> {
-  override fun map(from: GenreEntity): Genre =
-    Genre(
-      genre = from.genre.orEmpty(),
-      id = from.id ?: 0,
-    )
+  override fun map(from: GenreEntity): Genre = Genre(
+    genre = from.genre.orEmpty(),
+    id = from.id ?: 0
+  )
 }
 
 fun GenreDto.toEntity(): GenreEntity = GenreDtoMapper.map(this)

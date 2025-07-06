@@ -7,9 +7,7 @@ import com.kelsos.mbrc.R
 import com.kelsos.mbrc.features.library.artists.GenreArtistsActivity
 import com.kelsos.mbrc.features.queue.Queue
 
-fun determineGenreQueueAction(
-  @IdRes itemId: Int,
-): Queue {
+fun determineGenreQueueAction(@IdRes itemId: Int): Queue {
   if (R.id.popup_genre_artists == itemId) {
     return Queue.Default
   }

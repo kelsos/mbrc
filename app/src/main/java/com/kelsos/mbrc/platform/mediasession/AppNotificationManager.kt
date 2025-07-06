@@ -20,10 +20,7 @@ interface AppNotificationManager {
 
   fun updatePlayingTrack(playingTrack: PlayingTrack)
 
-  fun updateState(
-    state: PlayerState,
-    current: Duration,
-  )
+  fun updateState(state: PlayerState, current: Duration)
 
   fun connectionStateChanged(connected: Boolean)
 
@@ -40,7 +37,7 @@ class AppNotificationManagerImpl(
   private val notificationManager: NotificationManager,
   private val notificationBuilder: NotificationBuilder,
   private val channelManager: NotificationChannelManager,
-  private val mediaSessionManager: MediaSessionManager,
+  private val mediaSessionManager: MediaSessionManager
 ) : AppNotificationManager {
   private var notification: Notification? = null
   private var notificationData: NotificationData = NotificationData()
@@ -95,10 +92,7 @@ class AppNotificationManagerImpl(
     }
   }
 
-  override fun updateState(
-    state: PlayerState,
-    current: Duration,
-  ) {
+  override fun updateState(state: PlayerState, current: Duration) {
     mediaSessionManager.scope.launch {
       notificationData = notificationData.copy(playerState = state)
       update(notificationData)

@@ -19,10 +19,7 @@ import com.kelsos.mbrc.features.dragsort.TouchHelperViewHolder
 interface NowPlayingListener {
   fun onPress(position: Int)
 
-  fun onMove(
-    from: Int,
-    to: Int,
-  )
+  fun onMove(from: Int, to: Int)
 
   fun onDismiss(position: Int)
 }
@@ -71,14 +68,11 @@ class NowPlayingAdapter :
     notifyItemRangeChanged(
       range.firstItem,
       range.itemCount,
-      PLAYING_CHANGED,
+      PLAYING_CHANGED
     )
   }
 
-  override fun onCreateViewHolder(
-    parent: ViewGroup,
-    viewType: Int,
-  ): TrackHolder {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackHolder {
     val inflater = LayoutInflater.from(parent.context)
     val inflatedView = inflater.inflate(R.layout.item_track, parent, false)
     val holder =
@@ -104,11 +98,7 @@ class NowPlayingAdapter :
     listener.onPress(position + 1)
   }
 
-  override fun onBindViewHolder(
-    holder: TrackHolder,
-    position: Int,
-    payloads: MutableList<Any>,
-  ) {
+  override fun onBindViewHolder(holder: TrackHolder, position: Int, payloads: MutableList<Any>) {
     val track = getItem(position)
     val isCurrentlyPlaying = track?.path == currentTrack
     if (isCurrentlyPlaying) {
@@ -124,17 +114,11 @@ class NowPlayingAdapter :
     holder.setPlaying(isCurrentlyPlaying)
   }
 
-  override fun onBindViewHolder(
-    holder: TrackHolder,
-    position: Int,
-  ) {
+  override fun onBindViewHolder(holder: TrackHolder, position: Int) {
     onBindViewHolder(holder, position, mutableListOf())
   }
 
-  override fun onItemMove(
-    from: Int,
-    to: Int,
-  ): Boolean {
+  override fun onItemMove(from: Int, to: Int): Boolean {
     notifyItemMoved(from, to)
     listener.onMove(from, to)
 
@@ -149,10 +133,8 @@ class NowPlayingAdapter :
     listener.onDismiss(position)
   }
 
-  class TrackHolder(
-    itemView: View,
-    private val onDragEnd: () -> Unit,
-  ) : RecyclerView.ViewHolder(itemView),
+  class TrackHolder(itemView: View, private val onDragEnd: () -> Unit) :
+    RecyclerView.ViewHolder(itemView),
     TouchHelperViewHolder {
     val title: TextView = itemView.findViewById(R.id.track_title)
     val artist: TextView = itemView.findViewById(R.id.track_artist)
@@ -182,15 +164,11 @@ class NowPlayingAdapter :
     const val PLAYING_CHANGED = "playing_changed"
     private val DIFF_CALLBACK =
       object : DiffUtil.ItemCallback<NowPlaying>() {
-        override fun areItemsTheSame(
-          oldItem: NowPlaying,
-          newItem: NowPlaying,
-        ): Boolean = oldItem.id == newItem.id
+        override fun areItemsTheSame(oldItem: NowPlaying, newItem: NowPlaying): Boolean =
+          oldItem.id == newItem.id
 
-        override fun areContentsTheSame(
-          oldItem: NowPlaying,
-          newItem: NowPlaying,
-        ): Boolean = oldItem == newItem
+        override fun areContentsTheSame(oldItem: NowPlaying, newItem: NowPlaying): Boolean =
+          oldItem == newItem
       }
   }
 }

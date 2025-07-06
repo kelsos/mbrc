@@ -11,9 +11,7 @@ import com.kelsos.mbrc.R
 /**
  * Manages notification channels for the application.
  */
-class NotificationChannelManager(
-  private val context: Context,
-) {
+class NotificationChannelManager(private val context: Context) {
   /**
    * Creates a notification channel for the media session notifications.
    * This is only required for Android O and above.
@@ -27,7 +25,7 @@ class NotificationChannelManager(
       NotificationChannel(
         AppNotificationManager.CHANNEL_ID,
         channelName,
-        NotificationManager.IMPORTANCE_DEFAULT,
+        NotificationManager.IMPORTANCE_DEFAULT
       )
 
     return channel.apply {

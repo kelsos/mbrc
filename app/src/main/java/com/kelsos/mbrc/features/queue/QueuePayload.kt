@@ -10,5 +10,5 @@ data class QueuePayload(
   @Json(name = "data")
   val data: List<String>,
   @Json(name = "play")
-  val play: String? = null,
+  val play: String? = null
 )

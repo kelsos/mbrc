@@ -20,7 +20,7 @@ interface AlbumDao {
     select * from album 
     where album like '%' || :term || '%' or artist like '%' || :term || '%'
     order by album collate nocase asc
-    """,
+    """
   )
   fun search(term: String): PagingSource<Int, AlbumEntity>
 
@@ -39,7 +39,7 @@ interface AlbumDao {
         album.date_added as date_added, album.id as id, album.cover as cover from album
         inner join track where album.album = track.album and track.album_artist = album.artist
         and (track.artist = :artist or track.album_artist = :artist) order by artist collate nocase asc, album collate nocase asc
-    """,
+    """
   )
   fun getAlbumsByArtist(artist: String): PagingSource<Int, AlbumEntity>
 
@@ -50,11 +50,7 @@ interface AlbumDao {
   fun coverCount(): Long
 
   @Query("update album set cover = :cover where artist = :artist and album = :album")
-  fun updateCover(
-    artist: String,
-    album: String,
-    cover: String,
-  )
+  fun updateCover(artist: String, album: String, cover: String)
 
   @Transaction
   fun updateCovers(updated: List<AlbumCover>) {
@@ -65,7 +61,7 @@ interface AlbumDao {
       updateCover(
         artist = artist.orEmpty(),
         album = album.orEmpty(),
-        cover = hash,
+        cover = hash
       )
     }
   }

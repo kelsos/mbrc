@@ -25,10 +25,7 @@ class BrowseGenreFragment :
     viewModel.sync()
   }
 
-  override fun onViewCreated(
-    view: View,
-    savedInstanceState: Bundle?,
-  ) {
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
 
     setAdapter(adapter)
@@ -66,10 +63,7 @@ class BrowseGenreFragment :
     }
   }
 
-  override fun onAction(
-    item: Genre,
-    id: Int?,
-  ) {
+  override fun onAction(item: Genre, id: Int?) {
     viewModel.queue(if (id != null) determineGenreQueueAction(id) else Queue.Default, item)
   }
 }

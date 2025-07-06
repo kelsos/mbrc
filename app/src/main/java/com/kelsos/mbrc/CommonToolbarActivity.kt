@@ -11,9 +11,8 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import org.koin.androidx.scope.ScopeActivity
 
-open class CommonToolbarActivity(
-  @LayoutRes contentLayoutId: Int,
-) : ScopeActivity(contentLayoutId) {
+open class CommonToolbarActivity(@LayoutRes contentLayoutId: Int) :
+  ScopeActivity(contentLayoutId) {
   protected lateinit var toolbar: MaterialToolbar
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,7 +37,7 @@ open class CommonToolbarActivity(
         override fun handleOnBackPressed() {
           finish()
         }
-      },
+      }
     )
   }
 

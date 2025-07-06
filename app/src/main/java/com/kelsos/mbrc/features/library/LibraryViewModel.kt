@@ -12,7 +12,7 @@ class LibraryViewModel(
   private val librarySyncWorkHandler: LibrarySyncWorkHandler,
   private val librarySyncUseCase: LibrarySyncUseCase,
   private val settingsManager: SettingsManager,
-  private val connectionStateFlow: ConnectionStateFlow,
+  private val connectionStateFlow: ConnectionStateFlow
 ) : BaseViewModel<LibraryUiEvent>() {
   val progress: Flow<LibrarySyncProgress>
     get() = librarySyncWorkHandler.syncProgress()

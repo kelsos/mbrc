@@ -6,9 +6,8 @@ interface ClientConnectionUseCase {
   fun connect(reset: Boolean = false)
 }
 
-class ClientConnectionUseCaseImpl(
-  private val connectionManager: ClientConnectionManager,
-) : ClientConnectionUseCase {
+class ClientConnectionUseCaseImpl(private val connectionManager: ClientConnectionManager) :
+  ClientConnectionUseCase {
   override fun connect(reset: Boolean) {
     if (reset) {
       connectionManager.stop()

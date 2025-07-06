@@ -51,7 +51,7 @@ open class App : Application() {
       }
     return listOf(
       appModule,
-      androidModule,
+      androidModule
     )
   }
 

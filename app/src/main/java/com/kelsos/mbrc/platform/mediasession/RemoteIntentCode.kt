@@ -1,8 +1,6 @@
 package com.kelsos.mbrc.platform.mediasession
 
-sealed class RemoteIntentCode(
-  val code: Int,
-) {
+sealed class RemoteIntentCode(val code: Int) {
   object Open : RemoteIntentCode(OPEN)
 
   object Play : RemoteIntentCode(PLAY)

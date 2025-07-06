@@ -21,7 +21,7 @@ class BrowseGenreViewModel(
   private val queueHandler: QueueHandler,
   searchModel: LibrarySearchModel,
   settingsHelper: BasicSettingsHelper,
-  connectionStateFlow: ConnectionStateFlow,
+  connectionStateFlow: ConnectionStateFlow
 ) : BaseLibraryViewModel<GenreUiMessage>(settingsHelper, connectionStateFlow) {
   val genres: Flow<PagingData<Genre>> =
     searchModel.term
@@ -45,10 +45,7 @@ class BrowseGenreViewModel(
     }
   }
 
-  fun queue(
-    queue: Queue,
-    genre: Genre,
-  ) {
+  fun queue(queue: Queue, genre: Genre) {
     if (queue === Queue.Default) {
       launchDefault(GenreUiMessage.OpenArtists(genre))
       return

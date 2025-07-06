@@ -20,22 +20,18 @@ interface WidgetUpdater {
   }
 }
 
-class WidgetUpdaterImpl(
-  private val context: Context,
-) : WidgetUpdater {
+class WidgetUpdaterImpl(private val context: Context) : WidgetUpdater {
   private fun createIntent(clazz: Class<*>): Intent {
     val widgetUpdateIntent = Intent(context, clazz)
     widgetUpdateIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
     return widgetUpdateIntent
   }
 
-  private fun Intent.payload(track: PlayingTrack): Intent =
-    putExtra(WidgetUpdater.INFO, true)
-      .putExtra(WidgetUpdater.TRACK_INFO, track)
+  private fun Intent.payload(track: PlayingTrack): Intent = putExtra(WidgetUpdater.INFO, true)
+    .putExtra(WidgetUpdater.TRACK_INFO, track)
 
-  private fun Intent.statePayload(state: PlayerState): Intent =
-    putExtra(WidgetUpdater.STATE, true)
-      .putExtra(WidgetUpdater.PLAYER_STATE, state.state)
+  private fun Intent.statePayload(state: PlayerState): Intent = putExtra(WidgetUpdater.STATE, true)
+    .putExtra(WidgetUpdater.PLAYER_STATE, state.state)
 
   override fun updatePlayingTrack(track: PlayingTrack) {
     val normalIntent = createIntent(WidgetNormal::class.java).payload(track)
@@ -49,10 +45,7 @@ class WidgetUpdaterImpl(
     broadcast(smallIntent, normalIntent)
   }
 
-  private fun broadcast(
-    smallIntent: Intent,
-    normalIntent: Intent,
-  ) {
+  private fun broadcast(smallIntent: Intent, normalIntent: Intent) {
     try {
       with(context) {
         sendBroadcast(smallIntent)

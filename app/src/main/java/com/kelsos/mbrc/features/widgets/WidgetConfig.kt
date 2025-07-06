@@ -14,5 +14,5 @@ data class WidgetConfig(
   val imageId: Int,
   @IdRes
   val playButtonId: Int,
-  val widgetClass: KClass<out WidgetBase>,
+  val widgetClass: KClass<out WidgetBase>
 )

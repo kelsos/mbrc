@@ -8,12 +8,9 @@ import androidx.core.text.HtmlCompat
 import androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
 import androidx.recyclerview.widget.RecyclerView
 
-class VersionAdapter(
-  private val changeLog: List<ChangeLogEntry>,
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-  class VersionViewHolder(
-    itemView: View,
-  ) : RecyclerView.ViewHolder(itemView) {
+class VersionAdapter(private val changeLog: List<ChangeLogEntry>) :
+  RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+  class VersionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val version: TextView = itemView.findViewById(R.id.changelog_version__version)
     private val release: TextView = itemView.findViewById(R.id.changelog_version__release)
 
@@ -31,9 +28,7 @@ class VersionAdapter(
     }
   }
 
-  class EntryViewHolder(
-    itemView: View,
-  ) : RecyclerView.ViewHolder(itemView) {
+  class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val text: TextView = itemView.findViewById(R.id.changelog_entry__text)
     private val type: TextView = itemView.findViewById(R.id.changelog_entry__type)
 
@@ -57,20 +52,14 @@ class VersionAdapter(
     }
   }
 
-  override fun onCreateViewHolder(
-    parent: ViewGroup,
-    viewType: Int,
-  ): RecyclerView.ViewHolder =
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
     when (viewType) {
       ITEM_VIEW_TYPE_HEADER -> VersionViewHolder.from(parent)
       ITEM_VIEW_TYPE_ITEM -> EntryViewHolder.from(parent)
       else -> throw ClassCastException("Unknown viewType $viewType")
     }
 
-  override fun onBindViewHolder(
-    holder: RecyclerView.ViewHolder,
-    position: Int,
-  ) {
+  override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
     val version = changeLog[position]
     when (holder) {
       is VersionViewHolder -> holder.bind(version as ChangeLogEntry.Version)
@@ -78,11 +67,10 @@ class VersionAdapter(
     }
   }
 
-  override fun getItemViewType(position: Int): Int =
-    when (changeLog[position]) {
-      is ChangeLogEntry.Version -> ITEM_VIEW_TYPE_HEADER
-      is ChangeLogEntry.Entry -> ITEM_VIEW_TYPE_ITEM
-    }
+  override fun getItemViewType(position: Int): Int = when (changeLog[position]) {
+    is ChangeLogEntry.Version -> ITEM_VIEW_TYPE_HEADER
+    is ChangeLogEntry.Entry -> ITEM_VIEW_TYPE_ITEM
+  }
 
   override fun getItemCount(): Int = changeLog.size
 

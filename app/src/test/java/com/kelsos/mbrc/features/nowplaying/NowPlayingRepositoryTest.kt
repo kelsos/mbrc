@@ -34,7 +34,7 @@ class NowPlayingRepositoryTest : KoinTest {
         Room
           .inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            Database::class.java,
+            Database::class.java
           ).allowMainThreadQueries()
           .build()
       }
@@ -58,7 +58,7 @@ class NowPlayingRepositoryTest : KoinTest {
         path = "/music/electric_horizon/midnight_dreams/01_midnight_dreams.mp3",
         position = 1,
         dateAdded = System.currentTimeMillis() - 3600000, // 1 hour ago
-        id = 1,
+        id = 1
       ),
       NowPlayingEntity(
         title = "Neon Lights",
@@ -66,7 +66,7 @@ class NowPlayingRepositoryTest : KoinTest {
         path = "/music/electric_horizon/midnight_dreams/02_neon_lights.mp3",
         position = 2,
         dateAdded = System.currentTimeMillis() - 3590000,
-        id = 2,
+        id = 2
       ),
       NowPlayingEntity(
         title = "Digital Rain",
@@ -74,7 +74,7 @@ class NowPlayingRepositoryTest : KoinTest {
         path = "/music/electric_horizon/midnight_dreams/03_digital_rain.mp3",
         position = 3,
         dateAdded = System.currentTimeMillis() - 3580000,
-        id = 3,
+        id = 3
       ),
       NowPlayingEntity(
         title = "Lost in the City",
@@ -82,7 +82,7 @@ class NowPlayingRepositoryTest : KoinTest {
         path = "/music/electric_horizon/midnight_dreams/04_lost_in_the_city.mp3",
         position = 4,
         dateAdded = System.currentTimeMillis() - 3570000,
-        id = 4,
+        id = 4
       ),
       NowPlayingEntity(
         title = "Synth Wave",
@@ -90,7 +90,7 @@ class NowPlayingRepositoryTest : KoinTest {
         path = "/music/electric_horizon/midnight_dreams/05_synth_wave.mp3",
         position = 5,
         dateAdded = System.currentTimeMillis() - 3560000,
-        id = 5,
+        id = 5
       ),
       NowPlayingEntity(
         title = "Circuit Breaker",
@@ -98,7 +98,7 @@ class NowPlayingRepositoryTest : KoinTest {
         path = "/music/electric_horizon/midnight_dreams/06_circuit_breaker.mp3",
         position = 6,
         dateAdded = System.currentTimeMillis() - 3550000,
-        id = 6,
+        id = 6
       ),
       NowPlayingEntity(
         title = "Electric Pulse",
@@ -106,7 +106,7 @@ class NowPlayingRepositoryTest : KoinTest {
         path = "/music/electric_horizon/midnight_dreams/07_electric_pulse.mp3",
         position = 7,
         dateAdded = System.currentTimeMillis() - 3540000,
-        id = 7,
+        id = 7
       ),
       NowPlayingEntity(
         title = "Data Stream",
@@ -114,7 +114,7 @@ class NowPlayingRepositoryTest : KoinTest {
         path = "/music/electric_horizon/midnight_dreams/08_data_stream.mp3",
         position = 8,
         dateAdded = System.currentTimeMillis() - 3530000,
-        id = 8,
+        id = 8
       ),
       NowPlayingEntity(
         title = "Virtual Reality",
@@ -122,7 +122,7 @@ class NowPlayingRepositoryTest : KoinTest {
         path = "/music/electric_horizon/midnight_dreams/09_virtual_reality.mp3",
         position = 9,
         dateAdded = System.currentTimeMillis() - 3520000,
-        id = 9,
+        id = 9
       ),
       NowPlayingEntity(
         title = "Dawn Protocol",
@@ -130,8 +130,8 @@ class NowPlayingRepositoryTest : KoinTest {
         path = "/music/electric_horizon/midnight_dreams/10_dawn_protocol.mp3",
         position = 10,
         dateAdded = System.currentTimeMillis() - 3510000,
-        id = 10,
-      ),
+        id = 10
+      )
     )
 
   @Before
@@ -161,7 +161,11 @@ class NowPlayingRepositoryTest : KoinTest {
       val postMoveAlbumQueue = dao.all().sortedBy { it.position }
 
       // Verify positions are still 1-10
-      assertThat(postMoveAlbumQueue.map { it.position }).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10).inOrder()
+      assertThat(
+        postMoveAlbumQueue.map {
+          it.position
+        }
+      ).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10).inOrder()
 
       // Verify the moved item is now at position 5
       val movedItem = postMoveAlbumQueue.find { it.id == originalItem?.id }
@@ -175,7 +179,11 @@ class NowPlayingRepositoryTest : KoinTest {
       // Position 5: ID 2 (was 2nd, now 5th)
       // Positions 6-10: unchanged
       val expectedIdOrder = listOf(1L, 3L, 4L, 5L, 2L, 6L, 7L, 8L, 9L, 10L)
-      assertThat(postMoveAlbumQueue.map { it.id }).containsExactlyElementsIn(expectedIdOrder).inOrder()
+      assertThat(
+        postMoveAlbumQueue.map {
+          it.id
+        }
+      ).containsExactlyElementsIn(expectedIdOrder).inOrder()
     }
   }
 
@@ -193,7 +201,11 @@ class NowPlayingRepositoryTest : KoinTest {
       val postMoveAlbumQueue = dao.all().sortedBy { it.position }
 
       // Verify positions are still 1-10
-      assertThat(postMoveAlbumQueue.map { it.position }).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10).inOrder()
+      assertThat(
+        postMoveAlbumQueue.map {
+          it.position
+        }
+      ).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10).inOrder()
 
       // Verify the moved item is now at position 4
       val movedItem = postMoveAlbumQueue.find { it.id == originalItem?.id }
@@ -210,7 +222,11 @@ class NowPlayingRepositoryTest : KoinTest {
       // Position 8: ID 7 (was 7th, now 8th)
       // Positions 9-10: unchanged
       val expectedIdOrder = listOf(1L, 2L, 3L, 8L, 4L, 5L, 6L, 7L, 9L, 10L)
-      assertThat(postMoveAlbumQueue.map { it.id }).containsExactlyElementsIn(expectedIdOrder).inOrder()
+      assertThat(
+        postMoveAlbumQueue.map {
+          it.id
+        }
+      ).containsExactlyElementsIn(expectedIdOrder).inOrder()
     }
   }
 
@@ -257,7 +273,11 @@ class NowPlayingRepositoryTest : KoinTest {
       assertThat(afterRemoval.none { it.id == itemToRemove?.id }).isTrue()
 
       // Verify positions are consecutive 1 through (originalCount-1)
-      assertThat(afterRemoval.map { it.position }).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9).inOrder()
+      assertThat(
+        afterRemoval.map {
+          it.position
+        }
+      ).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9).inOrder()
 
       // Verify items after the removed position shifted down correctly
       itemsAfterPosition.forEach { originalItem ->
@@ -343,7 +363,11 @@ class NowPlayingRepositoryTest : KoinTest {
       assertThat(afterRemoval.none { it.id == itemToRemove?.id }).isTrue()
 
       // Verify positions are consecutive 1 through (originalCount-1)
-      assertThat(afterRemoval.map { it.position }).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9).inOrder()
+      assertThat(
+        afterRemoval.map {
+          it.position
+        }
+      ).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9).inOrder()
 
       // Verify items after the removed position shifted down correctly
       itemsAfterPosition.forEach { originalItem ->
@@ -413,14 +437,14 @@ class NowPlayingRepositoryTest : KoinTest {
             title = "Remote Song 1",
             artist = "Remote Artist 1",
             path = "/remote/path1.mp3",
-            position = 1,
+            position = 1
           ),
           NowPlayingDto(
             title = "Remote Song 2",
             artist = "Remote Artist 2",
             path = "/remote/path2.mp3",
-            position = 2,
-          ),
+            position = 2
+          )
         )
 
       coEvery {
@@ -448,7 +472,11 @@ class NowPlayingRepositoryTest : KoinTest {
 
       val currentItems = pagingData.asSnapshot()
       assertThat(currentItems).hasSize(10)
-      assertThat(currentItems.map { it.path }).containsExactlyElementsIn(fakeAlbumQueue.map { it.path })
+      assertThat(
+        currentItems.map {
+          it.path
+        }
+      ).containsExactlyElementsIn(fakeAlbumQueue.map { it.path })
     }
   }
 

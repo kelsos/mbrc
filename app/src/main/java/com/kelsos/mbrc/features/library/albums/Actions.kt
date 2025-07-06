@@ -8,9 +8,7 @@ import com.kelsos.mbrc.features.library.tracks.AlbumTracksActivity
 import com.kelsos.mbrc.features.queue.AlbumMapper
 import com.kelsos.mbrc.features.queue.Queue
 
-fun determineAlbumQueueAction(
-  @IdRes itemId: Int,
-): Queue {
+fun determineAlbumQueueAction(@IdRes itemId: Int): Queue {
   if (itemId == R.id.popup_album_tracks) {
     return Queue.Default
   }

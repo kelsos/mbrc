@@ -13,14 +13,12 @@ class SquareImageButton : AppCompatImageButton {
 
   constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
     context.withStyledAttributes(attrs, R.styleable.SquareImageButton) {
-      useHeight = attrs.getAttributeBooleanValue(R.styleable.SquareImageButton_sib_use_height, false)
+      useHeight =
+        attrs.getAttributeBooleanValue(R.styleable.SquareImageButton_sib_use_height, false)
     }
   }
 
-  override fun onMeasure(
-    widthMeasureSpec: Int,
-    heightMeasureSpec: Int,
-  ) {
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     if (useHeight) {
       setMeasuredDimension(measuredHeight, measuredHeight)

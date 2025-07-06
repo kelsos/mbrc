@@ -39,7 +39,7 @@ class MiniControlFragment : ScopeFragment() {
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?,
+    savedInstanceState: Bundle?
   ): View? {
     val view = inflater.inflate(R.layout.fragment_mini_control, container, false)
 
@@ -85,7 +85,11 @@ class MiniControlFragment : ScopeFragment() {
         viewModel.events.collect { event ->
           when (event) {
             MiniControlUiMessages.NetworkUnavailable -> {
-              Snackbar.make(view, R.string.connection_error_network_unavailable, Snackbar.LENGTH_SHORT).show()
+              Snackbar.make(
+                view,
+                R.string.connection_error_network_unavailable,
+                Snackbar.LENGTH_SHORT
+              ).show()
             }
             MiniControlUiMessages.ActionFailed -> {
               Snackbar.make(view, R.string.action_failed, Snackbar.LENGTH_SHORT).show()

@@ -89,7 +89,7 @@ class BrowseTrackViewModelTest : KoinTest {
           disc = 1,
           trackno = 1,
           src = "",
-          albumArtist = "Test Artist",
+          albumArtist = "Test Artist"
         )
 
       // When & Then
@@ -123,7 +123,7 @@ class BrowseTrackViewModelTest : KoinTest {
           disc = 1,
           trackno = 1,
           src = "",
-          albumArtist = "Test Artist",
+          albumArtist = "Test Artist"
         )
       val queueResult = QueueResult(success = true, tracks = 1)
       coEvery { queueHandler.queueTrack(track = track, type = Queue.Next) } returns queueResult
@@ -158,7 +158,7 @@ class BrowseTrackViewModelTest : KoinTest {
           disc = 1,
           trackno = 1,
           src = "",
-          albumArtist = "Test Artist",
+          albumArtist = "Test Artist"
         )
       val queueResult = QueueResult(success = false, tracks = 0)
       coEvery { queueHandler.queueTrack(track = track, type = Queue.Next) } returns queueResult
@@ -194,7 +194,7 @@ class BrowseTrackViewModelTest : KoinTest {
           disc = 1,
           trackno = 1,
           src = "",
-          albumArtist = "Test Artist",
+          albumArtist = "Test Artist"
         )
       val queueResult = QueueResult(success = true, tracks = 1)
       coEvery { queueHandler.queueTrack(track = track, type = Queue.Last) } returns queueResult
@@ -269,7 +269,7 @@ class BrowseTrackViewModelTest : KoinTest {
           disc = 1,
           trackno = 1,
           src = "",
-          albumArtist = "Test Artist",
+          albumArtist = "Test Artist"
         )
       val queueResult = QueueResult(success = true, tracks = 1)
       coEvery { queueHandler.queueTrack(any<Track>(), any<Queue>()) } returns queueResult

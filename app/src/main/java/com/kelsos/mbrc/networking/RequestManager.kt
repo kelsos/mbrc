@@ -9,20 +9,17 @@ import com.kelsos.mbrc.networking.client.SocketMessage
 import com.kelsos.mbrc.networking.connections.toSocketAddress
 import com.kelsos.mbrc.networking.protocol.Protocol
 import com.kelsos.mbrc.networking.protocol.ProtocolPayload
-import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.BufferedReader
 import java.io.IOException
 import java.net.Socket
 import java.nio.charset.Charset
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 interface RequestManager {
   suspend fun openConnection(handshake: Boolean = true): ActiveConnection
 
-  suspend fun request(
-    connection: ActiveConnection,
-    message: SocketMessage,
-  ): String
+  suspend fun request(connection: ActiveConnection, message: SocketMessage): String
 }
 
 class RequestManagerImpl(
@@ -30,7 +27,7 @@ class RequestManagerImpl(
   private val deserializationAdapter: DeserializationAdapter,
   private val clientInformationStore: ClientInformationStore,
   private val repository: ConnectionRepository,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : RequestManager {
   override suspend fun openConnection(handshake: Boolean): ActiveConnection =
     withContext(dispatchers.network) {
@@ -80,17 +77,13 @@ class RequestManagerImpl(
     return true
   }
 
-  private suspend fun getProtocolPayload(): ProtocolPayload =
-    ProtocolPayload(
-      noBroadcast = true,
-      protocolVersion = Protocol.Companion.PROTOCOL_VERSION,
-      clientId = clientInformationStore.getClientId(),
-    )
+  private suspend fun getProtocolPayload(): ProtocolPayload = ProtocolPayload(
+    noBroadcast = true,
+    protocolVersion = Protocol.Companion.PROTOCOL_VERSION,
+    clientId = clientInformationStore.getClientId()
+  )
 
-  override suspend fun request(
-    connection: ActiveConnection,
-    message: SocketMessage,
-  ): String =
+  override suspend fun request(connection: ActiveConnection, message: SocketMessage): String =
     withContext(dispatchers.network) {
       connection.send(message.getBytes())
       val readLine = connection.readLine()
@@ -120,7 +113,8 @@ class RequestManagerImpl(
     }
   }
 
-  private fun SocketMessage.getBytes(): ByteArray = (serializationAdapter.stringify(this) + "\r\n").toByteArray()
+  private fun SocketMessage.getBytes(): ByteArray =
+    (serializationAdapter.stringify(this) + "\r\n").toByteArray()
 
   private fun Socket.send(socketMessage: SocketMessage) {
     this.outputStream.write(socketMessage.getBytes())

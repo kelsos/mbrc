@@ -17,10 +17,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.kelsos.mbrc.BuildConfig.APPLICATION_ID
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.utilities.RemoteUtils
+import java.io.File
 import kotlinx.coroutines.launch
 import org.koin.androidx.scope.ScopeFragment
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.io.File
 
 class FeedbackFragment : ScopeFragment() {
   private lateinit var feedbackEditText: EditText
@@ -41,7 +41,7 @@ class FeedbackFragment : ScopeFragment() {
             Build.MANUFACTURER,
             Build.DEVICE,
             Build.VERSION.RELEASE,
-            RemoteUtils.VERSION,
+            RemoteUtils.VERSION
           )
       }
       return feedbackText
@@ -50,7 +50,7 @@ class FeedbackFragment : ScopeFragment() {
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?,
+    savedInstanceState: Bundle?
   ): View? {
     val view = inflater.inflate(R.layout.fragment_feedback, container, false)
     feedbackEditText = view.findViewById(R.id.feedback_content)
@@ -93,17 +93,18 @@ class FeedbackFragment : ScopeFragment() {
     }
   }
 
-  private fun openChooser(
-    feedbackText: String,
-    logs: File? = null,
-  ) {
+  private fun openChooser(feedbackText: String, logs: File? = null) {
     val emailIntent = Intent(Intent.ACTION_SEND)
     emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf("kelsos@kelsos.net"))
     emailIntent.type = "message/rfc822"
     emailIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.feedback_subject))
     emailIntent.putExtra(Intent.EXTRA_TEXT, feedbackText)
     if (logs != null) {
-      val logsUri = FileProvider.getUriForFile(requireContext(), "$APPLICATION_ID.fileprovider", logs)
+      val logsUri = FileProvider.getUriForFile(
+        requireContext(),
+        "$APPLICATION_ID.fileprovider",
+        logs
+      )
       emailIntent.putExtra(Intent.EXTRA_STREAM, logsUri)
     }
 

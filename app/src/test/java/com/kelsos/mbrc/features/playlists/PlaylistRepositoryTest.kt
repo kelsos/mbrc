@@ -46,7 +46,7 @@ class PlaylistRepositoryTest : KoinTest {
         Room
           .inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            Database::class.java,
+            Database::class.java
           ).allowMainThreadQueries()
           .build()
       }
@@ -78,23 +78,18 @@ class PlaylistRepositoryTest : KoinTest {
     name: String,
     url: String,
     dateAdded: Long = DEFAULT_DATE_ADDED,
-    id: Long? = null,
-  ): PlaylistEntity =
-    PlaylistEntity(
-      name = name,
-      url = url,
-      dateAdded = dateAdded,
-      id = id,
-    )
+    id: Long? = null
+  ): PlaylistEntity = PlaylistEntity(
+    name = name,
+    url = url,
+    dateAdded = dateAdded,
+    id = id
+  )
 
-  private fun createPlaylistDto(
-    name: String,
-    url: String,
-  ): PlaylistDto =
-    PlaylistDto(
-      name = name,
-      url = url,
-    )
+  private fun createPlaylistDto(name: String, url: String): PlaylistDto = PlaylistDto(
+    name = name,
+    url = url
+  )
 
   @Test
   fun countShouldReturnCorrectCount() {
@@ -103,16 +98,16 @@ class PlaylistRepositoryTest : KoinTest {
         listOf(
           createPlaylistEntity(
             name = "Playlist 1",
-            url = "playlist1",
+            url = "playlist1"
           ),
           createPlaylistEntity(
             name = "Playlist 2",
-            url = "playlist2",
+            url = "playlist2"
           ),
           createPlaylistEntity(
             name = "Playlist 3",
-            url = "playlist3",
-          ),
+            url = "playlist3"
+          )
         )
       dao.insertAll(playlists)
 
@@ -138,16 +133,16 @@ class PlaylistRepositoryTest : KoinTest {
         listOf(
           createPlaylistEntity(
             name = "Playlist 1",
-            url = "playlist1",
+            url = "playlist1"
           ),
           createPlaylistEntity(
             name = "Playlist 2",
-            url = "playlist2",
+            url = "playlist2"
           ),
           createPlaylistEntity(
             name = "Playlist 3",
-            url = "playlist3",
-          ),
+            url = "playlist3"
+          )
         )
       dao.insertAll(playlists)
 
@@ -174,16 +169,16 @@ class PlaylistRepositoryTest : KoinTest {
         listOf(
           createPlaylistEntity(
             name = "Rock Playlist",
-            url = "rock_playlist",
+            url = "rock_playlist"
           ),
           createPlaylistEntity(
             name = "Pop Playlist",
-            url = "pop_playlist",
+            url = "pop_playlist"
           ),
           createPlaylistEntity(
             name = "Another Rock Mix",
-            url = "another_rock_mix",
-          ),
+            url = "another_rock_mix"
+          )
         )
       dao.insertAll(playlists)
 
@@ -201,12 +196,12 @@ class PlaylistRepositoryTest : KoinTest {
         listOf(
           createPlaylistEntity(
             name = "Rock Playlist",
-            url = "rock_playlist",
+            url = "rock_playlist"
           ),
           createPlaylistEntity(
             name = "Pop Playlist",
-            url = "pop_playlist",
-          ),
+            url = "pop_playlist"
+          )
         )
       dao.insertAll(playlists)
 
@@ -222,7 +217,7 @@ class PlaylistRepositoryTest : KoinTest {
       val playlist =
         createPlaylistEntity(
           name = "Playlist 1",
-          url = "playlist1",
+          url = "playlist1"
         )
       dao.insertAll(listOf(playlist))
       val insertedPlaylist = dao.all().first()
@@ -252,12 +247,12 @@ class PlaylistRepositoryTest : KoinTest {
         listOf(
           createPlaylistDto(
             name = "Playlist 1",
-            url = "playlist1",
+            url = "playlist1"
           ),
           createPlaylistDto(
             name = "Playlist 2",
-            url = "playlist2",
-          ),
+            url = "playlist2"
+          )
         )
       coEvery {
         api.getAllPages(Protocol.PlaylistList, PlaylistDto::class, any())
@@ -278,7 +273,7 @@ class PlaylistRepositoryTest : KoinTest {
         createPlaylistEntity(
           name = "Playlist 1 Old",
           url = "playlist1",
-          dateAdded = OLDER_DATE_ADDED,
+          dateAdded = OLDER_DATE_ADDED
         )
       dao.insertAll(listOf(existingPlaylist))
 
@@ -286,8 +281,8 @@ class PlaylistRepositoryTest : KoinTest {
         listOf(
           createPlaylistDto(
             name = "Playlist 1 New",
-            url = "playlist1",
-          ),
+            url = "playlist1"
+          )
         )
       coEvery {
         api.getAllPages(Protocol.PlaylistList, PlaylistDto::class, any())
@@ -314,7 +309,7 @@ class PlaylistRepositoryTest : KoinTest {
         createPlaylistEntity(
           name = "Old Playlist",
           url = "old_playlist",
-          dateAdded = OLDER_DATE_ADDED,
+          dateAdded = OLDER_DATE_ADDED
         )
       dao.insertAll(listOf(oldPlaylist))
 
@@ -322,8 +317,8 @@ class PlaylistRepositoryTest : KoinTest {
         listOf(
           createPlaylistDto(
             name = "New Playlist",
-            url = "new_playlist",
-          ),
+            url = "new_playlist"
+          )
         )
       coEvery {
         api.getAllPages(Protocol.PlaylistList, PlaylistDto::class, any())
@@ -346,8 +341,8 @@ class PlaylistRepositoryTest : KoinTest {
         listOf(
           createPlaylistDto(
             name = "Playlist 1",
-            url = "playlist1",
-          ),
+            url = "playlist1"
+          )
         )
       coEvery {
         api.getAllPages(Protocol.PlaylistList, PlaylistDto::class, progress)
@@ -368,13 +363,13 @@ class PlaylistRepositoryTest : KoinTest {
           createPlaylistEntity(
             name = "Playlist 1",
             url = "playlist1",
-            dateAdded = OLDER_DATE_ADDED,
+            dateAdded = OLDER_DATE_ADDED
           ),
           createPlaylistEntity(
             name = "Playlist 2",
             url = "playlist2",
-            dateAdded = OLDER_DATE_ADDED,
-          ),
+            dateAdded = OLDER_DATE_ADDED
+          )
         )
       dao.insertAll(existingPlaylists)
 
@@ -382,12 +377,12 @@ class PlaylistRepositoryTest : KoinTest {
         listOf(
           createPlaylistDto(
             name = "Playlist 1 Updated",
-            url = "playlist1",
+            url = "playlist1"
           ),
           createPlaylistDto(
             name = "Playlist 3",
-            url = "playlist3",
-          ),
+            url = "playlist3"
+          )
         )
       coEvery {
         api.getAllPages(Protocol.PlaylistList, PlaylistDto::class, any())
@@ -400,7 +395,11 @@ class PlaylistRepositoryTest : KoinTest {
       // Since PlaylistRepositoryImpl uses REPLACE conflict strategy and removes previous entries in onCompletion,
       // we expect only the playlists from the remote source
       assertThat(storedPlaylists).hasSize(2)
-      assertThat(storedPlaylists.map { it.name }).containsExactly("Playlist 1 Updated", "Playlist 3")
+      assertThat(
+        storedPlaylists.map {
+          it.name
+        }
+      ).containsExactly("Playlist 1 Updated", "Playlist 3")
       assertThat(storedPlaylists.map { it.url }).containsExactly("playlist1", "playlist3")
     }
   }

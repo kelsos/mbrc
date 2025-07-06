@@ -14,6 +14,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.io.IOException
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -26,7 +27,6 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
-import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
 class PlaylistViewModelTest : KoinTest {
@@ -142,7 +142,7 @@ class PlaylistViewModelTest : KoinTest {
   }
 
   @Test
-  fun reloadShouldEmitRefreshFailedWhenConnectedButRepositoryThrowsIOExceptionAndShowUserMessageTrue() {
+  fun reloadShouldEmitRefreshFailedWhenConnectedButRepositoryThrowsAndShowUserMessageTrue() {
     runTest(testDispatcher) {
       // Given
       coEvery { connectionStateFlow.isConnected() } returns true
@@ -243,7 +243,9 @@ class PlaylistViewModelTest : KoinTest {
       }
 
       // Verify user action was called with correct parameters
-      coVerify(exactly = 1) { userActionUseCase.perform(UserAction.create(Protocol.PlaylistPlay, playlistPath)) }
+      coVerify(exactly = 1) {
+        userActionUseCase.perform(UserAction.create(Protocol.PlaylistPlay, playlistPath))
+      }
     }
   }
 
@@ -265,7 +267,9 @@ class PlaylistViewModelTest : KoinTest {
       }
 
       // Verify user action was called
-      coVerify(exactly = 1) { userActionUseCase.perform(UserAction.create(Protocol.PlaylistPlay, playlistPath)) }
+      coVerify(exactly = 1) {
+        userActionUseCase.perform(UserAction.create(Protocol.PlaylistPlay, playlistPath))
+      }
     }
   }
 

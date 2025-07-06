@@ -79,7 +79,7 @@ class AlbumTracksViewModelTest : KoinTest {
           disc = 1,
           trackno = 1,
           src = "",
-          albumArtist = "Test Artist",
+          albumArtist = "Test Artist"
         )
 
       // When & Then
@@ -112,7 +112,7 @@ class AlbumTracksViewModelTest : KoinTest {
           disc = 1,
           trackno = 1,
           src = "",
-          albumArtist = "Test Artist",
+          albumArtist = "Test Artist"
         )
       val queueResult = QueueResult(success = true, tracks = 1)
       coEvery { queueHandler.queueTrack(track = track, type = Queue.Next) } returns queueResult
@@ -140,7 +140,7 @@ class AlbumTracksViewModelTest : KoinTest {
         AlbumInfo(
           album = "Test Album",
           artist = "Test Artist",
-          cover = null,
+          cover = null
         )
 
       // When & Then
@@ -166,10 +166,11 @@ class AlbumTracksViewModelTest : KoinTest {
         AlbumInfo(
           album = "Test Album",
           artist = "Test Artist",
-          cover = null,
+          cover = null
         )
       val queueResult = QueueResult(success = true, tracks = 10)
-      coEvery { queueHandler.queueAlbum(Queue.Now, "Test Album", "Test Artist") } returns queueResult
+      coEvery { queueHandler.queueAlbum(Queue.Now, "Test Album", "Test Artist") } returns
+        queueResult
 
       // When & Then
       viewModel.events.test {
@@ -201,7 +202,7 @@ class AlbumTracksViewModelTest : KoinTest {
           disc = 1,
           trackno = 1,
           src = "",
-          albumArtist = "Test Artist",
+          albumArtist = "Test Artist"
         )
       val queueResult = QueueResult(success = true, tracks = 1)
       coEvery { queueHandler.queueTrack(any<Track>(), any<Queue>()) } returns queueResult
@@ -235,7 +236,7 @@ class AlbumTracksViewModelTest : KoinTest {
         AlbumInfo(
           album = "Test Album",
           artist = "Test Artist",
-          cover = null,
+          cover = null
         )
       val queueResult = QueueResult(success = true, tracks = 10)
       coEvery { queueHandler.queueAlbum(any(), any(), any()) } returns queueResult

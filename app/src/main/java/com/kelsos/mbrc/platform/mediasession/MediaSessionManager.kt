@@ -26,7 +26,7 @@ class MediaSessionManager(
   private val userActionUseCase: UserActionUseCase,
   private val volumeModifyUseCase: VolumeModifyUseCase,
   private val appState: AppStateFlow,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) {
   private var _mediaSession: MediaSession? = null
   private val sessionJob: Job = Job()
@@ -43,13 +43,14 @@ class MediaSessionManager(
       return requireNotNull(_mediaSession)
     }
 
-    val player = RemotePlayer(context, userActionUseCase, volumeModifyUseCase, appState, dispatchers, scope)
+    val player =
+      RemotePlayer(context, userActionUseCase, volumeModifyUseCase, appState, dispatchers, scope)
 
     val mediaSessionCallback =
       object : MediaSession.Callback {
         override fun onPlaybackResumption(
           mediaSession: MediaSession,
-          controller: MediaSession.ControllerInfo,
+          controller: MediaSession.ControllerInfo
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
           val item =
             runBlocking {
@@ -58,7 +59,9 @@ class MediaSessionManager(
                 .orEmpty()
                 .toMediaItem()
             }
-          return Futures.immediateFuture(MediaSession.MediaItemsWithStartPosition(listOf(item), 0, 0))
+          return Futures.immediateFuture(
+            MediaSession.MediaItemsWithStartPosition(listOf(item), 0, 0)
+          )
         }
       }
 

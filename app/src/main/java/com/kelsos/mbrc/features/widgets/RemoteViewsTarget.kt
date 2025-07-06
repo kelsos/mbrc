@@ -14,7 +14,7 @@ class RemoteViewsTarget(
   private val widget: RemoteViews,
   private val widgetIds: IntArray,
   @IdRes private val imageViewResId: Int,
-  private val onImageUpdated: (() -> Unit)? = null,
+  private val onImageUpdated: (() -> Unit)? = null
 ) : Target {
   override fun onStart(placeholder: Image?) {
     Timber.v("Image loading started for widgets ${widgetIds.joinToString(", ")}")
@@ -28,10 +28,7 @@ class RemoteViewsTarget(
     setDrawable(result, "success")
   }
 
-  private fun setDrawable(
-    image: Image?,
-    reason: String,
-  ) {
+  private fun setDrawable(image: Image?, reason: String) {
     if (image == null) {
       Timber.v("No image found for widget setting placeholder, reason: $reason")
       widget.setImageViewResource(imageViewResId, R.drawable.ic_image_no_cover)

@@ -16,6 +16,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
+import java.io.IOException
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -29,7 +30,6 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
-import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
 class RemoteServiceDiscoveryImplTest : KoinTest {
@@ -160,7 +160,9 @@ class RemoteServiceDiscoveryImplTest : KoinTest {
     val adapter = moshi.adapter(DiscoveryMessage::class.java)
 
     // When: parsing a valid discovery message
-    val validJson = """{"name":"MusicBee","address":"192.168.1.100","port":3000,"context":"notify"}"""
+    val validJson = """
+      {"name":"MusicBee","address":"192.168.1.100","port":3000,"context":"notify"}
+    """.trimIndent()
     val message = adapter.fromJson(validJson)
 
     // Then: should parse correctly
@@ -198,7 +200,7 @@ class RemoteServiceDiscoveryImplTest : KoinTest {
         name = "TestMusicBee",
         address = "192.168.1.200",
         port = 3001,
-        context = "notify",
+        context = "notify"
       )
 
     // When: converting to connection settings

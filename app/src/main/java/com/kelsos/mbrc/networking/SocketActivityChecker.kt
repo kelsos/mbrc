@@ -12,9 +12,7 @@ import timber.log.Timber
 
 typealias Listener = () -> Unit
 
-class SocketActivityChecker(
-  dispatchers: AppCoroutineDispatchers,
-) {
+class SocketActivityChecker(dispatchers: AppCoroutineDispatchers) {
   private var deferred: Deferred<Unit>? = null
   private var listener: Listener? = null
   private val job = SupervisorJob()

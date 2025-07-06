@@ -52,7 +52,7 @@ class LibraryViewModelTest : KoinTest {
     // Setup default mocks
     every { librarySyncWorkHandler.syncProgress() } returns
       flowOf(
-        LibrarySyncProgress(LibraryMediaType.Genres, 0, 0, false),
+        LibrarySyncProgress(LibraryMediaType.Genres, 0, 0, false)
       )
     every { librarySyncWorkHandler.syncResults() } returns flowOf(SyncResult.Noop)
     coEvery { connectionStateFlow.isConnected() } returns true
@@ -178,7 +178,7 @@ class LibraryViewModelTest : KoinTest {
           albums = 200,
           tracks = 1000,
           playlists = 50,
-          covers = 150,
+          covers = 150
         )
       coEvery { librarySyncUseCase.syncStats() } returns mockStats
 
@@ -210,7 +210,7 @@ class LibraryViewModelTest : KoinTest {
         librarySyncWorkHandler = librarySyncWorkHandler,
         librarySyncUseCase = librarySyncUseCase,
         settingsManager = settingsManager,
-        connectionStateFlow = connectionStateFlow,
+        connectionStateFlow = connectionStateFlow
       )
 
     // Then
@@ -229,8 +229,8 @@ class LibraryViewModelTest : KoinTest {
           albums = 100,
           tracks = 500,
           playlists = 25,
-          covers = 75,
-        ),
+          covers = 75
+        )
       )
     every { librarySyncWorkHandler.syncResults() } returns flowOf(mockResult)
 
@@ -241,7 +241,7 @@ class LibraryViewModelTest : KoinTest {
         librarySyncWorkHandler = librarySyncWorkHandler,
         librarySyncUseCase = librarySyncUseCase,
         settingsManager = settingsManager,
-        connectionStateFlow = connectionStateFlow,
+        connectionStateFlow = connectionStateFlow
       )
 
     // Then

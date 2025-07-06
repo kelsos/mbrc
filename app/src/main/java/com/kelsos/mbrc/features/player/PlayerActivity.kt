@@ -74,7 +74,7 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
     return@lazy MaterialColors.getColor(
       this@PlayerActivity,
       android.R.attr.colorControlNormal,
-      Color.GRAY,
+      Color.GRAY
     )
   }
 
@@ -91,7 +91,7 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
         override fun handleOnBackPressed() {
           finishAfterTransition()
         }
-      },
+      }
     )
 
     initViews()
@@ -141,7 +141,9 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
     findViewById<ImageButton>(R.id.main_button_previous).setOnClickListener {
       viewModel.interact(PlayerAction.PlayPrevious)
     }
-    findViewById<ImageButton>(R.id.main_button_next).setOnClickListener { viewModel.interact(PlayerAction.PlayNext) }
+    findViewById<ImageButton>(R.id.main_button_next).setOnClickListener {
+      viewModel.interact(PlayerAction.PlayNext)
+    }
     findViewById<View>(R.id.track_info_area).setOnClickListener { navigate(R.id.nav_now_playing) }
   }
 
@@ -177,26 +179,25 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
     albumLabel.isSelected = true
   }
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean =
-    when (item.itemId) {
-      R.id.menu_lastfm_scrobble -> {
-        viewModel.interact(PlayerAction.ToggleScrobbling)
-        true
-      }
-
-      R.id.menu_rating_dialog -> {
-        val ratingDialog = RatingDialogFragment()
-        ratingDialog.show(supportFragmentManager, "RatingDialog")
-        true
-      }
-
-      R.id.menu_lastfm_love -> {
-        viewModel.interact(PlayerAction.ToggleFavorite)
-        true
-      }
-
-      else -> false
+  override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+    R.id.menu_lastfm_scrobble -> {
+      viewModel.interact(PlayerAction.ToggleScrobbling)
+      true
     }
+
+    R.id.menu_rating_dialog -> {
+      val ratingDialog = RatingDialogFragment()
+      ratingDialog.show(supportFragmentManager, "RatingDialog")
+      true
+    }
+
+    R.id.menu_lastfm_love -> {
+      viewModel.interact(PlayerAction.ToggleFavorite)
+      true
+    }
+
+    else -> false
+  }
 
   override fun onStop() {
     super.onStop()
@@ -261,8 +262,11 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
   private fun updateShuffleState(shuffleModel: ShuffleMode) {
     val shuffle = ShuffleMode.Off != shuffleModel
     val autoDj = ShuffleMode.AutoDJ == shuffleModel
-    shuffleButton.imageTintList = ColorStateList.valueOf(if (shuffle) activeColor else inactiveColor)
-    shuffleButton.setImageResource(if (autoDj) R.drawable.baseline_headset_24 else R.drawable.baseline_shuffle_24)
+    shuffleButton.imageTintList =
+      ColorStateList.valueOf(if (shuffle) activeColor else inactiveColor)
+    shuffleButton.setImageResource(
+      if (autoDj) R.drawable.baseline_headset_24 else R.drawable.baseline_shuffle_24
+    )
   }
 
   private fun updateRepeat(mode: Repeat) {
@@ -279,13 +283,12 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
     repeatButton.imageTintList = ColorStateList.valueOf(color)
   }
 
-  private fun updateVolume(
-    volume: Int,
-    mute: Boolean,
-  ) {
+  private fun updateVolume(volume: Int, mute: Boolean) {
     volumeBar.progress = if (mute) 0 else volume
     muteButton.imageTintList = ColorStateList.valueOf(inactiveColor)
-    muteButton.setImageResource(if (mute) R.drawable.baseline_volume_off_24 else R.drawable.baseline_volume_up_24)
+    muteButton.setImageResource(
+      if (mute) R.drawable.baseline_volume_off_24 else R.drawable.baseline_volume_up_24
+    )
   }
 
   private fun updatePlayState(state: PlayerState) {
@@ -311,7 +314,9 @@ class PlayerActivity : BaseActivity(R.layout.activity_main) {
   }
 
   private fun updatePlayingPosition(position: PlayingPosition) {
-    if (progressBar.max == position.total.toInt() && progressBar.progress == position.current.toInt()) {
+    if (progressBar.max == position.total.toInt() &&
+      progressBar.progress == position.current.toInt()
+    ) {
       return
     }
     progressBar.max = position.total.toInt()

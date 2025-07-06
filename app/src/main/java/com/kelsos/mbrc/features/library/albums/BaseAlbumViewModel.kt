@@ -13,14 +13,11 @@ import kotlinx.coroutines.launch
 abstract class BaseAlbumViewModel(
   private val queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
-  connectionStateFlow: ConnectionStateFlow,
+  connectionStateFlow: ConnectionStateFlow
 ) : BaseLibraryViewModel<AlbumUiMessage>(settingsHelper, connectionStateFlow) {
   abstract val albums: Flow<PagingData<Album>>
 
-  fun queue(
-    queue: Queue,
-    album: Album,
-  ) {
+  fun queue(queue: Queue, album: Album) {
     if (queue == Queue.Default) {
       launchDefault(AlbumUiMessage.OpenAlbumTracks(album))
       return

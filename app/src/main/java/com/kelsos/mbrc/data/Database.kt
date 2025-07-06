@@ -29,9 +29,9 @@ import com.kelsos.mbrc.features.settings.ConnectionSettingsEntity
     NowPlayingEntity::class,
     PlaylistEntity::class,
     RadioStationEntity::class,
-    ConnectionSettingsEntity::class,
+    ConnectionSettingsEntity::class
   ],
-  version = VERSION,
+  version = VERSION
 )
 abstract class Database : RoomDatabase() {
   abstract fun genreDao(): GenreDao

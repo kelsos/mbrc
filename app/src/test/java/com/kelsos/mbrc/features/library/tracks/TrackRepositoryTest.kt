@@ -46,7 +46,7 @@ class TrackRepositoryTest : KoinTest {
         Room
           .inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            Database::class.java,
+            Database::class.java
           ).allowMainThreadQueries()
           .build()
       }
@@ -83,19 +83,18 @@ class TrackRepositoryTest : KoinTest {
     albumArtist: String = artist,
     album: String = "Album $artist",
     genre: String = "Rock",
-    dateAdded: Long = DEFAULT_DATE_ADDED,
-  ): TrackEntity =
-    TrackEntity(
-      artist = artist,
-      title = title,
-      src = src,
-      trackno = trackno,
-      disc = disc,
-      albumArtist = albumArtist,
-      album = album,
-      genre = genre,
-      dateAdded = dateAdded,
-    )
+    dateAdded: Long = DEFAULT_DATE_ADDED
+  ): TrackEntity = TrackEntity(
+    artist = artist,
+    title = title,
+    src = src,
+    trackno = trackno,
+    disc = disc,
+    albumArtist = albumArtist,
+    album = album,
+    genre = genre,
+    dateAdded = dateAdded
+  )
 
   private fun createTrackDto(
     artist: String,
@@ -106,19 +105,18 @@ class TrackRepositoryTest : KoinTest {
     albumArtist: String = artist,
     album: String = "Album $artist",
     genre: String = "Rock",
-    year: String = "2021",
-  ): TrackDto =
-    TrackDto(
-      artist = artist,
-      title = title,
-      src = src,
-      trackno = trackno,
-      disc = disc,
-      albumArtist = albumArtist,
-      album = album,
-      genre = genre,
-      year = year,
-    )
+    year: String = "2021"
+  ): TrackDto = TrackDto(
+    artist = artist,
+    title = title,
+    src = src,
+    trackno = trackno,
+    disc = disc,
+    albumArtist = albumArtist,
+    album = album,
+    genre = genre,
+    year = year
+  )
 
   @Test
   fun countShouldReturnCorrectCount() {
@@ -128,22 +126,22 @@ class TrackRepositoryTest : KoinTest {
           createTrackEntity(
             artist = "Artist 1",
             title = "Track 1",
-            src = "/path/to/track1.mp3",
+            src = "/path/to/track1.mp3"
           ),
           createTrackEntity(
             artist = "Artist 2",
             title = "Track 2",
             src = "/path/to/track2.mp3",
             trackno = 2,
-            genre = "Pop",
+            genre = "Pop"
           ),
           createTrackEntity(
             artist = "Artist 3",
             title = "Track 3",
             src = "/path/to/track3.mp3",
             trackno = 3,
-            genre = "Jazz",
-          ),
+            genre = "Jazz"
+          )
         )
       dao.insertAll(tracks)
 
@@ -170,22 +168,22 @@ class TrackRepositoryTest : KoinTest {
           createTrackEntity(
             artist = "Artist 1",
             title = "Track 1",
-            src = "/path/to/track1.mp3",
+            src = "/path/to/track1.mp3"
           ),
           createTrackEntity(
             artist = "Artist 2",
             title = "Track 2",
             src = "/path/to/track2.mp3",
             trackno = 2,
-            genre = "Pop",
+            genre = "Pop"
           ),
           createTrackEntity(
             artist = "Artist 3",
             title = "Track 3",
             src = "/path/to/track3.mp3",
             trackno = 3,
-            genre = "Jazz",
-          ),
+            genre = "Jazz"
+          )
         )
       dao.insertAll(tracks)
 
@@ -214,22 +212,22 @@ class TrackRepositoryTest : KoinTest {
             artist = "Artist 1",
             title = "Album 1 Track 1",
             src = "/path/to/album1/track1.mp3",
-            album = "Album 1",
+            album = "Album 1"
           ),
           createTrackEntity(
             artist = "Artist 1",
             title = "Album 1 Track 2",
             src = "/path/to/album1/track2.mp3",
             trackno = 2,
-            album = "Album 1",
+            album = "Album 1"
           ),
           createTrackEntity(
             artist = "Artist 2",
             title = "Album 2 Track 1",
             src = "/path/to/album2/track1.mp3",
             album = "Album 2",
-            genre = "Pop",
-          ),
+            genre = "Pop"
+          )
         )
       dao.insertAll(tracks)
 
@@ -237,7 +235,11 @@ class TrackRepositoryTest : KoinTest {
       val result = repository.getTracks(query).asSnapshot()
 
       assertThat(result).hasSize(2)
-      assertThat(result.map { it.title }).containsExactly("Album 1 Track 1", "Album 1 Track 2").inOrder()
+      assertThat(
+        result.map {
+          it.title
+        }
+      ).containsExactly("Album 1 Track 1", "Album 1 Track 2").inOrder()
     }
   }
 
@@ -250,21 +252,21 @@ class TrackRepositoryTest : KoinTest {
             artist = "Artist 1",
             title = "Non-Album Track 1",
             src = "/path/to/non-album/track1.mp3",
-            album = "",
+            album = ""
           ),
           createTrackEntity(
             artist = "Artist 1",
             title = "Non-Album Track 2",
             src = "/path/to/non-album/track2.mp3",
             trackno = 2,
-            album = "",
+            album = ""
           ),
           createTrackEntity(
             artist = "Artist 1",
             title = "Album Track",
             src = "/path/to/album/track.mp3",
-            album = "Album",
-          ),
+            album = "Album"
+          )
         )
       dao.insertAll(tracks)
 
@@ -272,7 +274,11 @@ class TrackRepositoryTest : KoinTest {
       val result = repository.getTracks(query).asSnapshot()
 
       assertThat(result).hasSize(2)
-      assertThat(result.map { it.title }).containsExactly("Non-Album Track 1", "Non-Album Track 2").inOrder()
+      assertThat(
+        result.map {
+          it.title
+        }
+      ).containsExactly("Non-Album Track 1", "Non-Album Track 2").inOrder()
     }
   }
 
@@ -284,19 +290,19 @@ class TrackRepositoryTest : KoinTest {
           createTrackEntity(
             artist = "Artist 1",
             title = "Rock Track",
-            src = "/path/to/rock_track.mp3",
+            src = "/path/to/rock_track.mp3"
           ),
           createTrackEntity(
             artist = "Artist 2",
             title = "Pop Track",
             src = "/path/to/pop_track.mp3",
-            genre = "Pop",
+            genre = "Pop"
           ),
           createTrackEntity(
             artist = "Artist 3",
             title = "Another Rock Track",
-            src = "/path/to/another_rock_track.mp3",
-          ),
+            src = "/path/to/another_rock_track.mp3"
+          )
         )
       dao.insertAll(tracks)
 
@@ -315,14 +321,14 @@ class TrackRepositoryTest : KoinTest {
           createTrackEntity(
             artist = "Artist 1",
             title = "Rock Track",
-            src = "/path/to/rock_track.mp3",
+            src = "/path/to/rock_track.mp3"
           ),
           createTrackEntity(
             artist = "Artist 2",
             title = "Pop Track",
             src = "/path/to/pop_track.mp3",
-            genre = "Pop",
-          ),
+            genre = "Pop"
+          )
         )
       dao.insertAll(tracks)
 
@@ -340,14 +346,14 @@ class TrackRepositoryTest : KoinTest {
           createTrackEntity(
             artist = "Artist 1",
             title = "Track 1",
-            src = "/path/to/track1.mp3",
+            src = "/path/to/track1.mp3"
           ),
           createTrackEntity(
             artist = "Artist 2",
             title = "Track 2",
             src = "/path/to/track2.mp3",
-            genre = "Pop",
-          ),
+            genre = "Pop"
+          )
         )
       dao.insertAll(tracks)
 
@@ -367,20 +373,20 @@ class TrackRepositoryTest : KoinTest {
             artist = "Artist 1",
             title = "Rock Track 1",
             src = "/path/to/rock_track1.mp3",
-            genre = "Rock",
+            genre = "Rock"
           ),
           createTrackEntity(
             artist = "Artist 2",
             title = "Rock Track 2",
             src = "/path/to/rock_track2.mp3",
-            genre = "Rock",
+            genre = "Rock"
           ),
           createTrackEntity(
             artist = "Artist 3",
             title = "Pop Track",
             src = "/path/to/pop_track.mp3",
-            genre = "Pop",
-          ),
+            genre = "Pop"
+          )
         )
       dao.insertAll(tracks)
 
@@ -400,29 +406,31 @@ class TrackRepositoryTest : KoinTest {
             artist = "Artist 1",
             title = "Track 1",
             src = "/path/to/artist1_track1.mp3",
-            album = "Album 1",
+            album = "Album 1"
           ),
           createTrackEntity(
             artist = "Artist 1",
             title = "Track 2",
             src = "/path/to/artist1_track2.mp3",
             trackno = 2,
-            album = "Album 1",
+            album = "Album 1"
           ),
           createTrackEntity(
             artist = "Artist 2",
             title = "Track 1",
             src = "/path/to/artist2_track1.mp3",
             album = "Album 2",
-            genre = "Pop",
-          ),
+            genre = "Pop"
+          )
         )
       dao.insertAll(tracks)
 
       val result = repository.getTrackPaths(TrackQuery.Artist(artist = "Artist 1"))
 
       assertThat(result).hasSize(2)
-      assertThat(result).containsExactly("/path/to/artist1_track1.mp3", "/path/to/artist1_track2.mp3")
+      assertThat(
+        result
+      ).containsExactly("/path/to/artist1_track1.mp3", "/path/to/artist1_track2.mp3")
     }
   }
 
@@ -435,25 +443,27 @@ class TrackRepositoryTest : KoinTest {
             artist = "Artist 1",
             title = "Album 1 Track 1",
             src = "/path/to/album1_track1.mp3",
-            album = "Album 1",
+            album = "Album 1"
           ),
           createTrackEntity(
             artist = "Artist 1",
             title = "Album 1 Track 2",
             src = "/path/to/album1_track2.mp3",
             trackno = 2,
-            album = "Album 1",
+            album = "Album 1"
           ),
           createTrackEntity(
             artist = "Artist 1",
             title = "Album 2 Track 1",
             src = "/path/to/album2_track1.mp3",
-            album = "Album 2",
-          ),
+            album = "Album 2"
+          )
         )
       dao.insertAll(tracks)
 
-      val result = repository.getTrackPaths(TrackQuery.Album(album = "Album 1", artist = "Artist 1"))
+      val result = repository.getTrackPaths(
+        TrackQuery.Album(album = "Album 1", artist = "Artist 1")
+      )
 
       assertThat(result).hasSize(2)
       assertThat(result).containsExactly("/path/to/album1_track1.mp3", "/path/to/album1_track2.mp3")
@@ -467,7 +477,7 @@ class TrackRepositoryTest : KoinTest {
         createTrackEntity(
           artist = "Artist 1",
           title = "Track 1",
-          src = "/path/to/track1.mp3",
+          src = "/path/to/track1.mp3"
         )
       dao.insertAll(listOf(track))
       val insertedTrack = dao.all().first()
@@ -499,15 +509,15 @@ class TrackRepositoryTest : KoinTest {
             artist = "Artist 1",
             title = "Track 1",
             src = "/path/to/track1.mp3",
-            year = "2021",
+            year = "2021"
           ),
           createTrackDto(
             artist = "Artist 2",
             title = "Track 2",
             src = "/path/to/track2.mp3",
             genre = "Pop",
-            year = "2022",
-          ),
+            year = "2022"
+          )
         )
       coEvery {
         api.getAllPages(Protocol.LibraryBrowseTracks, TrackDto::class, any())
@@ -530,7 +540,7 @@ class TrackRepositoryTest : KoinTest {
           title = "Track 1 Old",
           src = "/path/to/track1.mp3",
           album = "Album 1 Old",
-          dateAdded = OLDER_DATE_ADDED,
+          dateAdded = OLDER_DATE_ADDED
         )
       dao.insertAll(listOf(existingTrack))
       val insertedId = dao.all().first { it.src == "/path/to/track1.mp3" }.id
@@ -542,8 +552,8 @@ class TrackRepositoryTest : KoinTest {
             title = "Track 1 New",
             src = "/path/to/track1.mp3",
             album = "Album 1 New",
-            year = "2021",
-          ),
+            year = "2021"
+          )
         )
       coEvery {
         api.getAllPages(Protocol.LibraryBrowseTracks, TrackDto::class, any())
@@ -570,7 +580,7 @@ class TrackRepositoryTest : KoinTest {
           src = "/path/to/old_track.mp3",
           album = "Old Album",
           genre = "Old Genre",
-          dateAdded = OLDER_DATE_ADDED,
+          dateAdded = OLDER_DATE_ADDED
         )
       dao.insertAll(listOf(oldTrack))
 
@@ -582,8 +592,8 @@ class TrackRepositoryTest : KoinTest {
             src = "/path/to/new_track.mp3",
             album = "New Album",
             genre = "New Genre",
-            year = "2023",
-          ),
+            year = "2023"
+          )
         )
       coEvery {
         api.getAllPages(Protocol.LibraryBrowseTracks, TrackDto::class, any())
@@ -608,8 +618,8 @@ class TrackRepositoryTest : KoinTest {
             artist = "Artist 1",
             title = "Track 1",
             src = "/path/to/track1.mp3",
-            year = "2021",
-          ),
+            year = "2021"
+          )
         )
       coEvery {
         api.getAllPages(Protocol.LibraryBrowseTracks, TrackDto::class, progress)
@@ -631,15 +641,15 @@ class TrackRepositoryTest : KoinTest {
             artist = "Artist 1",
             title = "Track 1",
             src = "/path/to/track1.mp3",
-            dateAdded = OLDER_DATE_ADDED,
+            dateAdded = OLDER_DATE_ADDED
           ),
           createTrackEntity(
             artist = "Artist 2",
             title = "Track 2",
             src = "/path/to/track2.mp3",
             genre = "Jazz",
-            dateAdded = OLDER_DATE_ADDED,
-          ),
+            dateAdded = OLDER_DATE_ADDED
+          )
         )
       dao.insertAll(existingTracks)
       val track1Id = dao.all().first { it.src == "/path/to/track1.mp3" }.id
@@ -650,7 +660,7 @@ class TrackRepositoryTest : KoinTest {
             artist = "Artist 1",
             title = "Track 1 Updated",
             src = "/path/to/track1.mp3",
-            year = "2021",
+            year = "2021"
           ),
           createTrackDto(
             artist = "Artist 3",
@@ -658,8 +668,8 @@ class TrackRepositoryTest : KoinTest {
             src = "/path/to/track3.mp3",
             album = "Album 3",
             genre = "Pop",
-            year = "2023",
-          ),
+            year = "2023"
+          )
         )
       coEvery {
         api.getAllPages(Protocol.LibraryBrowseTracks, TrackDto::class, any())

@@ -7,7 +7,5 @@ sealed class DiscoveryStop {
 
   object NotFound : DiscoveryStop()
 
-  class Complete(
-    val settings: ConnectionSettings,
-  ) : DiscoveryStop()
+  class Complete(val settings: ConnectionSettings) : DiscoveryStop()
 }

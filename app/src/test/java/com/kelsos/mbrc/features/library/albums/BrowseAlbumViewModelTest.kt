@@ -101,7 +101,8 @@ class BrowseAlbumViewModelTest : KoinTest {
       coEvery { connectionStateFlow.isConnected() } returns true
       val album = Album(id = 1, album = "Test Album", artist = "Test Artist", cover = null)
       val queueResult = QueueResult(success = true, tracks = 10)
-      coEvery { queueHandler.queueAlbum(Queue.Next, "Test Album", "Test Artist") } returns queueResult
+      coEvery { queueHandler.queueAlbum(Queue.Next, "Test Album", "Test Artist") } returns
+        queueResult
 
       // When & Then
       viewModel.events.test {
@@ -124,7 +125,8 @@ class BrowseAlbumViewModelTest : KoinTest {
       coEvery { connectionStateFlow.isConnected() } returns true
       val album = Album(id = 1, album = "Test Album", artist = "Test Artist", cover = null)
       val queueResult = QueueResult(success = false, tracks = 0)
-      coEvery { queueHandler.queueAlbum(Queue.Next, "Test Album", "Test Artist") } returns queueResult
+      coEvery { queueHandler.queueAlbum(Queue.Next, "Test Album", "Test Artist") } returns
+        queueResult
 
       // When & Then
       viewModel.events.test {

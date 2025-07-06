@@ -50,7 +50,7 @@ abstract class BaseBrowseFragment : ScopeFragment() {
 
   protected fun observeLoadState(
     loadStateFlow: Flow<CombinedLoadStates>,
-    adapter: RecyclerView.Adapter<*>,
+    adapter: RecyclerView.Adapter<*>
   ) {
     lifecycleScope.launch {
       loadStateFlow.map { it.refresh }.distinctUntilChanged().collectLatest { loadState ->
@@ -63,7 +63,7 @@ abstract class BaseBrowseFragment : ScopeFragment() {
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?,
+    savedInstanceState: Bundle?
   ): View? {
     val view = inflater.inflate(R.layout.fragment_library_search, container, false)
     recycler = view.findViewById(R.id.library_data_list)
@@ -80,13 +80,13 @@ abstract class BaseBrowseFragment : ScopeFragment() {
     return view
   }
 
-  protected fun queue(
-    success: Boolean,
-    tracks: Int,
-  ) {
+  protected fun queue(success: Boolean, tracks: Int) {
     val message =
       if (success) {
-        getString(R.string.queue_result__success, resources.getQuantityString(R.plurals.track, tracks, tracks))
+        getString(
+          R.string.queue_result__success,
+          resources.getQuantityString(R.plurals.track, tracks, tracks)
+        )
       } else {
         getString(R.string.queue_result__failure)
       }

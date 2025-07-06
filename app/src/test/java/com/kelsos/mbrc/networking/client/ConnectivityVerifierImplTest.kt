@@ -18,6 +18,14 @@ import com.kelsos.mbrc.utils.testDispatcherModule
 import com.squareup.moshi.Moshi
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
+import java.io.PrintWriter
+import java.net.ServerSocket
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -31,14 +39,6 @@ import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
 import timber.log.Timber
-import java.io.BufferedReader
-import java.io.BufferedWriter
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
-import java.io.PrintWriter
-import java.net.ServerSocket
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 private const val EXCEPTION_MESSAGE = "Test should throw"
 
@@ -97,7 +97,7 @@ class ConnectivityVerifierImplTest : KoinTest {
   private fun startMockServer(
     prematureDisconnect: Boolean = false,
     responseContext: Protocol = Protocol.VerifyConnection,
-    json: Boolean = true,
+    json: Boolean = true
   ): ServerSocket {
     val executor: ExecutorService = Executors.newSingleThreadExecutor()
     val server = getServer()
@@ -152,14 +152,13 @@ class ConnectivityVerifierImplTest : KoinTest {
     return server
   }
 
-  private fun ServerSocket.toConnection(): ConnectionSettings =
-    ConnectionSettings(
-      address = checkNotNull(this.inetAddress.hostAddress),
-      port = this.localPort,
-      name = "Test",
-      isDefault = true,
-      id = 1,
-    )
+  private fun ServerSocket.toConnection(): ConnectionSettings = ConnectionSettings(
+    address = checkNotNull(this.inetAddress.hostAddress),
+    port = this.localPort,
+    name = "Test",
+    isDefault = true,
+    id = 1
+  )
 
   @Test
   fun testSuccessfulVerification() {

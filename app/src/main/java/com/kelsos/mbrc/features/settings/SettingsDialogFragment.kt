@@ -35,7 +35,10 @@ class SettingsDialogFragment : DialogFragment() {
       MaterialAlertDialogBuilder(requireActivity())
         .setView(R.layout.dialog_settings)
         .setTitle(if (edit) R.string.common_edit else R.string.common_add)
-        .setPositiveButton(if (edit) R.string.settings_dialog_save else R.string.common_add) { dialog, _ ->
+        .setPositiveButton(if (edit) R.string.settings_dialog_save else R.string.common_add) {
+            dialog,
+            _
+          ->
           var shouldIClose = true
           val hostname = hostEdit.text.toString()
           val computerName = nameEdit.text.toString()
@@ -52,8 +55,8 @@ class SettingsDialogFragment : DialogFragment() {
               settings.copy(
                 name = computerName,
                 address = hostname,
-                port = portNum,
-              ),
+                port = portNum
+              )
             )
             dialog.dismiss()
           }
@@ -76,13 +79,12 @@ class SettingsDialogFragment : DialogFragment() {
     }
   }
 
-  private fun isValid(port: Int): Boolean =
-    if (port < MIN_PORT || port > MAX_PORT) {
-      portEdit.error = getString(R.string.alert_invalid_port_number)
-      false
-    } else {
-      true
-    }
+  private fun isValid(port: Int): Boolean = if (port < MIN_PORT || port > MAX_PORT) {
+    portEdit.error = getString(R.string.alert_invalid_port_number)
+    false
+  } else {
+    true
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

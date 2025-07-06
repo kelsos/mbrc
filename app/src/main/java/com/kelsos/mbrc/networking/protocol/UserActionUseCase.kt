@@ -16,10 +16,7 @@ interface UserActionUseCase {
   fun tryPerform(action: UserAction)
 }
 
-suspend fun UserActionUseCase.performUserAction(
-  protocol: Protocol,
-  data: Any,
-) {
+suspend fun UserActionUseCase.performUserAction(protocol: Protocol, data: Any) {
   perform(UserAction.create(protocol, data))
 }
 
@@ -57,7 +54,7 @@ suspend fun UserActionUseCase.pause() {
 
 class UserActionUseCaseImpl(
   private val messageQueue: MessageQueue,
-  dispatchers: AppCoroutineDispatchers,
+  dispatchers: AppCoroutineDispatchers
 ) : UserActionUseCase {
   private val job = SupervisorJob()
   private val scope = CoroutineScope(job + dispatchers.network)

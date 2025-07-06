@@ -10,7 +10,7 @@ import kotlinx.coroutines.runBlocking
 
 class MediaIntentHandler(
   private val userActionUseCase: UserActionUseCase,
-  private val volumeModifyUseCase: VolumeModifyUseCase,
+  private val volumeModifyUseCase: VolumeModifyUseCase
 ) {
   private var previousClick: Long = 0
 

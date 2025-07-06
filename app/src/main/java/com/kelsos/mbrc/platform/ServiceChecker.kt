@@ -9,9 +9,7 @@ fun interface ServiceChecker {
   fun startServiceIfNotRunning()
 }
 
-class ServiceCheckerImpl(
-  private val application: Application,
-) : ServiceChecker {
+class ServiceCheckerImpl(private val application: Application) : ServiceChecker {
   override fun startServiceIfNotRunning() {
     if (RemoteService.serviceRunning) {
       return

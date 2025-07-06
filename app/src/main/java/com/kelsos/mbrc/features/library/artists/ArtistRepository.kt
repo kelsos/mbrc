@@ -21,24 +21,21 @@ interface ArtistRepository : Repository<Artist> {
 class ArtistRepositoryImpl(
   private val dao: ArtistDao,
   private val api: ApiBase,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : ArtistRepository {
-  override suspend fun count(): Long =
-    withContext(dispatchers.database) {
-      dao.count()
-    }
+  override suspend fun count(): Long = withContext(dispatchers.database) {
+    dao.count()
+  }
 
-  override fun getArtistByGenre(genreId: Long): Flow<PagingData<Artist>> =
-    paged({
-      dao.getArtistByGenre(genreId)
-    }) {
-      it.toArtist()
-    }
+  override fun getArtistByGenre(genreId: Long): Flow<PagingData<Artist>> = paged({
+    dao.getArtistByGenre(genreId)
+  }) {
+    it.toArtist()
+  }
 
-  override fun getAll(): Flow<PagingData<Artist>> =
-    paged({ dao.getAll() }) {
-      it.toArtist()
-    }
+  override fun getAll(): Flow<PagingData<Artist>> = paged({ dao.getAll() }) {
+    it.toArtist()
+  }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -47,7 +44,7 @@ class ArtistRepositoryImpl(
         api.getAllPages(
           Protocol.LibraryBrowseArtists,
           ArtistDto::class,
-          progress,
+          progress
         )
 
       allPages
@@ -64,9 +61,13 @@ class ArtistRepositoryImpl(
     }
   }
 
-  override fun search(term: String): Flow<PagingData<Artist>> = paged({ dao.search(term) }) { it.toArtist() }
+  override fun search(term: String): Flow<PagingData<Artist>> = paged({
+    dao.search(term)
+  }) { it.toArtist() }
 
-  override fun getAlbumArtistsOnly(): Flow<PagingData<Artist>> = paged({ dao.getAlbumArtists() }) { it.toArtist() }
+  override fun getAlbumArtistsOnly(): Flow<PagingData<Artist>> = paged({
+    dao.getAlbumArtists()
+  }) { it.toArtist() }
 
   override suspend fun getById(id: Long): Artist? {
     return withContext(dispatchers.database) {

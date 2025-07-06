@@ -17,7 +17,7 @@ interface PlaylistRepository : Repository<Playlist>
 class PlaylistRepositoryImpl(
   private val dao: PlaylistDao,
   private val api: ApiBase,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : PlaylistRepository {
   override suspend fun count(): Long = withContext(dispatchers.database) { dao.count() }
 
@@ -30,7 +30,7 @@ class PlaylistRepositoryImpl(
         api.getAllPages(
           Protocol.PlaylistList,
           PlaylistDto::class,
-          progress,
+          progress
         )
       allPages
         .onCompletion {
@@ -46,7 +46,9 @@ class PlaylistRepositoryImpl(
     }
   }
 
-  override fun search(term: String): Flow<PagingData<Playlist>> = paged({ dao.search(term) }) { it.toPlaylist() }
+  override fun search(term: String): Flow<PagingData<Playlist>> = paged({
+    dao.search(term)
+  }) { it.toPlaylist() }
 
   override suspend fun getById(id: Long): Playlist? {
     return withContext(dispatchers.database) {

@@ -6,14 +6,14 @@ import androidx.core.content.edit
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.utilities.RemoteUtils
 import com.kelsos.mbrc.logging.FileLoggingTree
+import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import timber.log.Timber
-import java.time.Instant
 
 class SettingsManagerImpl(
   private val context: Application,
-  private val preferences: SharedPreferences,
+  private val preferences: SharedPreferences
 ) : SettingsManager {
   private val mutableShouldDisplayOnlyArtists = MutableStateFlow(shouldDisplayOnlyAlbumArtists())
   override val shouldDisplayOnlyArtists: Flow<Boolean> = mutableShouldDisplayOnlyArtists
@@ -32,7 +32,8 @@ class SettingsManagerImpl(
     }
   }
 
-  private fun loggingEnabled(): Boolean = preferences.getBoolean(getKey(R.string.settings_key_debug_logging), false)
+  private fun loggingEnabled(): Boolean =
+    preferences.getBoolean(getKey(R.string.settings_key_debug_logging), false)
 
   override fun getCallAction(): CallAction {
     val key = getKey(R.string.settings_key_incoming_call_action)
@@ -49,10 +50,7 @@ class SettingsManagerImpl(
     return Instant.ofEpochMilli(preferences.getLong(key, 0))
   }
 
-  override fun setLastUpdated(
-    lastChecked: Instant,
-    required: Boolean,
-  ) {
+  override fun setLastUpdated(lastChecked: Instant, required: Boolean) {
     val key = if (required) REQUIRED_CHECK else getKey(R.string.settings_key_last_update_check)
     preferences.edit {
       putLong(key, lastChecked.toEpochMilli())
@@ -118,10 +116,7 @@ interface SettingsManager {
 
   fun getLastUpdated(required: Boolean = false): Instant
 
-  fun setLastUpdated(
-    lastChecked: Instant,
-    required: Boolean = false,
-  )
+  fun setLastUpdated(lastChecked: Instant, required: Boolean = false)
 
   fun getThemePreference(): String
 

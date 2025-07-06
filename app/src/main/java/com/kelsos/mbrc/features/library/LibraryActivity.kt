@@ -83,7 +83,7 @@ class LibraryActivity :
           onBackPressedDispatcher.onBackPressed()
           isEnabled = true
         }
-      },
+      }
     )
 
     pager = findViewById(R.id.search_pager)
@@ -163,37 +163,36 @@ class LibraryActivity :
     return super.onCreateOptionsMenu(menu)
   }
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean =
-    when (item.itemId) {
-      R.id.library_refresh_item -> {
-        viewModel.sync()
-        true
-      }
-
-      R.id.library_album_artist -> {
-        albumArtistOnly?.let {
-          it.isChecked = !it.isChecked
-          viewModel.updateAlbumArtistOnly(it.isChecked)
-        }
-        true
-      }
-
-      R.id.library_search_clear -> {
-        supportActionBar?.setTitle(R.string.nav_library)
-        supportActionBar?.subtitle = ""
-        viewModel.search()
-        searchMenuItem?.isVisible = true
-        searchClear?.isVisible = false
-        true
-      }
-
-      R.id.library_sync_state -> {
-        viewModel.displayLibraryStats()
-        true
-      }
-
-      else -> super.onOptionsItemSelected(item)
+  override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+    R.id.library_refresh_item -> {
+      viewModel.sync()
+      true
     }
+
+    R.id.library_album_artist -> {
+      albumArtistOnly?.let {
+        it.isChecked = !it.isChecked
+        viewModel.updateAlbumArtistOnly(it.isChecked)
+      }
+      true
+    }
+
+    R.id.library_search_clear -> {
+      supportActionBar?.setTitle(R.string.nav_library)
+      supportActionBar?.subtitle = ""
+      viewModel.search()
+      searchMenuItem?.isVisible = true
+      searchClear?.isVisible = false
+      true
+    }
+
+    R.id.library_sync_state -> {
+      viewModel.displayLibraryStats()
+      true
+    }
+
+    else -> super.onOptionsItemSelected(item)
+  }
 
   fun showStats(stats: LibraryStats) {
     val dialog =
@@ -219,7 +218,11 @@ class LibraryActivity :
         resources.getQuantityString(R.plurals.artist, stats.artists.toInt(), stats.artists.toInt()),
         resources.getQuantityString(R.plurals.album, stats.albums.toInt(), stats.albums.toInt()),
         resources.getQuantityString(R.plurals.track, stats.tracks.toInt(), stats.tracks.toInt()),
-        resources.getQuantityString(R.plurals.playlist, stats.playlists.toInt(), stats.playlists.toInt()),
+        resources.getQuantityString(
+          R.plurals.playlist,
+          stats.playlists.toInt(),
+          stats.playlists.toInt()
+        )
       )
     Snackbar
       .make(pager, R.string.library__sync_complete_title, Snackbar.LENGTH_LONG)
@@ -255,22 +258,22 @@ class LibraryActivity :
     Snackbar.make(pager, R.string.connection_error_network_unavailable, Snackbar.LENGTH_LONG).show()
   }
 
-  fun getCategoryText(mediaType: LibraryMediaType): String =
-    when (mediaType) {
-      LibraryMediaType.Albums -> getString(R.string.media__albums)
-      LibraryMediaType.Artists -> getString(R.string.media__artists)
-      LibraryMediaType.Genres -> getString(R.string.media__genres)
-      LibraryMediaType.Playlists -> getString(R.string.media__playlists)
-      LibraryMediaType.Tracks -> getString(R.string.media__tracks)
-      LibraryMediaType.Covers -> getString(R.string.media__covers)
-    }
+  fun getCategoryText(mediaType: LibraryMediaType): String = when (mediaType) {
+    LibraryMediaType.Albums -> getString(R.string.media__albums)
+    LibraryMediaType.Artists -> getString(R.string.media__artists)
+    LibraryMediaType.Genres -> getString(R.string.media__genres)
+    LibraryMediaType.Playlists -> getString(R.string.media__playlists)
+    LibraryMediaType.Tracks -> getString(R.string.media__tracks)
+    LibraryMediaType.Covers -> getString(R.string.media__covers)
+  }
 
   fun showSyncProgress(progress: LibrarySyncProgress) {
     val syncText = findViewById<TextView>(R.id.sync_progress_text)
     val progressIndicator = findViewById<LinearProgressIndicator>(R.id.sync_progress)
     val categoryText = getCategoryText(progress.category)
     syncText.isGone = false
-    syncText.text = getString(R.string.library__sync_progress, progress.current, progress.total, categoryText)
+    syncText.text =
+      getString(R.string.library__sync_progress, progress.current, progress.total, categoryText)
     progressIndicator.isGone = false
     progressIndicator.progress = progress.current
     progressIndicator.max = progress.total

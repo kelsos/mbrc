@@ -19,10 +19,7 @@ sealed class UiMessage {
 
   object PartyModeCommandUnavailable : UiMessage()
 
-  class PluginUpdateRequired(
-    val pluginVersion: String,
-    val minimumVersion: String,
-  ) : UiMessage()
+  class PluginUpdateRequired(val pluginVersion: String, val minimumVersion: String) : UiMessage()
 
   object PluginUpdateAvailable : UiMessage()
 
@@ -40,9 +37,7 @@ sealed class UiMessage {
 
     object UnsupportedProtocolVersion : ConnectionError()
 
-    data class UnknownConnectionError(
-      val message: String,
-    ) : ConnectionError()
+    data class UnknownConnectionError(val message: String) : ConnectionError()
 
     object AllRetriesExhausted : ConnectionError()
   }

@@ -34,7 +34,7 @@ class CommandFactoryImpl :
       Protocol.PlayerPrevious to SimpleLogCommand::class,
       Protocol.PlayerPlayPause to SimpleLogCommand::class,
       Protocol.NowPlayingListPlay to SimpleLogCommand::class,
-      Protocol.ProtocolTag to ProtocolVersionUpdate::class,
+      Protocol.ProtocolTag to ProtocolVersionUpdate::class
     )
 
   private fun resolveAction(protocol: Protocol): ProtocolAction? {

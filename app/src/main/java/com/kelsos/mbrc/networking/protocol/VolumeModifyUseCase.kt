@@ -25,10 +25,8 @@ interface VolumeModifyUseCase {
   suspend fun reduceVolume()
 }
 
-class VolumeModifyUseCaseImpl(
-  private val appState: AppStateFlow,
-  private val queue: MessageQueue,
-) : VolumeModifyUseCase {
+class VolumeModifyUseCaseImpl(private val appState: AppStateFlow, private val queue: MessageQueue) :
+  VolumeModifyUseCase {
   private suspend fun currentVolume() = appState.playerStatus.firstOrNull()?.volume ?: 0
 
   private suspend fun isMute() = appState.playerStatus.firstOrNull()?.mute == true

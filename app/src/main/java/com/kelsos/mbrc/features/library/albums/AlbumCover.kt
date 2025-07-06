@@ -10,10 +10,7 @@ data class AlbumCover(
   @Json(name = "album")
   val album: String?,
   @Json(name = "hash")
-  val hash: String?,
+  val hash: String?
 )
 
-data class CachedAlbumCover(
-  val id: Long,
-  val cover: String?,
-)
+data class CachedAlbumCover(val id: Long, val cover: String?)

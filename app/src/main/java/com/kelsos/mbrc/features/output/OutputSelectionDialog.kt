@@ -50,12 +50,7 @@ class OutputSelectionDialog :
         // We don't handle this
       }
 
-      override fun onItemSelected(
-        parent: AdapterView<*>?,
-        view: View?,
-        position: Int,
-        id: Long,
-      ) {
+      override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         if (!touchInitiated) {
           return
         }
@@ -115,10 +110,7 @@ class OutputSelectionDialog :
     return dialog
   }
 
-  override fun onTouch(
-    view: View?,
-    event: MotionEvent?,
-  ): Boolean {
+  override fun onTouch(view: View?, event: MotionEvent?): Boolean {
     touchInitiated = true
     return view?.performClick() == true
   }
@@ -131,7 +123,7 @@ class OutputSelectionDialog :
         requireContext(),
         R.layout.item_output_device,
         R.id.output_selection__output_device,
-        data,
+        data
       )
     availableOutputs.adapter = outputAdapter
     availableOutputs.onItemSelectedListener = onItemSelectedListener

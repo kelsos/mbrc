@@ -10,9 +10,7 @@ import com.kelsos.mbrc.platform.mediasession.RemoteViewIntentBuilder.getPendingI
 /**
  * Manages notification actions for the media session notifications.
  */
-class NotificationActionManager(
-  private val context: Context,
-) {
+class NotificationActionManager(private val context: Context) {
   /**
    * Adds media control actions to the notification builder.
    *
@@ -21,14 +19,14 @@ class NotificationActionManager(
    */
   fun addMediaActions(
     builder: androidx.core.app.NotificationCompat.Builder,
-    playerState: PlayerState,
+    playerState: PlayerState
   ) {
     val previousAction =
       Action
         .Builder(
           R.drawable.baseline_skip_previous_24,
           context.getString(R.string.action_previous),
-          getPendingIntent(RemoteIntentCode.Previous, context),
+          getPendingIntent(RemoteIntentCode.Previous, context)
         ).build()
     builder.addAction(previousAction)
 
@@ -49,7 +47,7 @@ class NotificationActionManager(
         .Builder(
           playPauseIcon,
           playPauseText,
-          getPendingIntent(RemoteIntentCode.Play, context),
+          getPendingIntent(RemoteIntentCode.Play, context)
         ).build()
     builder.addAction(playPauseAction)
 
@@ -58,7 +56,7 @@ class NotificationActionManager(
         .Builder(
           R.drawable.baseline_skip_next_24,
           context.getString(R.string.action_next),
-          getPendingIntent(RemoteIntentCode.Next, context),
+          getPendingIntent(RemoteIntentCode.Next, context)
         ).build()
     builder.addAction(nextAction)
   }
@@ -74,7 +72,7 @@ class NotificationActionManager(
       .Builder(
         R.drawable.baseline_close_24,
         getString(context, android.R.string.cancel),
-        cancelIntent,
+        cancelIntent
       ).build()
   }
 }

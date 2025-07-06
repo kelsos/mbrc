@@ -7,9 +7,7 @@ import com.kelsos.mbrc.R
 import com.kelsos.mbrc.features.library.albums.ArtistAlbumsActivity
 import com.kelsos.mbrc.features.queue.Queue
 
-fun determineArtistQueueAction(
-  @IdRes itemId: Int,
-): Queue {
+fun determineArtistQueueAction(@IdRes itemId: Int): Queue {
   if (itemId == R.id.popup_artist_album) {
     return Queue.Default
   }

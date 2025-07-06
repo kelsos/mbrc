@@ -28,15 +28,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
   private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
   private val themeManager: ThemeManager by inject()
 
-  override fun onCreatePreferences(
-    savedInstanceState: Bundle?,
-    rootKey: String?,
-  ) {
+  override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
     addPreferencesFromResource(R.xml.application_settings)
 
     requestPermissionLauncher =
       registerForActivityResult(
-        ActivityResultContracts.RequestPermission(),
+        ActivityResultContracts.RequestPermission()
       ) { isGranted: Boolean ->
         if (isGranted) {
           // Permission granted
@@ -110,7 +107,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
   private fun requestPhoneStatePermission() {
     if (ActivityCompat.checkSelfPermission(
         requireContext(),
-        Manifest.permission.READ_PHONE_STATE,
+        Manifest.permission.READ_PHONE_STATE
       ) == PackageManager.PERMISSION_GRANTED
     ) {
       restartService()
@@ -119,11 +116,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
   }
 
-  private fun hasPhonePermission(): Boolean =
-    ActivityCompat.checkSelfPermission(
-      requireActivity(),
-      Manifest.permission.READ_PHONE_STATE,
-    ) == PackageManager.PERMISSION_GRANTED
+  private fun hasPhonePermission(): Boolean = ActivityCompat.checkSelfPermission(
+    requireActivity(),
+    Manifest.permission.READ_PHONE_STATE
+  ) == PackageManager.PERMISSION_GRANTED
 
   private fun showLicenseDialog() {
     val args = Bundle()

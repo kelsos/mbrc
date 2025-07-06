@@ -19,13 +19,13 @@ class WidgetSmall : WidgetBase() {
       imageSize = R.dimen.widget_small_height,
       imageId = R.id.widget_small_image,
       playButtonId = R.id.widget_small_play,
-      widgetClass = WidgetSmall::class,
+      widgetClass = WidgetSmall::class
     )
 
   override fun setupActionIntents(
     views: RemoteViews,
     pendingIntent: PendingIntent,
-    context: Context,
+    context: Context
   ) {
     Timber.d("Setting up action intents for $type widget")
     views.setOnClickPendingIntent(R.id.widget_small_image, pendingIntent)
@@ -34,10 +34,7 @@ class WidgetSmall : WidgetBase() {
     views.setOnClickPendingIntent(R.id.widget_small_previous, getPendingIntent(Previous, context))
   }
 
-  override fun setupTrackInfo(
-    views: RemoteViews,
-    info: PlayingTrack,
-  ) {
+  override fun setupTrackInfo(views: RemoteViews, info: PlayingTrack) {
     views.setTextViewText(R.id.widget_small_line_one, info.title)
     views.setTextViewText(R.id.widget_small_line_two, info.artist)
   }

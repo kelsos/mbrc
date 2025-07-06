@@ -6,9 +6,6 @@ import android.net.wifi.WifiManager
 import com.kelsos.mbrc.networking.connections.toConnection
 import com.kelsos.mbrc.networking.protocol.Protocol
 import com.squareup.moshi.Moshi
-import okio.buffer
-import okio.source
-import timber.log.Timber
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.Inet4Address
@@ -17,6 +14,9 @@ import java.net.MulticastSocket
 import java.net.NetworkInterface
 import java.net.SocketException
 import java.net.SocketTimeoutException
+import okio.buffer
+import okio.source
+import timber.log.Timber
 
 fun interface RemoteServiceDiscovery {
   suspend fun discover(): DiscoveryStop
@@ -25,13 +25,13 @@ fun interface RemoteServiceDiscovery {
 class RemoteServiceDiscoveryImpl(
   private val manager: WifiManager,
   private val connectivityManager: ConnectivityManager,
-  moshi: Moshi,
+  moshi: Moshi
 ) : RemoteServiceDiscovery {
   private val adapter = moshi.adapter(DiscoveryMessage::class.java)
 
   private suspend fun <T> useMulticastLock(
     lock: WifiManager.MulticastLock,
-    block: suspend () -> T,
+    block: suspend () -> T
   ): T {
     lock.setReferenceCounted(true)
     lock.acquire()
@@ -59,8 +59,8 @@ class RemoteServiceDiscoveryImpl(
           .toJson(
             DiscoveryMessage(
               context = Protocol.DISCOVERY,
-              address = requireNotNull(getWifiAddress()),
-            ),
+              address = requireNotNull(getWifiAddress())
+            )
           ).toByteArray()
       socket.send(DatagramPacket(data, data.size, group, MULTICAST_PORT))
 
@@ -81,7 +81,7 @@ class RemoteServiceDiscoveryImpl(
   private fun retryUntilNotifyContext(
     socket: MulticastSocket,
     maxAttempts: Int = 3,
-    totalTimeoutMs: Long = 15000,
+    totalTimeoutMs: Long = 15000
   ): DiscoveryMessage? {
     var attempts = 0
     val startTime = System.currentTimeMillis()
@@ -130,15 +130,14 @@ class RemoteServiceDiscoveryImpl(
     }
   }
 
-  private fun getDiscoveryMessage(socket: MulticastSocket): DiscoveryMessage? =
-    try {
-      socket.discoveryMessage()
-    } catch (_: SocketTimeoutException) {
-      null
-    } catch (e: IOException) {
-      Timber.e(e, "Failed to get discovery message")
-      null
-    }
+  private fun getDiscoveryMessage(socket: MulticastSocket): DiscoveryMessage? = try {
+    socket.discoveryMessage()
+  } catch (_: SocketTimeoutException) {
+    null
+  } catch (e: IOException) {
+    Timber.e(e, "Failed to get discovery message")
+    null
+  }
 
   private fun getWifiAddress(): String? {
     if (!isWifiConnected()) {
@@ -182,7 +181,11 @@ class RemoteServiceDiscoveryImpl(
 
     val byteSource = buffer.inputStream(0, packet.length).source().buffer()
     val discoveryMessage = adapter.fromJson(byteSource)
-    Timber.v("Discovery parsed -> $discoveryMessage (from %s:%d)", packet.address?.hostAddress, packet.port)
+    Timber.v(
+      "Discovery parsed -> $discoveryMessage (from %s:%d)",
+      packet.address?.hostAddress,
+      packet.port
+    )
     if (discoveryMessage != null && discoveryMessage.address.isEmpty()) {
       Timber.w("Received discovery message with empty address, using sender address")
       return discoveryMessage.copy(address = packet.address?.hostAddress.orEmpty())
@@ -190,9 +193,7 @@ class RemoteServiceDiscoveryImpl(
     return discoveryMessage
   }
 
-  private class SocketCreationFailedException(
-    cause: Throwable,
-  ) : IOException(cause)
+  private class SocketCreationFailedException(cause: Throwable) : IOException(cause)
 
   companion object {
     private const val BUFFER_SIZE = 1024

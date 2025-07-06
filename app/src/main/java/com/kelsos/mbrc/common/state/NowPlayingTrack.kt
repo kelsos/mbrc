@@ -14,5 +14,5 @@ data class NowPlayingTrack(
   @Json(name = "year")
   val year: String,
   @Json(name = "path")
-  val path: String,
+  val path: String
 )

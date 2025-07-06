@@ -69,10 +69,7 @@ class GenreArtistsActivity :
     viewModel.load(id)
   }
 
-  override fun onAction(
-    item: Artist,
-    id: Int?,
-  ) {
+  override fun onAction(item: Artist, id: Int?) {
     val action = if (id !== null) determineArtistQueueAction(id) else Queue.Default
     viewModel.queue(action, item)
   }

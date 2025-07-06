@@ -25,10 +25,7 @@ abstract class WidgetBase : AppWidgetProvider() {
   abstract val config: WidgetConfig
   abstract val type: String
 
-  override fun onReceive(
-    context: Context?,
-    intent: Intent?,
-  ) {
+  override fun onReceive(context: Context?, intent: Intent?) {
     super.onReceive(context, intent)
     when (intent?.action) {
       AppWidgetManager.ACTION_APPWIDGET_UPDATE -> {
@@ -48,10 +45,7 @@ abstract class WidgetBase : AppWidgetProvider() {
     }
   }
 
-  private fun updateWidget(
-    context: Context,
-    extras: Bundle,
-  ) {
+  private fun updateWidget(context: Context, extras: Bundle) {
     try {
       val widgetManager = AppWidgetManager.getInstance(context)
       val widgets = ComponentName(context.packageName, config.widgetClass.java.name)
@@ -72,7 +66,7 @@ abstract class WidgetBase : AppWidgetProvider() {
             context,
             widgetManager,
             widgetsIds,
-            playingTrack,
+            playingTrack
           )
         }
         data.isState() ->
@@ -80,7 +74,7 @@ abstract class WidgetBase : AppWidgetProvider() {
             context,
             widgetManager,
             widgetsIds,
-            data.state(),
+            data.state()
           )
       }
     } catch (e: SecurityException) {
@@ -93,7 +87,7 @@ abstract class WidgetBase : AppWidgetProvider() {
   override fun onUpdate(
     context: Context,
     appWidgetManager: AppWidgetManager,
-    appWidgetIds: IntArray,
+    appWidgetIds: IntArray
   ) {
     super.onUpdate(context, appWidgetManager, appWidgetIds)
 
@@ -108,7 +102,7 @@ abstract class WidgetBase : AppWidgetProvider() {
           context,
           0,
           intent,
-          PendingIntent.FLAG_IMMUTABLE,
+          PendingIntent.FLAG_IMMUTABLE
         )
       val views = RemoteViews(context.packageName, config.layout)
       setupActionIntents(views, pendingIntent, context)
@@ -120,19 +114,16 @@ abstract class WidgetBase : AppWidgetProvider() {
   abstract fun setupActionIntents(
     views: RemoteViews,
     pendingIntent: PendingIntent,
-    context: Context,
+    context: Context
   )
 
-  abstract fun setupTrackInfo(
-    views: RemoteViews,
-    info: PlayingTrack,
-  )
+  abstract fun setupTrackInfo(views: RemoteViews, info: PlayingTrack)
 
   private fun updateInfoWithCover(
     context: Context,
     widgetManager: AppWidgetManager,
     widgetsIds: IntArray,
-    info: PlayingTrack,
+    info: PlayingTrack
   ) {
     Timber.d("updateInfoWithCover called for $type widget, coverUrl: '${info.coverUrl}'")
 
@@ -151,7 +142,7 @@ abstract class WidgetBase : AppWidgetProvider() {
           onImageUpdated = {
             // Callback to preserve actions after the image loads
             preserveActions(context, widget)
-          },
+          }
         )
 
       val request =
@@ -175,17 +166,14 @@ abstract class WidgetBase : AppWidgetProvider() {
     }
   }
 
-  private fun preserveActions(
-    context: Context,
-    views: RemoteViews,
-  ) {
+  private fun preserveActions(context: Context, views: RemoteViews) {
     val intent = Intent(context, PlayerActivity::class.java)
     val pendingIntent =
       PendingIntent.getActivity(
         context,
         0,
         intent,
-        PendingIntent.FLAG_IMMUTABLE,
+        PendingIntent.FLAG_IMMUTABLE
       )
     setupActionIntents(views, pendingIntent, context)
   }
@@ -194,7 +182,7 @@ abstract class WidgetBase : AppWidgetProvider() {
     context: Context,
     manager: AppWidgetManager,
     widgetsIds: IntArray,
-    state: String,
+    state: String
   ) {
     val widget = RemoteViews(context.packageName, config.layout)
 
@@ -204,7 +192,7 @@ abstract class WidgetBase : AppWidgetProvider() {
         R.drawable.baseline_pause_24
       } else {
         R.drawable.baseline_play_arrow_24
-      },
+      }
     )
 
     preserveActions(context, widget)

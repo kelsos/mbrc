@@ -15,6 +15,7 @@ import com.kelsos.mbrc.utils.testDispatcher
 import com.kelsos.mbrc.utils.testDispatcherModule
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.net.SocketTimeoutException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -33,7 +34,6 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
-import java.net.SocketTimeoutException
 
 @RunWith(AndroidJUnit4::class)
 class LibrarySyncUseCaseImplTest : KoinTest {

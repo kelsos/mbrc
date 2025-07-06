@@ -25,10 +25,7 @@ class BrowseTrackFragment :
     viewModel.sync()
   }
 
-  override fun onViewCreated(
-    view: View,
-    savedInstanceState: Bundle?,
-  ) {
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
 
     setAdapter(adapter)
@@ -66,10 +63,7 @@ class BrowseTrackFragment :
     }
   }
 
-  override fun onAction(
-    item: Track,
-    id: Int?,
-  ) {
+  override fun onAction(item: Track, id: Int?) {
     viewModel.queue(if (id != null) determineTrackQueueAction(id) else Queue.Default, item)
   }
 }

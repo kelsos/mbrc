@@ -41,8 +41,5 @@ interface ConnectionDao {
   fun getPrevious(id: Long): ConnectionSettingsEntity?
 
   @Query("select id from settings where address = :address and port = :port")
-  fun findId(
-    address: String,
-    port: Int,
-  ): Long?
+  fun findId(address: String, port: Int): Long?
 }

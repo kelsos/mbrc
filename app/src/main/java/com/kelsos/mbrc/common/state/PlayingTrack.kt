@@ -15,7 +15,7 @@ data class PlayingTrack(
   val year: String = "",
   val path: String = "",
   val coverUrl: String = "",
-  val duration: Long = 0,
+  val duration: Long = 0
 ) : Parcelable {
   companion object {
     @JvmField
@@ -34,15 +34,12 @@ data class PlayingTrack(
     source.readString().orEmpty(),
     source.readString().orEmpty(),
     source.readString().orEmpty(),
-    source.readLong(),
+    source.readLong()
   )
 
   override fun describeContents() = 0
 
-  override fun writeToParcel(
-    dest: Parcel,
-    flags: Int,
-  ) {
+  override fun writeToParcel(dest: Parcel, flags: Int) {
     dest.writeString(artist)
     dest.writeString(title)
     dest.writeString(album)

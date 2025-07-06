@@ -2,27 +2,22 @@ package com.kelsos.mbrc.logging
 
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.logging.FileLoggingTree.Companion.LOGS_DIR
-import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 interface LogHelper {
   suspend fun logsExist(filesDir: File): Boolean
 
-  suspend fun zipLogs(
-    filesDir: File,
-    cacheDir: File?,
-  ): File
+  suspend fun zipLogs(filesDir: File, cacheDir: File?): File
 }
 
-class LogHelperImpl(
-  private val appCoroutineDispatchers: AppCoroutineDispatchers,
-) : LogHelper {
+class LogHelperImpl(private val appCoroutineDispatchers: AppCoroutineDispatchers) : LogHelper {
   override suspend fun logsExist(filesDir: File): Boolean =
     withContext(appCoroutineDispatchers.io) {
       try {
@@ -34,10 +29,7 @@ class LogHelperImpl(
       }
     }
 
-  override suspend fun zipLogs(
-    filesDir: File,
-    cacheDir: File?,
-  ): File =
+  override suspend fun zipLogs(filesDir: File, cacheDir: File?): File =
     withContext(appCoroutineDispatchers.io) {
       val logDir = File(filesDir, LOGS_DIR)
       if (!logDir.exists()) {

@@ -15,10 +15,7 @@ import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-private data class ArtistSearchParams(
-  val keyword: String,
-  val albumArtists: Boolean,
-)
+private data class ArtistSearchParams(val keyword: String, val albumArtists: Boolean)
 
 class BrowseArtistViewModel(
   private val repository: ArtistRepository,
@@ -27,7 +24,7 @@ class BrowseArtistViewModel(
   settingsManager: SettingsManager,
   queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
-  connectionStateFlow: ConnectionStateFlow,
+  connectionStateFlow: ConnectionStateFlow
 ) : BaseArtistViewModel(queueHandler, settingsHelper, connectionStateFlow) {
   val shouldDisplayOnlyArtists = settingsManager.shouldDisplayOnlyArtists
 

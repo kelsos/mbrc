@@ -14,23 +14,22 @@ import kotlinx.coroutines.withContext
 class TrackRepositoryImpl(
   private val dao: TrackDao,
   private val api: ApiBase,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : TrackRepository {
   override suspend fun count(): Long = withContext(dispatchers.database) { dao.count() }
 
   override fun getAll(): Flow<PagingData<Track>> = paged({ dao.getAll() }) { it.toTrack() }
 
-  override fun getTracks(query: PagingTrackQuery): Flow<PagingData<Track>> =
-    when (query) {
-      is PagingTrackQuery.Album ->
-        paged({
-          dao.getAlbumTracks(query.album, query.artist)
-        }) { it.toTrack() }
-      is PagingTrackQuery.NonAlbum ->
-        paged(
-          { dao.getNonAlbumTracks(query.artist) },
-        ) { it.toTrack() }
-    }
+  override fun getTracks(query: PagingTrackQuery): Flow<PagingData<Track>> = when (query) {
+    is PagingTrackQuery.Album ->
+      paged({
+        dao.getAlbumTracks(query.album, query.artist)
+      }) { it.toTrack() }
+    is PagingTrackQuery.NonAlbum ->
+      paged(
+        { dao.getNonAlbumTracks(query.artist) }
+      ) { it.toTrack() }
+  }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -39,7 +38,7 @@ class TrackRepositoryImpl(
         api.getAllPages(
           Protocol.LibraryBrowseTracks,
           TrackDto::class,
-          progress,
+          progress
         )
       allPages
         .onCompletion {
@@ -63,7 +62,7 @@ class TrackRepositoryImpl(
             dao.update(
               toUpdate.map {
                 it.copy(id = matches.getValue(requireNotNull(it.src)))
-              },
+              }
             )
             dao.insertAll(toInsert)
           }
@@ -71,18 +70,16 @@ class TrackRepositoryImpl(
     }
   }
 
-  override fun search(term: String): Flow<PagingData<Track>> =
-    paged({
-      dao.search(term)
-    }) { it.toTrack() }
+  override fun search(term: String): Flow<PagingData<Track>> = paged({
+    dao.search(term)
+  }) { it.toTrack() }
 
-  override fun getTrackPaths(query: TrackQuery): List<String> =
-    when (query) {
-      is TrackQuery.All -> dao.getAllTrackPaths()
-      is TrackQuery.Genre -> dao.getGenreTrackPaths(query.genre)
-      is TrackQuery.Artist -> dao.getArtistTrackPaths(query.artist)
-      is TrackQuery.Album -> dao.getAlbumTrackPaths(query.album, query.artist)
-    }
+  override fun getTrackPaths(query: TrackQuery): List<String> = when (query) {
+    is TrackQuery.All -> dao.getAllTrackPaths()
+    is TrackQuery.Genre -> dao.getGenreTrackPaths(query.genre)
+    is TrackQuery.Artist -> dao.getArtistTrackPaths(query.artist)
+    is TrackQuery.Album -> dao.getAlbumTrackPaths(query.album, query.artist)
+  }
 
   override suspend fun getById(id: Long): Track? {
     return withContext(dispatchers.database) {

@@ -1,15 +1,13 @@
 package com.kelsos.mbrc.networking
 
-import timber.log.Timber
 import java.io.BufferedReader
 import java.io.Closeable
 import java.io.IOException
 import java.net.Socket
+import timber.log.Timber
 
-class ActiveConnection(
-  private val socket: Socket,
-  private val bufferedReader: BufferedReader,
-) : Closeable {
+class ActiveConnection(private val socket: Socket, private val bufferedReader: BufferedReader) :
+  Closeable {
   fun send(bytes: ByteArray) {
     socket.getOutputStream().write(bytes)
   }

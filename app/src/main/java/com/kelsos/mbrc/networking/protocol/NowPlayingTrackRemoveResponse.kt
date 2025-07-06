@@ -8,5 +8,5 @@ data class NowPlayingTrackRemoveResponse(
   @Json(name = "index")
   val index: Int,
   @Json(name = "success")
-  val success: Boolean,
+  val success: Boolean
 )

@@ -3,12 +3,10 @@ package com.kelsos.mbrc.features.help
 import androidx.lifecycle.viewModelScope
 import com.kelsos.mbrc.common.mvvm.BaseViewModel
 import com.kelsos.mbrc.logging.LogHelper
-import kotlinx.coroutines.launch
 import java.io.File
+import kotlinx.coroutines.launch
 
-class FeedbackViewModel(
-  private val logHelper: LogHelper,
-) : BaseViewModel<FeedbackUiMessage>() {
+class FeedbackViewModel(private val logHelper: LogHelper) : BaseViewModel<FeedbackUiMessage>() {
   fun checkIfLogsExist(filesDir: File) {
     viewModelScope.launch {
       val logsExist = logHelper.logsExist(filesDir = filesDir)
@@ -16,10 +14,7 @@ class FeedbackViewModel(
     }
   }
 
-  fun createZip(
-    filesDir: File,
-    externalCacheDir: File,
-  ) {
+  fun createZip(filesDir: File, externalCacheDir: File) {
     viewModelScope.launch {
       val result =
         runCatching {

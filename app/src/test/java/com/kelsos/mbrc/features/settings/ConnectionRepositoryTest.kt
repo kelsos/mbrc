@@ -265,7 +265,7 @@ class ConnectionRepositoryTest : KoinTest {
 
   private data class Settings(
     val withId: List<ConnectionSettings>,
-    val withoutId: List<ConnectionSettings>,
+    val withoutId: List<ConnectionSettings>
   )
 
   private fun generateSettings(count: Long): Settings {
@@ -279,12 +279,11 @@ class ConnectionRepositoryTest : KoinTest {
     return Settings(withId, withoutId)
   }
 
-  private fun createSettings(lastOctet: Long): ConnectionSettings =
-    ConnectionSettings(
-      name = "Desktop PC $lastOctet",
-      address = "198.51.100.$lastOctet",
-      port = 3000,
-      isDefault = lastOctet == 1L,
-      id = 0,
-    )
+  private fun createSettings(lastOctet: Long): ConnectionSettings = ConnectionSettings(
+    name = "Desktop PC $lastOctet",
+    address = "198.51.100.$lastOctet",
+    port = 3000,
+    isDefault = lastOctet == 1L,
+    id = 0
+  )
 }

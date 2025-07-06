@@ -3,6 +3,8 @@ package com.kelsos.mbrc.common.state
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.common.utilities.ScopeBase
 import com.kelsos.mbrc.platform.mediasession.AppNotificationManager
+import java.util.Timer
+import kotlin.concurrent.fixedRateTimer
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -10,8 +12,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Timer
-import kotlin.concurrent.fixedRateTimer
 
 @OptIn(FlowPreview::class)
 class AppStateManager(
@@ -19,7 +19,7 @@ class AppStateManager(
   private val connectionState: ConnectionStateFlow,
   private val notifications: AppNotificationManager,
   private val trackCache: PlayingTrackCache,
-  dispatchers: AppCoroutineDispatchers,
+  dispatchers: AppCoroutineDispatchers
 ) : ScopeBase(dispatchers.io) {
   private var isRunning = false
   var timer: Timer? = null

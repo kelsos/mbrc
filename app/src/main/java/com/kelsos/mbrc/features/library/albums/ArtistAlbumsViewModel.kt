@@ -15,7 +15,7 @@ class ArtistAlbumsViewModel(
   private val repository: AlbumRepository,
   queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
-  connectionStateFlow: ConnectionStateFlow,
+  connectionStateFlow: ConnectionStateFlow
 ) : BaseAlbumViewModel(queueHandler, settingsHelper, connectionStateFlow) {
   private val artistFilter: MutableSharedFlow<String> = MutableSharedFlow(replay = 1)
 

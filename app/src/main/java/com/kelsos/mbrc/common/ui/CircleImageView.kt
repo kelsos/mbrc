@@ -84,12 +84,14 @@ class CircleImageView : AppCompatImageView {
   constructor(context: Context, attrs: AttributeSet, defStyle: Int = 0) : super(
     context,
     attrs,
-    defStyle,
+    defStyle
   ) {
     context.withStyledAttributes(attrs, R.styleable.CircleImageView, defStyle, 0) {
-      mBorderWidth = getDimensionPixelSize(R.styleable.CircleImageView_civ_border_width, DEFAULT_BORDER_WIDTH)
+      mBorderWidth =
+        getDimensionPixelSize(R.styleable.CircleImageView_civ_border_width, DEFAULT_BORDER_WIDTH)
       mBorderColor = getColor(R.styleable.CircleImageView_civ_border_color, DEFAULT_BORDER_COLOR)
-      mBorderOverlay = getBoolean(R.styleable.CircleImageView_civ_border_overlay, DEFAULT_BORDER_OVERLAY)
+      mBorderOverlay =
+        getBoolean(R.styleable.CircleImageView_civ_border_overlay, DEFAULT_BORDER_OVERLAY)
       mFillColor = getColor(R.styleable.CircleImageView_civ_fill_color, DEFAULT_FILL_COLOR)
     }
 
@@ -131,26 +133,21 @@ class CircleImageView : AppCompatImageView {
         drawableRect.centerX(),
         drawableRect.centerY(),
         mDrawableRadius,
-        fillPaint,
+        fillPaint
       )
     }
     canvas.drawCircle(
       drawableRect.centerX(),
       drawableRect.centerY(),
       mDrawableRadius,
-      bitmapPaint,
+      bitmapPaint
     )
     if (mBorderWidth != 0) {
       canvas.drawCircle(borderRect.centerX(), borderRect.centerY(), mBorderRadius, borderPaint)
     }
   }
 
-  override fun onSizeChanged(
-    w: Int,
-    h: Int,
-    oldw: Int,
-    oldh: Int,
-  ) {
+  override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
     super.onSizeChanged(w, h, oldw, oldh)
     setup()
   }
@@ -158,7 +155,7 @@ class CircleImageView : AppCompatImageView {
   var borderColor: Int
     get() = mBorderColor
     set(
-      @ColorInt borderColor,
+      @ColorInt borderColor
     ) {
       if (borderColor == mBorderColor) {
         return
@@ -169,16 +166,14 @@ class CircleImageView : AppCompatImageView {
       invalidate()
     }
 
-  fun setBorderColorResource(
-    @ColorRes borderColorRes: Int,
-  ) {
+  fun setBorderColorResource(@ColorRes borderColorRes: Int) {
     borderColor = ContextCompat.getColor(context, borderColorRes)
   }
 
   var fillColor: Int
     get() = mFillColor
     set(
-      @ColorInt fillColor,
+      @ColorInt fillColor
     ) {
       if (fillColor == mFillColor) {
         return
@@ -189,9 +184,7 @@ class CircleImageView : AppCompatImageView {
       invalidate()
     }
 
-  fun setFillColorResource(
-    @ColorRes fillColorRes: Int,
-  ) {
+  fun setFillColorResource(@ColorRes fillColorRes: Int) {
     fillColor = ContextCompat.getColor(context, fillColorRes)
   }
 
@@ -227,9 +220,7 @@ class CircleImageView : AppCompatImageView {
     initializeBitmap()
   }
 
-  override fun setImageResource(
-    @DrawableRes resId: Int,
-  ) {
+  override fun setImageResource(@DrawableRes resId: Int) {
     super.setImageResource(resId)
     initializeBitmap()
   }
@@ -326,7 +317,9 @@ class CircleImageView : AppCompatImageView {
 
     borderRect.set(calculateBounds())
     mBorderRadius =
-      ((borderRect.height() - mBorderWidth) / 2.0f).coerceAtMost((borderRect.width() - mBorderWidth) / 2.0f)
+      ((borderRect.height() - mBorderWidth) / 2.0f).coerceAtMost(
+        (borderRect.width() - mBorderWidth) / 2.0f
+      )
 
     drawableRect.set(borderRect)
     if (!mBorderOverlay) {
@@ -369,7 +362,7 @@ class CircleImageView : AppCompatImageView {
     shaderMatrix.setScale(scale, scale)
     shaderMatrix.postTranslate(
       (dx + HALF).toInt() + drawableRect.left,
-      (dy + HALF).toInt() + drawableRect.top,
+      (dy + HALF).toInt() + drawableRect.top
     )
 
     requireNotNull(mBitmapShader).setLocalMatrix(shaderMatrix)

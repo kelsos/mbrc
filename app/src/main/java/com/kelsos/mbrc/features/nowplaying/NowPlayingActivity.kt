@@ -131,7 +131,7 @@ class NowPlayingActivity :
           onBackPressedDispatcher.onBackPressed()
           isEnabled = true
         }
-      },
+      }
     )
 
     initViews()
@@ -200,11 +200,19 @@ class NowPlayingActivity :
 
             NowPlayingUiMessages.NetworkUnavailable -> {
               swipeLayout.isRefreshing = false
-              Snackbar.make(nowPlayingList, R.string.connection_error_network_unavailable, Snackbar.LENGTH_SHORT).show()
+              Snackbar.make(
+                nowPlayingList,
+                R.string.connection_error_network_unavailable,
+                Snackbar.LENGTH_SHORT
+              ).show()
             }
 
             NowPlayingUiMessages.PlayFailed -> {
-              Snackbar.make(nowPlayingList, R.string.radio__play_failed, Snackbar.LENGTH_SHORT).show()
+              Snackbar.make(
+                nowPlayingList,
+                R.string.radio__play_failed,
+                Snackbar.LENGTH_SHORT
+              ).show()
             }
 
             NowPlayingUiMessages.RemoveFailed -> {
@@ -262,10 +270,7 @@ class NowPlayingActivity :
     viewModel.actions.play(position)
   }
 
-  override fun onMove(
-    from: Int,
-    to: Int,
-  ) {
+  override fun onMove(from: Int, to: Int) {
     viewModel.actions.moveTrack(from, to)
   }
 
@@ -273,10 +278,7 @@ class NowPlayingActivity :
     viewModel.actions.removeTrack(position)
   }
 
-  fun trackChanged(
-    playingTrack: PlayingTrack,
-    scrollToTrack: Boolean,
-  ) {
+  fun trackChanged(playingTrack: PlayingTrack, scrollToTrack: Boolean) {
     adapter.setPlayingTrack(playingTrack.path)
     if (scrollToTrack) {
       nowPlayingList.scrollToPosition(adapter.getPlayingTrackIndex())

@@ -12,15 +12,11 @@ import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.ui.EmptyRecyclerView
 
 interface MenuItemSelectedListener<T : Any> {
-  fun onAction(
-    item: T,
-    id: Int? = null,
-  )
+  fun onAction(item: T, id: Int? = null)
 }
 
-open class BaseDetailsActivity(
-  @LayoutRes contentLayoutId: Int,
-) : CommonToolbarActivity(contentLayoutId) {
+open class BaseDetailsActivity(@LayoutRes contentLayoutId: Int) :
+  CommonToolbarActivity(contentLayoutId) {
   private lateinit var recycler: EmptyRecyclerView
   private lateinit var emptyView: ConstraintLayout
 
@@ -45,13 +41,13 @@ open class BaseDetailsActivity(
     emptyView.isVisible = isEmpty
   }
 
-  protected fun queue(
-    success: Boolean,
-    tracks: Int,
-  ) {
+  protected fun queue(success: Boolean, tracks: Int) {
     val message =
       if (success) {
-        getString(R.string.queue_result__success, resources.getQuantityString(R.plurals.track, tracks, tracks))
+        getString(
+          R.string.queue_result__success,
+          resources.getQuantityString(R.plurals.track, tracks, tracks)
+        )
       } else {
         getString(R.string.queue_result__failure)
       }

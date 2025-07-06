@@ -15,7 +15,7 @@ class GenreArtistsViewModel(
   private val repository: ArtistRepository,
   queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
-  connectionStateFlow: ConnectionStateFlow,
+  connectionStateFlow: ConnectionStateFlow
 ) : BaseArtistViewModel(queueHandler, settingsHelper, connectionStateFlow) {
   private val genre: MutableSharedFlow<Long> = MutableSharedFlow(replay = 1)
 

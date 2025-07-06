@@ -4,18 +4,18 @@ import com.kelsos.mbrc.features.settings.SettingsManager
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
+import java.io.IOException
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import timber.log.Timber
-import java.io.IOException
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 @JsonClass(generateAdapter = true)
 data class GithubRelease(
   @Json(name = "tag_name")
-  val tagName: String,
+  val tagName: String
 )
 
 fun interface PluginUpdateCheckUseCase {
@@ -25,7 +25,7 @@ fun interface PluginUpdateCheckUseCase {
 class PluginUpdateCheckUseCaseImpl(
   private val manager: SettingsManager,
   private val uiMessage: UiMessageQueue,
-  moshi: Moshi,
+  moshi: Moshi
 ) : PluginUpdateCheckUseCase {
   private val adapter = moshi.adapter(GithubRelease::class.java)
   private val client = OkHttpClient()
@@ -40,7 +40,7 @@ class PluginUpdateCheckUseCaseImpl(
 
   private suspend fun handleRequiredPluginUpdateCheck(
     pluginVersion: String,
-    now: Instant,
+    now: Instant
   ): Boolean {
     if (check(pluginVersion, MINIMUM_REQUIRED)) {
       if (shouldISkipThisCheck(getNextCheck(required = true), now)) return true
@@ -51,10 +51,7 @@ class PluginUpdateCheckUseCaseImpl(
     return false
   }
 
-  private suspend fun handleOptionalPluginUpdateCheck(
-    now: Instant,
-    pluginVersion: String,
-  ) {
+  private suspend fun handleOptionalPluginUpdateCheck(now: Instant, pluginVersion: String) {
     if (shouldISkipThisCheck(getNextCheck(), now)) return
 
     try {
@@ -65,10 +62,7 @@ class PluginUpdateCheckUseCaseImpl(
     }
   }
 
-  private fun shouldISkipThisCheck(
-    nextCheck: Instant,
-    now: Instant?,
-  ): Boolean {
+  private fun shouldISkipThisCheck(nextCheck: Instant, now: Instant?): Boolean {
     if (nextCheck.isAfter(now)) {
       Timber.d("Next update check after @ $nextCheck")
       return true
@@ -76,10 +70,7 @@ class PluginUpdateCheckUseCaseImpl(
     return false
   }
 
-  private suspend fun checkForTheLatestPluginRelease(
-    pluginVersion: String,
-    now: Instant,
-  ) {
+  private suspend fun checkForTheLatestPluginRelease(pluginVersion: String, now: Instant) {
     val request =
       Request
         .Builder()
@@ -96,7 +87,7 @@ class PluginUpdateCheckUseCaseImpl(
   private suspend fun handlePluginUpdateCheckResponse(
     response: Response,
     pluginVersion: String,
-    now: Instant,
+    now: Instant
   ) {
     val body = checkNotNull(response.body)
     val versionResponse = adapter.fromJson(body.source())
@@ -116,10 +107,7 @@ class PluginUpdateCheckUseCaseImpl(
     return lastUpdated.plus(days, ChronoUnit.DAYS)
   }
 
-  private fun check(
-    reportedVersion: String,
-    suggestedVersion: String,
-  ): Boolean {
+  private fun check(reportedVersion: String, suggestedVersion: String): Boolean {
     val currentVersion = reportedVersion.toVersionArray()
     val latestVersion = suggestedVersion.toVersionArray()
 

@@ -17,14 +17,15 @@ interface RadioRepository : Repository<RadioStation>
 class RadioRepositoryImpl(
   private val dao: RadioStationDao,
   private val api: ApiBase,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : RadioRepository {
-  override suspend fun count(): Long =
-    withContext(dispatchers.database) {
-      dao.count()
-    }
+  override suspend fun count(): Long = withContext(dispatchers.database) {
+    dao.count()
+  }
 
-  override fun getAll(): Flow<PagingData<RadioStation>> = paged({ dao.getAll() }) { it.toRadioStation() }
+  override fun getAll(): Flow<PagingData<RadioStation>> = paged({
+    dao.getAll()
+  }) { it.toRadioStation() }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -33,7 +34,7 @@ class RadioRepositoryImpl(
         api.getAllPages(
           Protocol.RadioStations,
           RadioStationDto::class,
-          progress,
+          progress
         )
       allPages
         .onCompletion {
@@ -51,12 +52,11 @@ class RadioRepositoryImpl(
     }
   }
 
-  override fun search(term: String): Flow<PagingData<RadioStation>> =
-    paged({
-      dao.search(term)
-    }) {
-      it.toRadioStation()
-    }
+  override fun search(term: String): Flow<PagingData<RadioStation>> = paged({
+    dao.search(term)
+  }) {
+    it.toRadioStation()
+  }
 
   override suspend fun getById(id: Long): RadioStation? {
     return withContext(dispatchers.database) {

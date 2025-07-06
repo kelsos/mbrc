@@ -9,10 +9,7 @@ import timber.log.Timber
 class MediaButtonReceiver :
   BroadcastReceiver(),
   KoinComponent {
-  override fun onReceive(
-    context: Context,
-    intent: Intent,
-  ) {
+  override fun onReceive(context: Context, intent: Intent) {
     Timber.v("Incoming %s", intent)
     if (intent.action != Intent.ACTION_MEDIA_BUTTON) {
       return

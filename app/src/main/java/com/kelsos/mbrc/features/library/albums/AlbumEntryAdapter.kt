@@ -18,16 +18,13 @@ import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.ui.SquareImageView
 import com.kelsos.mbrc.features.library.MenuItemSelectedListener
 import com.kelsos.mbrc.features.library.popupMenu
-import timber.log.Timber
 import java.io.File
+import timber.log.Timber
 
 class AlbumEntryAdapter : PagingDataAdapter<Album, AlbumEntryAdapter.ViewHolder>(DIFF_CALLBACK) {
   private var listener: MenuItemSelectedListener<Album>? = null
 
-  override fun onCreateViewHolder(
-    parent: ViewGroup,
-    viewType: Int,
-  ): ViewHolder {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
     val inflater: LayoutInflater = LayoutInflater.from(parent.context)
     val view = inflater.inflate(R.layout.item_album, parent, false)
     val holder = ViewHolder(view)
@@ -49,10 +46,7 @@ class AlbumEntryAdapter : PagingDataAdapter<Album, AlbumEntryAdapter.ViewHolder>
     return holder
   }
 
-  override fun onBindViewHolder(
-    holder: ViewHolder,
-    position: Int,
-  ) {
+  override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     val context = holder.itemView.context
     val cache = File(context.cacheDir, "covers")
     val item = getItem(position) ?: return
@@ -75,9 +69,7 @@ class AlbumEntryAdapter : PagingDataAdapter<Album, AlbumEntryAdapter.ViewHolder>
     this.listener = listener
   }
 
-  class ViewHolder(
-    itemView: View,
-  ) : RecyclerView.ViewHolder(itemView) {
+  class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val artist: TextView = itemView.findViewById(R.id.line_two)
     val album: TextView = itemView.findViewById(R.id.line_one)
     val image: SquareImageView = itemView.findViewById(R.id.cover)
@@ -94,15 +86,11 @@ class AlbumEntryAdapter : PagingDataAdapter<Album, AlbumEntryAdapter.ViewHolder>
   companion object {
     private val DIFF_CALLBACK =
       object : DiffUtil.ItemCallback<Album>() {
-        override fun areItemsTheSame(
-          oldItem: Album,
-          newItem: Album,
-        ): Boolean = oldItem.id == newItem.id
+        override fun areItemsTheSame(oldItem: Album, newItem: Album): Boolean =
+          oldItem.id == newItem.id
 
-        override fun areContentsTheSame(
-          oldItem: Album,
-          newItem: Album,
-        ): Boolean = oldItem == newItem
+        override fun areContentsTheSame(oldItem: Album, newItem: Album): Boolean =
+          oldItem == newItem
       }
   }
 }

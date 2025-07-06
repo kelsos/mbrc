@@ -7,9 +7,7 @@ sealed class PlayerAction {
 
   object ToggleRepeat : PlayerAction()
 
-  class Seek(
-    val position: Int,
-  ) : PlayerAction()
+  class Seek(val position: Int) : PlayerAction()
 
   object ToggleScrobbling : PlayerAction()
 
@@ -23,7 +21,5 @@ sealed class PlayerAction {
 
   object ToggleMute : PlayerAction()
 
-  class ChangeVolume(
-    val volume: Int,
-  ) : PlayerAction()
+  class ChangeVolume(val volume: Int) : PlayerAction()
 }

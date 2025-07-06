@@ -13,14 +13,11 @@ import kotlinx.coroutines.launch
 abstract class BaseTrackViewModel(
   private val queueHandler: QueueHandler,
   settingsHelper: BasicSettingsHelper,
-  connectionStateFlow: ConnectionStateFlow,
+  connectionStateFlow: ConnectionStateFlow
 ) : BaseLibraryViewModel<TrackUiMessage>(settingsHelper, connectionStateFlow) {
   abstract val tracks: Flow<PagingData<Track>>
 
-  fun queue(
-    action: Queue,
-    track: Track,
-  ) {
+  fun queue(action: Queue, track: Track) {
     val queueAction = getQueueAction(action)
 
     viewModelScope.launch {

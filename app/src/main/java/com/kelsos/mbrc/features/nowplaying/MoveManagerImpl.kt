@@ -18,10 +18,7 @@ class MoveManagerImpl : MoveManager {
     }
   }
 
-  override fun move(
-    from: Int,
-    to: Int,
-  ) {
+  override fun move(from: Int, to: Int) {
     require(from >= 0) { "from position must be non-negative" }
     require(to >= 0) { "to position must be non-negative" }
     if (originalPosition < 0) {
@@ -33,7 +30,8 @@ class MoveManagerImpl : MoveManager {
     }
   }
 
-  private fun hasValidMove(): Boolean = originalPosition >= 0 && finalPosition >= 0 && originalPosition != finalPosition
+  private fun hasValidMove(): Boolean =
+    originalPosition >= 0 && finalPosition >= 0 && originalPosition != finalPosition
 
   private fun reset() {
     originalPosition = -1

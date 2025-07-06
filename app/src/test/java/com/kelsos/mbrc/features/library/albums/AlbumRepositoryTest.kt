@@ -42,7 +42,7 @@ class AlbumRepositoryTest : KoinTest {
         Room
           .inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            Database::class.java,
+            Database::class.java
           ).allowMainThreadQueries()
           .build()
       }
@@ -78,7 +78,7 @@ class AlbumRepositoryTest : KoinTest {
         listOf(
           AlbumEntity(artist = "Artist1", album = "Album1", dateAdded = 1000L),
           AlbumEntity(artist = "Artist2", album = "Album2", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist3", album = "Album3", dateAdded = 1000L),
+          AlbumEntity(artist = "Artist3", album = "Album3", dateAdded = 1000L)
         )
       dao.insert(albums)
 
@@ -104,7 +104,7 @@ class AlbumRepositoryTest : KoinTest {
         listOf(
           AlbumEntity(artist = "Artist1", album = "Album C", dateAdded = 1000L),
           AlbumEntity(artist = "Artist2", album = "Album A", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist3", album = "Album B", dateAdded = 1000L),
+          AlbumEntity(artist = "Artist3", album = "Album B", dateAdded = 1000L)
         )
       dao.insert(albums)
 
@@ -131,14 +131,18 @@ class AlbumRepositoryTest : KoinTest {
           AlbumEntity(artist = "Artist1", album = "Rock Album", dateAdded = 1000L),
           AlbumEntity(artist = "Artist2", album = "Pop Rock", dateAdded = 1000L),
           AlbumEntity(artist = "Artist3", album = "Jazz", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist4", album = "Hard Rock", dateAdded = 1000L),
+          AlbumEntity(artist = "Artist4", album = "Hard Rock", dateAdded = 1000L)
         )
       dao.insert(albums)
 
       val result = repository.search("Rock").asSnapshot()
 
       // The DAO sorts by album name, so the order is alphabetical
-      assertThat(result.map { it.album }).containsExactly("Hard Rock", "Pop Rock", "Rock Album").inOrder()
+      assertThat(
+        result.map {
+          it.album
+        }
+      ).containsExactly("Hard Rock", "Pop Rock", "Rock Album").inOrder()
     }
   }
 
@@ -148,7 +152,7 @@ class AlbumRepositoryTest : KoinTest {
       val albums =
         listOf(
           AlbumEntity(artist = "Artist1", album = "Rock Album", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist2", album = "Pop", dateAdded = 1000L),
+          AlbumEntity(artist = "Artist2", album = "Pop", dateAdded = 1000L)
         )
       dao.insert(albums)
 
@@ -165,7 +169,7 @@ class AlbumRepositoryTest : KoinTest {
         listOf(
           AlbumEntity(artist = "Artist1", album = "Rock Album", dateAdded = 1000L),
           AlbumEntity(artist = "Artist2", album = "JAZZ", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist3", album = "pop", dateAdded = 1000L),
+          AlbumEntity(artist = "Artist3", album = "pop", dateAdded = 1000L)
         )
       dao.insert(albums)
 
@@ -183,14 +187,18 @@ class AlbumRepositoryTest : KoinTest {
           AlbumEntity(artist = "Metallica", album = "Master of Puppets", dateAdded = 1000L),
           AlbumEntity(artist = "Metallica", album = "Black Album", dateAdded = 1000L),
           AlbumEntity(artist = "Iron Maiden", album = "The Number of the Beast", dateAdded = 1000L),
-          AlbumEntity(artist = "Black Sabbath", album = "Paranoid", dateAdded = 1000L),
+          AlbumEntity(artist = "Black Sabbath", album = "Paranoid", dateAdded = 1000L)
         )
       dao.insert(albums)
 
       val result = repository.search("Metallica").asSnapshot()
 
       // Should return albums by Metallica, sorted by album name
-      assertThat(result.map { it.album }).containsExactly("Black Album", "Master of Puppets").inOrder()
+      assertThat(
+        result.map {
+          it.album
+        }
+      ).containsExactly("Black Album", "Master of Puppets").inOrder()
       assertThat(result.map { it.artist }).containsExactly("Metallica", "Metallica")
     }
   }
@@ -203,14 +211,18 @@ class AlbumRepositoryTest : KoinTest {
           AlbumEntity(artist = "Iron Maiden", album = "Powerslave", dateAdded = 1000L),
           AlbumEntity(artist = "Iron Butterfly", album = "In-A-Gadda-Da-Vida", dateAdded = 1000L),
           AlbumEntity(artist = "Black Sabbath", album = "Iron Man", dateAdded = 1000L),
-          AlbumEntity(artist = "Metallica", album = "Master of Puppets", dateAdded = 1000L),
+          AlbumEntity(artist = "Metallica", album = "Master of Puppets", dateAdded = 1000L)
         )
       dao.insert(albums)
 
       val result = repository.search("Iron").asSnapshot()
 
       // Should return albums containing "Iron" in either artist or album name, sorted by album name
-      assertThat(result.map { it.album }).containsExactly("In-A-Gadda-Da-Vida", "Iron Man", "Powerslave").inOrder()
+      assertThat(
+        result.map {
+          it.album
+        }
+      ).containsExactly("In-A-Gadda-Da-Vida", "Iron Man", "Powerslave").inOrder()
     }
   }
 
@@ -221,14 +233,18 @@ class AlbumRepositoryTest : KoinTest {
         listOf(
           AlbumEntity(artist = "Pink Floyd", album = "Dark Side of the Moon", dateAdded = 1000L),
           AlbumEntity(artist = "Led Zeppelin", album = "Pink Floyd Tribute", dateAdded = 1000L),
-          AlbumEntity(artist = "The Beatles", album = "Abbey Road", dateAdded = 1000L),
+          AlbumEntity(artist = "The Beatles", album = "Abbey Road", dateAdded = 1000L)
         )
       dao.insert(albums)
 
       val result = repository.search("Pink").asSnapshot()
 
       // Should return both albums: one by artist match, one by album match
-      assertThat(result.map { it.album }).containsExactly("Dark Side of the Moon", "Pink Floyd Tribute").inOrder()
+      assertThat(
+        result.map {
+          it.album
+        }
+      ).containsExactly("Dark Side of the Moon", "Pink Floyd Tribute").inOrder()
     }
   }
 
@@ -239,13 +255,17 @@ class AlbumRepositoryTest : KoinTest {
         listOf(
           AlbumEntity(artist = "METALLICA", album = "Master of Puppets", dateAdded = 1000L),
           AlbumEntity(artist = "metallica", album = "Black Album", dateAdded = 1000L),
-          AlbumEntity(artist = "Iron Maiden", album = "Powerslave", dateAdded = 1000L),
+          AlbumEntity(artist = "Iron Maiden", album = "Powerslave", dateAdded = 1000L)
         )
       dao.insert(albums)
 
       val result = repository.search("metallica").asSnapshot()
 
-      assertThat(result.map { it.album }).containsExactly("Black Album", "Master of Puppets").inOrder()
+      assertThat(
+        result.map {
+          it.album
+        }
+      ).containsExactly("Black Album", "Master of Puppets").inOrder()
     }
   }
 
@@ -281,7 +301,7 @@ class AlbumRepositoryTest : KoinTest {
         listOf(
           AlbumEntity(artist = "Artist1", album = "Album1", dateAdded = 1000L),
           AlbumEntity(artist = "Artist1", album = "Album2", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist2", album = "Album3", dateAdded = 1000L),
+          AlbumEntity(artist = "Artist2", album = "Album3", dateAdded = 1000L)
         )
       dao.insert(albums)
 
@@ -293,22 +313,22 @@ class AlbumRepositoryTest : KoinTest {
             albumArtist = "Artist1",
             album = "Album1",
             title = "Track1",
-            dateAdded = 1000L,
+            dateAdded = 1000L
           ),
           TrackEntity(
             artist = "Artist1",
             albumArtist = "Artist1",
             album = "Album2",
             title = "Track2",
-            dateAdded = 1000L,
+            dateAdded = 1000L
           ),
           TrackEntity(
             artist = "Artist2",
             albumArtist = "Artist2",
             album = "Album3",
             title = "Track3",
-            dateAdded = 1000L,
-          ),
+            dateAdded = 1000L
+          )
         )
       trackDao.insertAll(tracks)
 
@@ -326,7 +346,7 @@ class AlbumRepositoryTest : KoinTest {
       val albums =
         listOf(
           AlbumEntity(artist = "Artist1", album = "Album1", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist2", album = "Album2", dateAdded = 1000L),
+          AlbumEntity(artist = "Artist2", album = "Album2", dateAdded = 1000L)
         )
       dao.insert(albums)
 
@@ -342,7 +362,7 @@ class AlbumRepositoryTest : KoinTest {
       val remoteAlbums =
         listOf(
           AlbumDto(artist = "Artist1", album = "Album1"),
-          AlbumDto(artist = "Artist2", album = "Album2"),
+          AlbumDto(artist = "Artist2", album = "Album2")
         )
       coEvery {
         api.getAllPages(Protocol.LibraryBrowseAlbums, AlbumDto::class, any())
@@ -417,7 +437,7 @@ class AlbumRepositoryTest : KoinTest {
       val existingAlbums =
         listOf(
           AlbumEntity(artist = "Artist1", album = "Album1", dateAdded = 500L),
-          AlbumEntity(artist = "Artist2", album = "Album2", dateAdded = 500L),
+          AlbumEntity(artist = "Artist2", album = "Album2", dateAdded = 500L)
         )
       dao.insert(existingAlbums)
       val album1Id = dao.all().first { it.album == "Album1" }.id
@@ -425,7 +445,7 @@ class AlbumRepositoryTest : KoinTest {
       val remoteAlbums =
         listOf(
           AlbumDto(artist = "Artist1", album = "Album1"),
-          AlbumDto(artist = "Artist3", album = "Album3"),
+          AlbumDto(artist = "Artist3", album = "Album3")
         )
       coEvery {
         api.getAllPages(Protocol.LibraryBrowseAlbums, AlbumDto::class, any())
@@ -446,14 +466,14 @@ class AlbumRepositoryTest : KoinTest {
       val albums =
         listOf(
           AlbumEntity(artist = "Artist1", album = "Album1", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist2", album = "Album2", dateAdded = 1000L),
+          AlbumEntity(artist = "Artist2", album = "Album2", dateAdded = 1000L)
         )
       dao.insert(albums)
 
       val covers =
         listOf(
           AlbumCover(artist = "Artist1", album = "Album1", hash = "hash1"),
-          AlbumCover(artist = "Artist2", album = "Album2", hash = "hash2"),
+          AlbumCover(artist = "Artist2", album = "Album2", hash = "hash2")
         )
 
       repository.updateCovers(covers)
@@ -470,14 +490,14 @@ class AlbumRepositoryTest : KoinTest {
       val albums =
         listOf(
           AlbumEntity(artist = "Artist1", album = "Album1", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist2", album = "Album2", dateAdded = 1000L),
+          AlbumEntity(artist = "Artist2", album = "Album2", dateAdded = 1000L)
         )
       dao.insert(albums)
 
       val covers =
         listOf(
           AlbumCover(artist = "Artist1", album = "Album1", hash = "hash1"),
-          AlbumCover(artist = "Artist2", album = "Album2", hash = null),
+          AlbumCover(artist = "Artist2", album = "Album2", hash = null)
         )
 
       repository.updateCovers(covers)
@@ -494,7 +514,7 @@ class AlbumRepositoryTest : KoinTest {
       val albums =
         listOf(
           AlbumEntity(artist = "Artist1", album = "Album1", cover = "hash1", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist2", album = "Album2", cover = "hash2", dateAdded = 1000L),
+          AlbumEntity(artist = "Artist2", album = "Album2", cover = "hash2", dateAdded = 1000L)
         )
       dao.insert(albums)
 
@@ -521,7 +541,7 @@ class AlbumRepositoryTest : KoinTest {
         listOf(
           AlbumEntity(artist = "Artist1", album = "Album1", cover = "hash1", dateAdded = 1000L),
           AlbumEntity(artist = "Artist2", album = "Album2", cover = "hash2", dateAdded = 1000L),
-          AlbumEntity(artist = "Artist3", album = "Album3", cover = null, dateAdded = 1000L),
+          AlbumEntity(artist = "Artist3", album = "Album3", cover = null, dateAdded = 1000L)
         )
       dao.insert(albums)
 
@@ -537,7 +557,7 @@ class AlbumRepositoryTest : KoinTest {
       val albums =
         listOf(
           AlbumEntity(artist = "Artist1", album = "Album1", cover = null, dateAdded = 1000L),
-          AlbumEntity(artist = "Artist2", album = "Album2", cover = null, dateAdded = 1000L),
+          AlbumEntity(artist = "Artist2", album = "Album2", cover = null, dateAdded = 1000L)
         )
       dao.insert(albums)
 

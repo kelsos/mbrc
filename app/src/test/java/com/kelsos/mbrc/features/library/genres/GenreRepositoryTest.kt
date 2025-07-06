@@ -40,7 +40,7 @@ class GenreRepositoryTest : KoinTest {
         Room
           .inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            Database::class.java,
+            Database::class.java
           ).allowMainThreadQueries()
           .build()
       }
@@ -74,7 +74,7 @@ class GenreRepositoryTest : KoinTest {
         listOf(
           GenreEntity(genre = "Rock", dateAdded = 1000L),
           GenreEntity(genre = "Pop", dateAdded = 1000L),
-          GenreEntity(genre = "Jazz", dateAdded = 1000L),
+          GenreEntity(genre = "Jazz", dateAdded = 1000L)
         )
       dao.insertAll(genres)
 
@@ -100,7 +100,7 @@ class GenreRepositoryTest : KoinTest {
         listOf(
           GenreEntity(genre = "Rock", dateAdded = 1000L),
           GenreEntity(genre = "Jazz", dateAdded = 1000L),
-          GenreEntity(genre = "Pop", dateAdded = 1000L),
+          GenreEntity(genre = "Pop", dateAdded = 1000L)
         )
       dao.insertAll(genres)
 
@@ -127,7 +127,7 @@ class GenreRepositoryTest : KoinTest {
           GenreEntity(genre = "Rock", dateAdded = 1000L),
           GenreEntity(genre = "Pop Rock", dateAdded = 1000L),
           GenreEntity(genre = "Jazz", dateAdded = 1000L),
-          GenreEntity(genre = "Hard Rock", dateAdded = 1000L),
+          GenreEntity(genre = "Hard Rock", dateAdded = 1000L)
         )
       dao.insertAll(genres)
 
@@ -143,7 +143,7 @@ class GenreRepositoryTest : KoinTest {
       val genres =
         listOf(
           GenreEntity(genre = "Rock", dateAdded = 1000L),
-          GenreEntity(genre = "Pop", dateAdded = 1000L),
+          GenreEntity(genre = "Pop", dateAdded = 1000L)
         )
       dao.insertAll(genres)
 
@@ -160,7 +160,7 @@ class GenreRepositoryTest : KoinTest {
         listOf(
           GenreEntity(genre = "Rock", dateAdded = 1000L),
           GenreEntity(genre = "JAZZ", dateAdded = 1000L),
-          GenreEntity(genre = "pop", dateAdded = 1000L),
+          GenreEntity(genre = "pop", dateAdded = 1000L)
         )
       dao.insertAll(genres)
 
@@ -200,7 +200,7 @@ class GenreRepositoryTest : KoinTest {
       val remoteGenres =
         listOf(
           GenreDto(genre = "Rock"),
-          GenreDto(genre = "Pop"),
+          GenreDto(genre = "Pop")
         )
       coEvery {
         api.getAllPages(Protocol.LibraryBrowseGenres, GenreDto::class, any())
@@ -275,7 +275,7 @@ class GenreRepositoryTest : KoinTest {
       val existingGenres =
         listOf(
           GenreEntity(genre = "Rock", dateAdded = 500L),
-          GenreEntity(genre = "Jazz", dateAdded = 500L),
+          GenreEntity(genre = "Jazz", dateAdded = 500L)
         )
       dao.insertAll(existingGenres)
       val rockId = dao.genres().first { it.genre == "Rock" }.id
@@ -283,7 +283,7 @@ class GenreRepositoryTest : KoinTest {
       val remoteGenres =
         listOf(
           GenreDto(genre = "Rock"),
-          GenreDto(genre = "Pop"),
+          GenreDto(genre = "Pop")
         )
       coEvery {
         api.getAllPages(Protocol.LibraryBrowseGenres, GenreDto::class, any())

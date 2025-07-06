@@ -25,21 +25,28 @@ class RemoteService : Service() {
   override fun onCreate() {
     super.onCreate()
     Timber.d("Background Service::Created")
-    startForeground(AppNotificationManager.MEDIA_SESSION_NOTIFICATION_ID, notificationManager.createPlaceholder())
+    startForeground(
+      AppNotificationManager.MEDIA_SESSION_NOTIFICATION_ID,
+      notificationManager.createPlaceholder()
+    )
     val looper = requireNotNull(Looper.myLooper())
     handler = Handler(looper)
     serviceRunning = true
-    ContextCompat.registerReceiver(this, receiver, receiver.filter(this), ContextCompat.RECEIVER_EXPORTED)
+    ContextCompat.registerReceiver(
+      this,
+      receiver,
+      receiver.filter(this),
+      ContextCompat.RECEIVER_EXPORTED
+    )
   }
 
-  override fun onStartCommand(
-    intent: Intent?,
-    flags: Int,
-    startId: Int,
-  ): Int {
+  override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     Timber.d("Background Service::Started")
     notificationManager.initialize()
-    startForeground(AppNotificationManager.MEDIA_SESSION_NOTIFICATION_ID, notificationManager.createPlaceholder())
+    startForeground(
+      AppNotificationManager.MEDIA_SESSION_NOTIFICATION_ID,
+      notificationManager.createPlaceholder()
+    )
     appStateManager.start()
     connectionManager.start()
     return super.onStartCommand(intent, flags, startId)
@@ -59,7 +66,7 @@ class RemoteService : Service() {
         serviceRunning = false
         Timber.d("Background Service::Destroyed")
       },
-      DESTROY_DELAY_MS,
+      DESTROY_DELAY_MS
     )
   }
 

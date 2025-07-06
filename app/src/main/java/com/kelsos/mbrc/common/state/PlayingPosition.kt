@@ -1,9 +1,6 @@
 package com.kelsos.mbrc.common.state
 
-data class PlayingPosition(
-  val current: Duration = 0,
-  val total: Duration = 0,
-) {
+data class PlayingPosition(val current: Duration = 0, val total: Duration = 0) {
   val totalMinutes get() = total.toMinutes()
   val currentMinutes get() = current.toMinutes()
 

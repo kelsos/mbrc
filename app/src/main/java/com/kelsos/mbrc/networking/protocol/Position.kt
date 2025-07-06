@@ -8,5 +8,5 @@ data class Position(
   @Json(name = "current")
   val current: Long,
   @Json(name = "total")
-  val total: Long,
+  val total: Long
 )

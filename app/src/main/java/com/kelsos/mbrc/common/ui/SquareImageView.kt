@@ -9,10 +9,7 @@ class SquareImageView : AppCompatImageView {
 
   constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
-  override fun onMeasure(
-    widthMeasureSpec: Int,
-    heightMeasureSpec: Int,
-  ) {
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     setMeasuredDimension(measuredHeight, measuredHeight)
   }

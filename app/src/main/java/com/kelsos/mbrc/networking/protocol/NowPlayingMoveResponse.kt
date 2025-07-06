@@ -10,5 +10,5 @@ data class NowPlayingMoveResponse(
   @Json(name = "to")
   val to: Int,
   @Json(name = "success")
-  val success: Boolean = false,
+  val success: Boolean = false
 )

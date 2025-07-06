@@ -31,7 +31,7 @@ class ConnectionRepositoryImpl(
   private val dao: ConnectionDao,
   private val dispatchers: AppCoroutineDispatchers,
   private val discovery: RemoteServiceDiscovery,
-  private val sharedPreferences: SharedPreferences,
+  private val sharedPreferences: SharedPreferences
 ) : ConnectionRepository {
   override suspend fun discover(): DiscoveryStop {
     val discover = discovery.discover()
@@ -72,14 +72,13 @@ class ConnectionRepositoryImpl(
 
   private fun getItemBefore(id: Long): ConnectionSettings? = dao.getPrevious(id)?.toConnection()
 
-  override fun getDefault(): ConnectionSettings? =
-    sharedPreferences
-      .getLong("mbrc_default_settings", -1)
-      .takeIf { it != -1L }
-      ?.let { id ->
-        val byId = dao.getById(id)
-        byId?.toConnection()?.copy(isDefault = true)
-      }
+  override fun getDefault(): ConnectionSettings? = sharedPreferences
+    .getLong("mbrc_default_settings", -1)
+    .takeIf { it != -1L }
+    ?.let { id ->
+      val byId = dao.getById(id)
+      byId?.toConnection()?.copy(isDefault = true)
+    }
 
   override fun setDefault(settings: ConnectionSettings) {
     Timber.Forest.d("Setting default to $settings")
@@ -97,25 +96,22 @@ class ConnectionRepositoryImpl(
     }
   }
 
-  override suspend fun count(): Long =
-    withContext(dispatchers.database) {
-      dao.count()
-    }
+  override suspend fun count(): Long = withContext(dispatchers.database) {
+    dao.count()
+  }
 }
 
-fun ConnectionSettingsEntity.toConnection(): ConnectionSettings =
-  ConnectionSettings(
-    address = address.orEmpty(),
-    port = port ?: 3000,
-    name = name.orEmpty(),
-    isDefault = false,
-    id = id ?: 0,
-  )
+fun ConnectionSettingsEntity.toConnection(): ConnectionSettings = ConnectionSettings(
+  address = address.orEmpty(),
+  port = port ?: 3000,
+  name = name.orEmpty(),
+  isDefault = false,
+  id = id ?: 0
+)
 
-fun ConnectionSettings.toConnectionEntity(): ConnectionSettingsEntity =
-  ConnectionSettingsEntity(
-    address = address,
-    port = port,
-    name = name,
-    id = if (id > 0) id else null,
-  )
+fun ConnectionSettings.toConnectionEntity(): ConnectionSettingsEntity = ConnectionSettingsEntity(
+  address = address,
+  port = port,
+  name = name,
+  id = if (id > 0) id else null
+)

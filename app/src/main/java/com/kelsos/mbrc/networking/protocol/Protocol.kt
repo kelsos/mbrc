@@ -1,8 +1,6 @@
 package com.kelsos.mbrc.networking.protocol
 
-sealed class Protocol(
-  val context: String,
-) {
+sealed class Protocol(val context: String) {
   object Player : Protocol(PLAYER)
 
   object ProtocolTag : Protocol(PROTOCOL_TAG)
@@ -209,7 +207,7 @@ sealed class Protocol(
           COMMAND_UNAVAILABLE to CommandUnavailable,
           PLAYER_OUTPUT to PlayerOutput,
           PLAYER_OUTPUT_SWITCH to PlayerOutputSwitch,
-          LIBRARY_COVER to LibraryCover,
+          LIBRARY_COVER to LibraryCover
         )
 
       return contextMap[context] ?: UnknownCommand

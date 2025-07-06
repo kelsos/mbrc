@@ -3,9 +3,7 @@ package com.kelsos.mbrc.features.theme
 import androidx.appcompat.app.AppCompatDelegate
 import com.kelsos.mbrc.features.settings.SettingsManager
 
-class ThemeManagerImpl(
-  private val settingsManager: SettingsManager,
-) : ThemeManager {
+class ThemeManagerImpl(private val settingsManager: SettingsManager) : ThemeManager {
   override fun applyTheme() {
     val themePreference = settingsManager.getThemePreference()
     val nightMode =

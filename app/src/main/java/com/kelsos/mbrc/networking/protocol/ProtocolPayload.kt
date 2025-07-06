@@ -10,5 +10,5 @@ data class ProtocolPayload(
   @Json(name = "no_broadcast")
   val noBroadcast: Boolean = false,
   @Json(name = "protocol_version")
-  val protocolVersion: Int = 3,
+  val protocolVersion: Int = 3
 )

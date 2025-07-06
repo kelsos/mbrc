@@ -22,7 +22,7 @@ class HelpFragment : Fragment() {
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?,
+    savedInstanceState: Bundle?
   ): View? {
     // Inflate the layout for this fragment
     val view = inflater.inflate(R.layout.fragment_help, container, false)
@@ -32,10 +32,7 @@ class HelpFragment : Fragment() {
   }
 
   private class RemoteWebViewClient : WebViewClient() {
-    override fun shouldOverrideUrlLoading(
-      view: WebView?,
-      request: WebResourceRequest?,
-    ): Boolean {
+    override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
       val url = request?.url.toString()
       view?.loadUrl(url)
       return false

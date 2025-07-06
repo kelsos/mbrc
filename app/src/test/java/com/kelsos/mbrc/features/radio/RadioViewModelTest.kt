@@ -13,6 +13,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.io.IOException
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -26,7 +27,6 @@ import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.get
 import org.koin.test.inject
-import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
 class RadioViewModelTest : KoinTest {

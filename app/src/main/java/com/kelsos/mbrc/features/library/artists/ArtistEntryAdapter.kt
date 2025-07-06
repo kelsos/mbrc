@@ -19,10 +19,7 @@ class ArtistEntryAdapter : PagingDataAdapter<Artist, ArtistEntryAdapter.ViewHold
     this.listener = listener
   }
 
-  override fun onCreateViewHolder(
-    parent: ViewGroup,
-    viewType: Int,
-  ): ViewHolder {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
     val inflater: LayoutInflater = LayoutInflater.from(parent.context)
     val view = inflater.inflate(R.layout.item_single, parent, false)
     val holder = ViewHolder(view)
@@ -46,18 +43,13 @@ class ArtistEntryAdapter : PagingDataAdapter<Artist, ArtistEntryAdapter.ViewHold
     return holder
   }
 
-  override fun onBindViewHolder(
-    holder: ViewHolder,
-    position: Int,
-  ) {
+  override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     getItem(position)?.let {
       holder.title.text = it.artist.ifBlank { holder.empty }
     }
   }
 
-  class ViewHolder(
-    itemView: View,
-  ) : RecyclerView.ViewHolder(itemView) {
+  class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val title: TextView = itemView.findViewById(R.id.line_one)
     val indicator: LinearLayout = itemView.findViewById(R.id.ui_item_context_indicator)
     val empty: String = itemView.context.getString(R.string.empty)
@@ -66,15 +58,11 @@ class ArtistEntryAdapter : PagingDataAdapter<Artist, ArtistEntryAdapter.ViewHold
   companion object {
     private val DIFF_CALLBACK =
       object : DiffUtil.ItemCallback<Artist>() {
-        override fun areItemsTheSame(
-          oldItem: Artist,
-          newItem: Artist,
-        ): Boolean = oldItem.id == newItem.id
+        override fun areItemsTheSame(oldItem: Artist, newItem: Artist): Boolean =
+          oldItem.id == newItem.id
 
-        override fun areContentsTheSame(
-          oldItem: Artist,
-          newItem: Artist,
-        ): Boolean = oldItem == newItem
+        override fun areContentsTheSame(oldItem: Artist, newItem: Artist): Boolean =
+          oldItem == newItem
       }
   }
 }

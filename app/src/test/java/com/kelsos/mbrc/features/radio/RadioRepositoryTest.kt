@@ -40,7 +40,7 @@ class RadioRepositoryTest : KoinTest {
         Room
           .inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            Database::class.java,
+            Database::class.java
           ).allowMainThreadQueries()
           .build()
       }
@@ -74,7 +74,7 @@ class RadioRepositoryTest : KoinTest {
         listOf(
           RadioStationEntity(name = "Radio 1", url = "http://radio1.com", dateAdded = 1000L),
           RadioStationEntity(name = "Radio 2", url = "http://radio2.com", dateAdded = 1000L),
-          RadioStationEntity(name = "Radio 3", url = "http://radio3.com", dateAdded = 1000L),
+          RadioStationEntity(name = "Radio 3", url = "http://radio3.com", dateAdded = 1000L)
         )
       dao.insertAll(radioStations)
 
@@ -100,7 +100,7 @@ class RadioRepositoryTest : KoinTest {
         listOf(
           RadioStationEntity(name = "Z Radio", url = "http://zradio.com", dateAdded = 1000L),
           RadioStationEntity(name = "A Radio", url = "http://aradio.com", dateAdded = 1000L),
-          RadioStationEntity(name = "M Radio", url = "http://mradio.com", dateAdded = 1000L),
+          RadioStationEntity(name = "M Radio", url = "http://mradio.com", dateAdded = 1000L)
         )
       dao.insertAll(radioStations)
 
@@ -126,9 +126,13 @@ class RadioRepositoryTest : KoinTest {
       val radioStations =
         listOf(
           RadioStationEntity(name = "Rock FM", url = "http://rockfm.com", dateAdded = 1000L),
-          RadioStationEntity(name = "Pop Rock Radio", url = "http://poprock.com", dateAdded = 1000L),
+          RadioStationEntity(
+            name = "Pop Rock Radio",
+            url = "http://poprock.com",
+            dateAdded = 1000L
+          ),
           RadioStationEntity(name = "Jazz Station", url = "http://jazz.com", dateAdded = 1000L),
-          RadioStationEntity(name = "Hard Rock", url = "http://hardrock.com", dateAdded = 1000L),
+          RadioStationEntity(name = "Hard Rock", url = "http://hardrock.com", dateAdded = 1000L)
         )
       dao.insertAll(radioStations)
 
@@ -145,7 +149,7 @@ class RadioRepositoryTest : KoinTest {
       val radioStations =
         listOf(
           RadioStationEntity(name = "Rock FM", url = "http://rockfm.com", dateAdded = 1000L),
-          RadioStationEntity(name = "Pop Station", url = "http://pop.com", dateAdded = 1000L),
+          RadioStationEntity(name = "Pop Station", url = "http://pop.com", dateAdded = 1000L)
         )
       dao.insertAll(radioStations)
 
@@ -162,7 +166,7 @@ class RadioRepositoryTest : KoinTest {
         listOf(
           RadioStationEntity(name = "Rock FM", url = "http://rockfm.com", dateAdded = 1000L),
           RadioStationEntity(name = "JAZZ", url = "http://jazz.com", dateAdded = 1000L),
-          RadioStationEntity(name = "pop", url = "http://pop.com", dateAdded = 1000L),
+          RadioStationEntity(name = "pop", url = "http://pop.com", dateAdded = 1000L)
         )
       dao.insertAll(radioStations)
 
@@ -175,7 +179,8 @@ class RadioRepositoryTest : KoinTest {
   @Test
   fun getByIdShouldReturnRadioStationWhenExists() {
     runTest(testDispatcher) {
-      val radioStation = RadioStationEntity(name = "Radio 1", url = "http://radio1.com", dateAdded = 1000L)
+      val radioStation =
+        RadioStationEntity(name = "Radio 1", url = "http://radio1.com", dateAdded = 1000L)
       dao.insertAll(listOf(radioStation))
       val insertedRadioStation = dao.all().first()
 
@@ -203,7 +208,7 @@ class RadioRepositoryTest : KoinTest {
       val remoteRadioStations =
         listOf(
           RadioStationDto(name = "Radio 1", url = "http://radio1.com"),
-          RadioStationDto(name = "Radio 2", url = "http://radio2.com"),
+          RadioStationDto(name = "Radio 2", url = "http://radio2.com")
         )
       coEvery {
         api.getAllPages(Protocol.RadioStations, RadioStationDto::class, any())
@@ -213,14 +218,19 @@ class RadioRepositoryTest : KoinTest {
 
       val storedRadioStations = dao.all()
       assertThat(storedRadioStations.map { it.name }).containsExactly("Radio 1", "Radio 2")
-      assertThat(storedRadioStations.map { it.url }).containsExactly("http://radio1.com", "http://radio2.com")
+      assertThat(
+        storedRadioStations.map {
+          it.url
+        }
+      ).containsExactly("http://radio1.com", "http://radio2.com")
     }
   }
 
   @Test
   fun getRemoteShouldReplaceExistingRadioStations() {
     runTest(testDispatcher) {
-      val existingRadioStation = RadioStationEntity(name = "Radio 1", url = "http://radio1.com", dateAdded = 500L)
+      val existingRadioStation =
+        RadioStationEntity(name = "Radio 1", url = "http://radio1.com", dateAdded = 500L)
       dao.insertAll(listOf(existingRadioStation))
       val insertedId = dao.all().first { it.name == "Radio 1" }.id
 
@@ -244,10 +254,12 @@ class RadioRepositoryTest : KoinTest {
   @Test
   fun getRemoteShouldRemovePreviousEntries() {
     runTest(testDispatcher) {
-      val oldRadioStation = RadioStationEntity(name = "Old Radio", url = "http://oldradio.com", dateAdded = 500L)
+      val oldRadioStation =
+        RadioStationEntity(name = "Old Radio", url = "http://oldradio.com", dateAdded = 500L)
       dao.insertAll(listOf(oldRadioStation))
 
-      val remoteRadioStations = listOf(RadioStationDto(name = "New Radio", url = "http://newradio.com"))
+      val remoteRadioStations =
+        listOf(RadioStationDto(name = "New Radio", url = "http://newradio.com"))
       coEvery {
         api.getAllPages(Protocol.RadioStations, RadioStationDto::class, any())
       } returns flowOf(remoteRadioStations)
@@ -283,14 +295,14 @@ class RadioRepositoryTest : KoinTest {
       val existingRadioStations =
         listOf(
           RadioStationEntity(name = "Radio 1", url = "http://radio1.com", dateAdded = 500L),
-          RadioStationEntity(name = "Radio 2", url = "http://radio2.com", dateAdded = 500L),
+          RadioStationEntity(name = "Radio 2", url = "http://radio2.com", dateAdded = 500L)
         )
       dao.insertAll(existingRadioStations)
 
       val remoteRadioStations =
         listOf(
           RadioStationDto(name = "Radio 1", url = "http://radio1.com"),
-          RadioStationDto(name = "Radio 3", url = "http://radio3.com"),
+          RadioStationDto(name = "Radio 3", url = "http://radio3.com")
         )
       coEvery {
         api.getAllPages(Protocol.RadioStations, RadioStationDto::class, any())
@@ -310,7 +322,8 @@ class RadioRepositoryTest : KoinTest {
   @Test
   fun getRemoteShouldHandleEmptyRemoteResponse() {
     runTest(testDispatcher) {
-      val existingRadioStation = RadioStationEntity(name = "Radio 1", url = "http://radio1.com", dateAdded = 500L)
+      val existingRadioStation =
+        RadioStationEntity(name = "Radio 1", url = "http://radio1.com", dateAdded = 500L)
       dao.insertAll(listOf(existingRadioStation))
 
       coEvery {
@@ -330,7 +343,7 @@ class RadioRepositoryTest : KoinTest {
       val remoteRadioStations =
         listOf(
           RadioStationDto(name = "", url = "http://radio1.com"),
-          RadioStationDto(name = "Radio 2", url = ""),
+          RadioStationDto(name = "Radio 2", url = "")
         )
       coEvery {
         api.getAllPages(Protocol.RadioStations, RadioStationDto::class, any())
@@ -366,9 +379,13 @@ class RadioRepositoryTest : KoinTest {
     runTest(testDispatcher) {
       val radioStations =
         listOf(
-          RadioStationEntity(name = "Rock & Roll FM", url = "http://rockroll.com", dateAdded = 1000L),
+          RadioStationEntity(
+            name = "Rock & Roll FM",
+            url = "http://rockroll.com",
+            dateAdded = 1000L
+          ),
           RadioStationEntity(name = "Jazz's Best", url = "http://jazz.com", dateAdded = 1000L),
-          RadioStationEntity(name = "Pop 100%", url = "http://pop.com", dateAdded = 1000L),
+          RadioStationEntity(name = "Pop 100%", url = "http://pop.com", dateAdded = 1000L)
         )
       dao.insertAll(radioStations)
 
@@ -381,7 +398,8 @@ class RadioRepositoryTest : KoinTest {
   @Test
   fun getAllShouldReturnRadioStationsWithCorrectMapping() {
     runTest(testDispatcher) {
-      val radioStation = RadioStationEntity(name = "Test Radio", url = "http://test.com", dateAdded = 1000L)
+      val radioStation =
+        RadioStationEntity(name = "Test Radio", url = "http://test.com", dateAdded = 1000L)
       dao.insertAll(listOf(radioStation))
 
       val result = repository.getAll().asSnapshot()

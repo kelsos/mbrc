@@ -10,14 +10,13 @@ import kotlinx.coroutines.launch
 
 open class BaseLibraryViewModel<T : UiMessageBase>(
   private val settingsHelper: BasicSettingsHelper,
-  private val connectionStateFlow: ConnectionStateFlow,
+  private val connectionStateFlow: ConnectionStateFlow
 ) : BaseViewModel<T>() {
-  protected fun getQueueAction(action: Queue): Queue =
-    if (action == Queue.Default) {
-      Queue.fromString(settingsHelper.defaultAction)
-    } else {
-      action
-    }
+  protected fun getQueueAction(action: Queue): Queue = if (action == Queue.Default) {
+    Queue.fromString(settingsHelper.defaultAction)
+  } else {
+    action
+  }
 
   protected fun launchDefault(event: T) {
     viewModelScope.launch {

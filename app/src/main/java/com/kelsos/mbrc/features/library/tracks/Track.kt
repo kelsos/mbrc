@@ -17,7 +17,7 @@ data class Track(
   val album: String,
   val genre: String,
   val year: String,
-  val id: Long,
+  val id: Long
 )
 
 @JsonClass(generateAdapter = true)
@@ -39,7 +39,7 @@ data class TrackDto(
   @Json(name = "genre")
   val genre: String = "",
   @Json(name = "year")
-  val year: String = "",
+  val year: String = ""
 )
 
 @Entity(tableName = "track", indices = [])
@@ -63,12 +63,9 @@ data class TrackEntity(
   @ColumnInfo(name = "date_added")
   val dateAdded: Long? = null,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null,
+  val id: Long? = null
 )
 
-class TrackPath(
-  val src: String,
-  val id: Long,
-)
+class TrackPath(val src: String, val id: Long)
 
 fun Track.key(): String = "${albumArtist}_$album".encodeUtf8().sha1().hex().uppercase()

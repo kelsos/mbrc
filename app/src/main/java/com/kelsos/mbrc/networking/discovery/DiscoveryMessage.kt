@@ -12,5 +12,5 @@ data class DiscoveryMessage(
   @Json(name = "port")
   val port: Int = 0,
   @Json(name = "context")
-  val context: String = "",
+  val context: String = ""
 )

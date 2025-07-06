@@ -17,7 +17,7 @@ class BrowseTrackViewModel(
   queueHandler: QueueHandler,
   searchModel: LibrarySearchModel,
   settingsHelper: BasicSettingsHelper,
-  connectionStateFlow: ConnectionStateFlow,
+  connectionStateFlow: ConnectionStateFlow
 ) : BaseTrackViewModel(queueHandler, settingsHelper, connectionStateFlow) {
   override val tracks =
     searchModel.term

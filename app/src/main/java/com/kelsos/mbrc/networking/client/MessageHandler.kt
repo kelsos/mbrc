@@ -10,10 +10,10 @@ import com.kelsos.mbrc.networking.protocol.MessageEvent
 import com.kelsos.mbrc.networking.protocol.Protocol
 import com.kelsos.mbrc.networking.protocol.ProtocolAction
 import com.kelsos.mbrc.networking.protocol.ProtocolPayload
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.util.concurrent.ConcurrentHashMap
 
 interface MessageHandler {
   suspend fun processIncoming(message: SocketMessage)
@@ -30,7 +30,7 @@ class MessageHandlerImpl(
   private val connectionState: ConnectionStatePublisher,
   private val clientInformationStore: ClientInformationStore,
   private val librarySyncWorkHandler: LibrarySyncWorkHandler,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val dispatchers: AppCoroutineDispatchers
 ) : MessageHandler {
   private val commands: ConcurrentHashMap<Protocol, ProtocolAction> = ConcurrentHashMap()
 
@@ -48,7 +48,7 @@ class MessageHandlerImpl(
         Protocol.ClientNotAllowed -> clientNotAllowed()
         Protocol.CommandUnavailable ->
           uiMessageQueue.messages.emit(
-            UiMessage.PartyModeCommandUnavailable,
+            UiMessage.PartyModeCommandUnavailable
           )
 
         Protocol.UnknownCommand -> Unit
@@ -57,15 +57,11 @@ class MessageHandlerImpl(
     }
   }
 
-  private fun isValidMessage(message: SocketMessage): Boolean =
-    message.context.isNotBlank() &&
-      message.context.length <= MAX_CONTEXT_LENGTH &&
-      message.data.toString().length <= MAX_DATA_LENGTH
+  private fun isValidMessage(message: SocketMessage): Boolean = message.context.isNotBlank() &&
+    message.context.length <= MAX_CONTEXT_LENGTH &&
+    message.data.toString().length <= MAX_DATA_LENGTH
 
-  private suspend fun handle(
-    message: SocketMessage,
-    context: Protocol,
-  ) {
+  private suspend fun handle(message: SocketMessage, context: Protocol) {
     val data = message.data
 
     if (handshake(context, data)) {
@@ -78,60 +74,58 @@ class MessageHandlerImpl(
     }
   }
 
-  private suspend fun handshake(
-    context: Protocol,
-    dataPayload: Any,
-  ): Boolean =
-    when (context) {
-      Protocol.Player -> {
-        sendProtocolPayload()
-        true
-      }
-
-      Protocol.ProtocolTag -> {
-        val protocolVersion = parseProtocolVersion(dataPayload)
-
-        if (isVersionSupported(protocolVersion)) {
-          execute(MessageEvent(Protocol.ProtocolTag, protocolVersion))
-          connectionState.updateConnection(ConnectionStatus.Connected)
-          Timber.v("Handshake complete with protocol version $protocolVersion, sending init message")
-          messageQueue.queue(SocketMessage.create(Protocol.Init))
-
-          Timber.v("Starting automatic library sync after successful connection")
-          librarySyncWorkHandler.sync(auto = true)
-          true
-        } else {
-          Timber.w("Unsupported protocol version: $protocolVersion")
-          uiMessageQueue.messages.emit(UiMessage.ConnectionError.UnsupportedProtocolVersion)
-          connectionState.updateConnection(ConnectionStatus.Offline)
-          false
-        }
-      }
-
-      else -> false
+  private suspend fun handshake(context: Protocol, dataPayload: Any): Boolean = when (context) {
+    Protocol.Player -> {
+      sendProtocolPayload()
+      true
     }
 
-  private fun parseProtocolVersion(dataPayload: Any): Int =
-    try {
-      val versionString = dataPayload.toString()
-      if (versionString.isBlank()) {
-        Timber.w("Empty protocol version, using default")
+    Protocol.ProtocolTag -> {
+      val protocolVersion = parseProtocolVersion(dataPayload)
+
+      if (isVersionSupported(protocolVersion)) {
+        execute(MessageEvent(Protocol.ProtocolTag, protocolVersion))
+        connectionState.updateConnection(ConnectionStatus.Connected)
+        Timber.v(
+          "Handshake complete with protocol version $protocolVersion, sending init message"
+        )
+        messageQueue.queue(SocketMessage.create(Protocol.Init))
+
+        Timber.v("Starting automatic library sync after successful connection")
+        librarySyncWorkHandler.sync(auto = true)
+        true
+      } else {
+        Timber.w("Unsupported protocol version: $protocolVersion")
+        uiMessageQueue.messages.emit(UiMessage.ConnectionError.UnsupportedProtocolVersion)
+        connectionState.updateConnection(ConnectionStatus.Offline)
+        false
+      }
+    }
+
+    else -> false
+  }
+
+  private fun parseProtocolVersion(dataPayload: Any): Int = try {
+    val versionString = dataPayload.toString()
+    if (versionString.isBlank()) {
+      Timber.w("Empty protocol version, using default")
+      MIN_SUPPORTED_VERSION
+    } else {
+      val version = versionString.toFloat().toInt()
+      if (version < 1) {
+        Timber.w("Invalid protocol version: $version, using minimum supported")
         MIN_SUPPORTED_VERSION
       } else {
-        val version = versionString.toFloat().toInt()
-        if (version < 1) {
-          Timber.w("Invalid protocol version: $version, using minimum supported")
-          MIN_SUPPORTED_VERSION
-        } else {
-          version
-        }
+        version
       }
-    } catch (e: NumberFormatException) {
-      Timber.w(e, "Failed to parse protocol version: $dataPayload, using default")
-      MIN_SUPPORTED_VERSION
     }
+  } catch (e: NumberFormatException) {
+    Timber.w(e, "Failed to parse protocol version: $dataPayload, using default")
+    MIN_SUPPORTED_VERSION
+  }
 
-  private fun isVersionSupported(version: Int): Boolean = version in MIN_SUPPORTED_VERSION..Protocol.PROTOCOL_VERSION
+  private fun isVersionSupported(version: Int): Boolean =
+    version in MIN_SUPPORTED_VERSION..Protocol.PROTOCOL_VERSION
 
   companion object {
     private const val MIN_SUPPORTED_VERSION = 2
@@ -145,19 +139,18 @@ class MessageHandlerImpl(
       .onFailure { Timber.e(it, "Failed to execute command for $event") }
   }
 
-  private fun get(context: Protocol) =
-    runCatching {
-      commands.computeIfAbsent(context) { protocol ->
-        commandFactory.create(protocol)
-      }
+  private fun get(context: Protocol) = runCatching {
+    commands.computeIfAbsent(context) { protocol ->
+      commandFactory.create(protocol)
     }
+  }
 
   private suspend fun sendProtocolPayload() {
     val payload =
       ProtocolPayload(
         clientId = clientInformationStore.getClientId(),
         noBroadcast = false,
-        protocolVersion = Protocol.PROTOCOL_VERSION,
+        protocolVersion = Protocol.PROTOCOL_VERSION
       )
     messageQueue.queue(SocketMessage.create(Protocol.ProtocolTag, payload))
   }

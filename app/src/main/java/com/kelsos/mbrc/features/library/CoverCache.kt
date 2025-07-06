@@ -8,19 +8,19 @@ import com.kelsos.mbrc.features.library.albums.AlbumRepository
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.ApiStatus
 import com.kelsos.mbrc.networking.protocol.Protocol
+import java.io.File
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.withContext
 import okio.ByteString.Companion.decodeBase64
 import okio.buffer
 import okio.sink
 import timber.log.Timber
-import java.io.File
 
 class CoverCache(
   private val albumRepository: AlbumRepository,
   private val api: ApiBase,
   private val dispatchers: AppCoroutineDispatchers,
-  app: Application,
+  app: Application
 ) {
   private val cache = File(app.cacheDir, "covers")
 
@@ -36,28 +36,24 @@ class CoverCache(
     fetchCovers(covers, progress)
   }
 
-  private suspend fun getCachedCovers(): List<AlbumCover> =
-    withContext(dispatchers.database) {
-      val covers = albumRepository.getCovers()
-      val albumCovers = mutableListOf<AlbumCover>()
-      withContext(dispatchers.io) {
-        val files = cache.listFiles()?.map { it.nameWithoutExtension }.orEmpty()
+  private suspend fun getCachedCovers(): List<AlbumCover> = withContext(dispatchers.database) {
+    val covers = albumRepository.getCovers()
+    val albumCovers = mutableListOf<AlbumCover>()
+    withContext(dispatchers.io) {
+      val files = cache.listFiles()?.map { it.nameWithoutExtension }.orEmpty()
 
-        for (cover in covers) {
-          if (cover.hash.isNullOrEmpty() || files.contains(cover.key())) {
-            albumCovers.add(cover)
-          } else {
-            albumCovers.add(cover.copy(hash = null))
-          }
+      for (cover in covers) {
+        if (cover.hash.isNullOrEmpty() || files.contains(cover.key())) {
+          albumCovers.add(cover)
+        } else {
+          albumCovers.add(cover.copy(hash = null))
         }
       }
-      albumCovers
     }
+    albumCovers
+  }
 
-  private suspend fun fetchCovers(
-    covers: List<AlbumCover>,
-    progress: Progress?,
-  ) {
+  private suspend fun fetchCovers(covers: List<AlbumCover>, progress: Progress?) {
     withContext(dispatchers.network) {
       val updated = mutableListOf<AlbumCover>()
       api
@@ -73,7 +69,7 @@ class CoverCache(
   private fun processApiCoverResponse(
     response: Cover,
     payload: AlbumCover,
-    updated: MutableList<AlbumCover>,
+    updated: MutableList<AlbumCover>
   ) {
     val status = response.status
     if (status == ApiStatus.NOT_MODIFIED) {
@@ -113,15 +109,14 @@ class CoverCache(
     payload: AlbumCover,
     cover: String,
     updated: MutableList<AlbumCover>,
-    hash: String,
-  ): Result<Boolean> =
-    runCatching {
-      val file = File(cache, payload.key())
-      val decodeBase64 = cover.decodeBase64()
-      if (decodeBase64 != null) {
-        Timber.v("saving cover for $payload -> ${file.path}")
-        file.sink().buffer().use { sink -> sink.write(decodeBase64) }
-      }
-      updated.add(payload.copy(hash = hash))
+    hash: String
+  ): Result<Boolean> = runCatching {
+    val file = File(cache, payload.key())
+    val decodeBase64 = cover.decodeBase64()
+    if (decodeBase64 != null) {
+      Timber.v("saving cover for $payload -> ${file.path}")
+      file.sink().buffer().use { sink -> sink.write(decodeBase64) }
     }
+    updated.add(payload.copy(hash = hash))
+  }
 }

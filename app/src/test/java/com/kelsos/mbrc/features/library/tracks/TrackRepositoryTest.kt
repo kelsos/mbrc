@@ -283,7 +283,7 @@ class TrackRepositoryTest : KoinTest {
   }
 
   @Test
-  fun searchShouldReturnMatchingTracks() {
+  fun searchShouldReturnMatchingTracksByTitle() {
     runTest(testDispatcher) {
       val tracks =
         listOf(
@@ -314,6 +314,76 @@ class TrackRepositoryTest : KoinTest {
   }
 
   @Test
+  fun searchShouldReturnMatchingTracksByArtist() {
+    runTest(testDispatcher) {
+      val tracks =
+        listOf(
+          createTrackEntity(
+            artist = "Rock Artist",
+            title = "Track 1",
+            src = "/path/to/track1.mp3"
+          ),
+          createTrackEntity(
+            artist = "Pop Artist",
+            title = "Track 2",
+            src = "/path/to/track2.mp3",
+            genre = "Pop"
+          ),
+          createTrackEntity(
+            artist = "Another Rock Artist",
+            title = "Track 3",
+            src = "/path/to/track3.mp3"
+          )
+        )
+      dao.insertAll(tracks)
+
+      val result = repository.search("Rock").asSnapshot()
+
+      assertThat(result).hasSize(2)
+      assertThat(result.map { it.artist }).containsExactly("Rock Artist", "Another Rock Artist")
+    }
+  }
+
+  @Test
+  fun searchShouldReturnMatchingTracksByTitleOrArtist() {
+    runTest(testDispatcher) {
+      val tracks =
+        listOf(
+          createTrackEntity(
+            artist = "Jazz Artist",
+            title = "Rock Track", // Title matches
+            src = "/path/to/track1.mp3"
+          ),
+          createTrackEntity(
+            artist = "Rock Artist", // Artist matches
+            title = "Pop Track",
+            src = "/path/to/track2.mp3"
+          ),
+          createTrackEntity(
+            artist = "Pop Artist",
+            title = "Blues Track", // No match
+            src = "/path/to/track3.mp3"
+          ),
+          createTrackEntity(
+            artist = "Rock Star", // Artist matches
+            title = "Jazz Track",
+            src = "/path/to/track4.mp3"
+          )
+        )
+      dao.insertAll(tracks)
+
+      val result = repository.search("Rock").asSnapshot()
+
+      assertThat(result).hasSize(3)
+      assertThat(result.map { it.src }).containsExactly(
+        "/path/to/track1.mp3",
+        "/path/to/track2.mp3",
+        "/path/to/track4.mp3"
+      )
+    }
+  }
+
+  @Test
   fun searchShouldReturnEmptyWhenNoMatches() {
     runTest(testDispatcher) {
       val tracks =
@@ -335,6 +405,40 @@ class TrackRepositoryTest : KoinTest {
       val result = repository.search("Jazz").asSnapshot()
 
       assertThat(result).isEmpty()
+    }
+  }
+
+  @Test
+  fun searchShouldBeCaseInsensitive() {
+    runTest(testDispatcher) {
+      val tracks =
+        listOf(
+          createTrackEntity(
+            artist = "ROCK ARTIST",
+            title = "Classical Music",
+            src = "/path/to/track1.mp3"
+          ),
+          createTrackEntity(
+            artist = "Jazz Musician",
+            title = "ROCK ANTHEM",
+            src = "/path/to/track2.mp3"
+          ),
+          createTrackEntity(
+            artist = "Pop Star",
+            title = "Dancing Queen",
+            src = "/path/to/track3.mp3"
+          )
+        )
+      dao.insertAll(tracks)
+
+      val result = repository.search("rock").asSnapshot()
+
+      assertThat(result).hasSize(2)
+      assertThat(
+        result.map {
+          it.src
+        }
+      ).containsExactly("/path/to/track1.mp3", "/path/to/track2.mp3")
     }
   }
 

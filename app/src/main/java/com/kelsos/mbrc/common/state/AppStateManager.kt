@@ -3,8 +3,6 @@ package com.kelsos.mbrc.common.state
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.common.utilities.ScopeBase
 import com.kelsos.mbrc.platform.mediasession.AppNotificationManager
-import java.util.Timer
-import kotlin.concurrent.fixedRateTimer
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -12,6 +10,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.*
+import kotlin.concurrent.fixedRateTimer
 
 @OptIn(FlowPreview::class)
 class AppStateManager(
@@ -70,6 +70,9 @@ class AppStateManager(
     launch {
       connectionState.connection.collect { connection ->
         notifications.connectionStateChanged(connection == ConnectionStatus.Connected)
+        if (connection == ConnectionStatus.Offline) {
+          stopPositionUpdater()
+        }
       }
     }
 

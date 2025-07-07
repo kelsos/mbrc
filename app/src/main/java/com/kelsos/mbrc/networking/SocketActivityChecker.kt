@@ -18,7 +18,20 @@ class SocketActivityChecker(dispatchers: AppCoroutineDispatchers) {
   private val job = SupervisorJob()
   private val scope = CoroutineScope(job + dispatchers.network)
 
+  @Volatile
+  private var isRunning = false
+
+  @Volatile
+  private var consecutiveTimeouts = 0
+
   fun start() {
+    if (isRunning) {
+      Timber.v("Activity checker already running")
+      return
+    }
+
+    isRunning = true
+    consecutiveTimeouts = 0
     scope.launch {
       Timber.v("Starting activity checker")
       schedule()
@@ -27,13 +40,27 @@ class SocketActivityChecker(dispatchers: AppCoroutineDispatchers) {
 
   private suspend fun schedule() {
     cancel()
+    if (!isRunning) return
+
     deferred =
       scope.async {
         delay(DELAY_MS)
-        Timber.v("Ping was more than %d seconds ago", DELAY_MS)
-        val result = runCatching { listener?.invoke() }
+        if (!isRunning) return@async
+
+        consecutiveTimeouts++
+        Timber.v("Ping timeout #$consecutiveTimeouts after %d ms", DELAY_MS)
+
+        val result = runCatching {
+          listener?.invoke()
+        }
+
         if (result.isFailure) {
           Timber.e(result.exceptionOrNull(), "calling the onTimeout method failed")
+        }
+
+        // Reset consecutive timeout count after successful timeout handling
+        if (result.isSuccess) {
+          consecutiveTimeouts = 0
         }
       }
   }
@@ -47,13 +74,30 @@ class SocketActivityChecker(dispatchers: AppCoroutineDispatchers) {
   }
 
   fun stop() {
+    if (!isRunning) {
+      Timber.v("Activity checker already stopped")
+      return
+    }
+
     Timber.v("Stopping activity checker")
+    isRunning = false
+    consecutiveTimeouts = 0
     scope.launch { cancel() }
   }
 
   fun ping() {
-    Timber.v("Received ping")
-    scope.launch { schedule() }
+    if (!isRunning) {
+      Timber.v("Received ping but activity checker is not running")
+      return
+    }
+
+    Timber.v("Received ping - resetting timeout")
+    consecutiveTimeouts = 0 // Reset timeout count on successful ping
+    scope.launch {
+      if (isRunning) {
+        schedule()
+      }
+    }
   }
 
   fun setPingTimeoutListener(listener: Listener?) {
@@ -62,5 +106,10 @@ class SocketActivityChecker(dispatchers: AppCoroutineDispatchers) {
 
   companion object {
     private const val DELAY_MS = 40_000L
+    private const val MAX_CONSECUTIVE_TIMEOUTS = 3
   }
+
+  fun getTimeoutCount(): Int = consecutiveTimeouts
+
+  fun isHealthy(): Boolean = isRunning && consecutiveTimeouts < MAX_CONSECUTIVE_TIMEOUTS
 }

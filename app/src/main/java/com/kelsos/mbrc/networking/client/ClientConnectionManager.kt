@@ -9,12 +9,6 @@ import com.kelsos.mbrc.networking.SocketActivityChecker
 import com.kelsos.mbrc.networking.connections.toSocketAddress
 import com.kelsos.mbrc.networking.discovery.DiscoveryStop
 import com.squareup.moshi.Moshi
-import java.io.IOException
-import java.net.Socket
-import java.net.SocketAddress
-import java.net.SocketException
-import java.net.SocketTimeoutException
-import kotlin.math.pow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
@@ -26,6 +20,12 @@ import okio.buffer
 import okio.sink
 import okio.source
 import timber.log.Timber
+import java.io.IOException
+import java.net.Socket
+import java.net.SocketAddress
+import java.net.SocketException
+import java.net.SocketTimeoutException
+import kotlin.math.pow
 
 interface ClientConnectionManager {
   fun start()
@@ -47,7 +47,11 @@ data class ConnectionConfig(
   val maxRetries: Int = 3,
   val initialDelay: Long = 1000L,
   val maxDelay: Long = 30000L,
-  val backoffMultiplier: Double = 2.0
+  val backoffMultiplier: Double = 2.0,
+  // Slightly less than ping timeout
+  val readTimeoutMs: Long = 35000L,
+  // Healthcheck every 20 seconds
+  val healthCheckIntervalMs: Long = 20000L
 )
 
 class ClientConnectionManagerImpl(
@@ -178,13 +182,14 @@ class ClientConnectionManagerImpl(
 
   private fun setupConnection(socket: Socket) {
     val connection =
-      Connection(socket, moshi, dispatchers).also {
+      Connection(socket, moshi, dispatchers, connectionConfig).also {
         this.connection = it
       }
 
     setupMessageFlows(connection)
     startConnectionWorker(connection)
     setupActivityChecker(connection)
+    startHealthChecker(connection)
   }
 
   private fun setupMessageFlows(connection: Connection) {
@@ -200,10 +205,10 @@ class ClientConnectionManagerImpl(
           onSuccess = { true },
           onFailure = { exception ->
             Timber.e(exception, "Send failed")
-            if (!connection.isConnected) {
-              connection.cleanup()
-              stop()
-            }
+            // Always cleanup on send failure, regardless of isConnected status
+            // as send failures often indicate broken connections
+            connection.cleanup()
+            stop()
           }
         )
       }
@@ -228,9 +233,41 @@ class ClientConnectionManagerImpl(
   private fun setupActivityChecker(connection: Connection) {
     activityChecker.start()
     activityChecker.setPingTimeoutListener {
-      Timber.v("Timeout received resetting socket")
+      Timber.v("Ping timeout received - resetting socket")
       connection.cleanup()
       activityChecker.stop()
+      launch {
+        connectionState.updateConnection(ConnectionStatus.Offline)
+        delay(RECONNECT_DELAY_MS) // Brief delay before attempting reconnection
+        attemptConnection()
+      }
+    }
+  }
+
+  private fun startHealthChecker(connection: Connection) {
+    launch {
+      while (connection.isConnected) {
+        delay(connectionConfig.healthCheckIntervalMs)
+
+        // Perform health check
+        if (!connection.isConnected) {
+          Timber.v("Health check failed - connection no longer healthy")
+          connection.cleanup()
+          break
+        }
+
+        // Additional check: try to get socket info to verify connection
+        val healthCheck = runCatching {
+          val (remoteAddress, isInputShutdown, isOutputShutdown) = connection.getSocketInfo()
+          remoteAddress != null && !isInputShutdown && !isOutputShutdown
+        }
+
+        if (healthCheck.isFailure || healthCheck.getOrNull() == false) {
+          Timber.v("Socket health check failed")
+          connection.cleanup()
+          break
+        }
+      }
     }
   }
 
@@ -253,10 +290,16 @@ class ClientConnectionManagerImpl(
 
   companion object {
     private const val DELAY_MS = 2000L
+    private const val RECONNECT_DELAY_MS = 1000L
   }
 }
 
-class Connection(private val socket: Socket, moshi: Moshi, dispatchers: AppCoroutineDispatchers) {
+class Connection(
+  private val socket: Socket,
+  moshi: Moshi,
+  dispatchers: AppCoroutineDispatchers,
+  private val config: ConnectionConfig = ConnectionConfig()
+) {
   private val sink = socket.sink().buffer()
   private val source = socket.source().buffer()
   private val adapter = moshi.adapter(SocketMessage::class.java)
@@ -268,7 +311,22 @@ class Connection(private val socket: Socket, moshi: Moshi, dispatchers: AppCorou
   @Volatile
   private var isCleanedUp = false
 
-  val isConnected get() = !isCleanedUp && socket.isConnected && !socket.isClosed
+  val isConnected get() = !isCleanedUp &&
+    socket.isConnected &&
+    !socket.isClosed &&
+    isSocketHealthy()
+
+  fun isSocketHealthy(): Boolean = runCatching {
+    // More robust socket health check
+    !socket.isInputShutdown && !socket.isOutputShutdown && socket.remoteSocketAddress != null
+  }.getOrElse { false }
+
+  // Expose socket for health checks
+  internal fun getSocketInfo() = Triple(
+    socket.remoteSocketAddress,
+    socket.isInputShutdown,
+    socket.isOutputShutdown
+  )
 
   fun cleanup() {
     if (isCleanedUp) return
@@ -317,7 +375,17 @@ class Connection(private val socket: Socket, moshi: Moshi, dispatchers: AppCorou
     for (reply in replies) {
       val result =
         runCatching {
-          val message = checkNotNull(adapter.fromJson(reply))
+          if (reply.isBlank()) {
+            Timber.v("Skipping blank message")
+            return@runCatching
+          }
+
+          val message = adapter.fromJson(reply)
+          if (message == null) {
+            Timber.w("Received null message from: $reply")
+            return@runCatching
+          }
+
           scope.launch {
             _messages.emit(message)
           }
@@ -325,15 +393,29 @@ class Connection(private val socket: Socket, moshi: Moshi, dispatchers: AppCorou
 
       if (result.isFailure) {
         val throwable = result.exceptionOrNull()
-        Timber.e(throwable, "Failed processing $reply")
+        Timber.e(throwable, "Failed processing message: $reply")
+        // If we consistently fail to parse messages, the connection might be corrupted
+        messageParseFailureCount++
+        if (messageParseFailureCount >= MAX_PARSE_FAILURES) {
+          Timber.w(
+            "Too many message parse failures ($messageParseFailureCount), treating as connection failure"
+          )
+          throw IOException("Message parsing consistently failing - connection corrupted")
+        }
+      } else {
+        // Reset failure count on successful parse
+        messageParseFailureCount = 0
       }
     }
   }
 
+  @Volatile
+  private var messageParseFailureCount = 0
+
   fun listen() {
     try {
       while (isConnected) {
-        val rawMessage = source.readUtf8Line()
+        val rawMessage = readWithTimeout()
         if (rawMessage == null) {
           Timber.d("Connection closed by remote")
           break
@@ -352,13 +434,30 @@ class Connection(private val socket: Socket, moshi: Moshi, dispatchers: AppCorou
     }
   }
 
+  private fun readWithTimeout(): String? {
+    // Set read timeout to detect unresponsive connections
+    val originalTimeout = socket.soTimeout
+    return try {
+      socket.soTimeout = config.readTimeoutMs.toInt()
+      source.readUtf8Line()
+    } catch (e: SocketTimeoutException) {
+      Timber.w("Read timeout after ${config.readTimeoutMs}ms - connection may be unresponsive")
+      throw IOException("Connection read timeout", e)
+    } finally {
+      socket.soTimeout = originalTimeout
+    }
+  }
+
   companion object {
     private const val SO_TIMEOUT = 30_000
     private const val NEWLINE = "\r\n"
+    private const val MAX_PARSE_FAILURES = 5
 
     fun connect(address: SocketAddress): Socket {
       val socket = Socket()
       socket.soTimeout = SO_TIMEOUT
+      socket.tcpNoDelay = true // Reduce latency for ping/pong
+      socket.keepAlive = true // Enable TCP keep-alive
       socket.connect(address)
       return socket
     }

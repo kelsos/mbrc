@@ -3,18 +3,18 @@ package com.kelsos.mbrc.features.library
 import androidx.annotation.StringRes
 import com.kelsos.mbrc.R
 
-sealed class LibraryMediaType(val code: Int, @StringRes val nameRes: Int = 0) {
-  object Genres : LibraryMediaType(GENRES, R.string.media__genres)
+sealed class LibraryMediaType(val code: Int, @StringRes val progressRes: Int = 0) {
+  object Genres : LibraryMediaType(GENRES, R.string.notification__sync_progress_genres)
 
-  object Artists : LibraryMediaType(ARTISTS, R.string.media__artists)
+  object Artists : LibraryMediaType(ARTISTS, R.string.notification__sync_progress_artists)
 
-  object Albums : LibraryMediaType(ALBUMS, R.string.media__albums)
+  object Albums : LibraryMediaType(ALBUMS, R.string.notification__sync_progress_albums)
 
-  object Tracks : LibraryMediaType(TRACKS, R.string.media__tracks)
+  object Tracks : LibraryMediaType(TRACKS, R.string.notification__sync_progress_tracks)
 
-  object Playlists : LibraryMediaType(PLAYLISTS, R.string.media__playlists)
+  object Playlists : LibraryMediaType(PLAYLISTS, R.string.notification__sync_progress_playlists)
 
-  object Covers : LibraryMediaType(COVERS, R.string.media__covers)
+  object Covers : LibraryMediaType(COVERS, R.string.notification__sync_progress_covers)
 
   companion object {
     const val GENRES = 1

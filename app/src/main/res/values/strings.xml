@@ -119,6 +119,12 @@
   <string name="notification__session_channel_name">MusicBee Remote Session</string>
   <string name="notification__sync_description">Library metadata sync in progress</string>
   <string name="notification__sync_title">Library Sync</string>
+  <string name="notification__sync_progress_albums">Albums (%1$d/%2$d)</string>
+  <string name="notification__sync_progress_artists">Artists (%1$d/%2$d)</string>
+  <string name="notification__sync_progress_covers">Covers (%1$d/%2$d)</string>
+  <string name="notification__sync_progress_genres">Genres (%1$d/%2$d)</string>
+  <string name="notification__sync_progress_playlists">Playlists (%1$d/%2$d)</string>
+  <string name="notification__sync_progress_tracks">Tracks (%1$d/%2$d)</string>
   <string name="now_playing_indicator">Should be shown if the track is currently playing</string>
   <string name="now_playing_search">Search</string>
   <string name="now_playing_search_hint">Search and play a track</string>

@@ -148,14 +148,14 @@ class LibrarySyncWorker(
 
   private fun updateProgress(category: LibraryMediaType, current: Int, total: Int) {
     val title = applicationContext.getString(R.string.notification__sync_title)
-    val contextText = applicationContext.getString(category.nameRes, current, total)
+    val contextText = applicationContext.getString(category.progressRes, current, total)
     val builder =
       NotificationCompat
         .Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
         .setContentTitle(title)
         .setSmallIcon(R.drawable.ic_mbrc_status)
         .setOngoing(true)
-        .setProgress(current, total, false)
+        .setProgress(total, current, false)
         .setContentText(contextText)
 
     notificationManager.notify(NOTIFICATION_ID, builder.build())

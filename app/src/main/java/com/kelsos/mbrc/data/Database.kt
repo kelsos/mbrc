@@ -51,7 +51,7 @@ abstract class Database : RoomDatabase() {
   abstract fun connectionDao(): ConnectionDao
 
   companion object {
-    const val VERSION = 3
+    const val VERSION = 4
     const val NAME = "cache.db"
   }
 }

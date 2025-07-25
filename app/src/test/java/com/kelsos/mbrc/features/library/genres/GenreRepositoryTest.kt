@@ -177,7 +177,7 @@ class GenreRepositoryTest : KoinTest {
       dao.insertAll(listOf(genre))
       val insertedGenre = dao.all().first()
 
-      val result = repository.getById(insertedGenre.id!!)
+      val result = repository.getById(insertedGenre.id)
 
       assertThat(result).isNotNull()
       assertThat(result!!.genre).isEqualTo("Rock")

@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.playlists
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -18,15 +19,15 @@ data class PlaylistDto(
 
 @Entity(
   tableName = "playlists",
-  indices = []
+  indices = [Index("name", name = "playlist_name_idx", unique = true)]
 )
 data class PlaylistEntity(
   @ColumnInfo(name = "name")
-  val name: String? = null,
+  val name: String,
   @ColumnInfo(name = "url")
-  val url: String? = null,
+  val url: String,
   @ColumnInfo(name = "date_added")
-  val dateAdded: Long? = null,
+  val dateAdded: Long = 0,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null
+  val id: Long = 0
 )

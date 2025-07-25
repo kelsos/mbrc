@@ -131,21 +131,39 @@ class ArtistRepositoryTest : KoinTest {
             artist = "Rock Artist 1",
             title = "Rock Track 1",
             album = "Rock Album 1",
+            albumArtist = "Rock Artist 1",
             genre = "Rock",
+            src = "rock1.mp3",
+            trackno = 1,
+            disc = 1,
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           ),
           TrackEntity(
             artist = "Rock Artist 2",
             title = "Rock Track 2",
             album = "Rock Album 2",
+            albumArtist = "Rock Artist 2",
             genre = "Rock",
+            src = "rock2.mp3",
+            trackno = 1,
+            disc = 1,
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           ),
           TrackEntity(
             artist = "Pop Artist",
             title = "Pop Track",
             album = "Pop Album",
+            albumArtist = "Pop Artist",
             genre = "Pop",
+            src = "pop1.mp3",
+            trackno = 1,
+            disc = 1,
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           )
         )
@@ -207,7 +225,7 @@ class ArtistRepositoryTest : KoinTest {
       dao.insertAll(listOf(artist))
       val insertedArtist = dao.all().first()
 
-      val result = repository.getById(insertedArtist.id!!)
+      val result = repository.getById(insertedArtist.id)
 
       assertThat(result).isNotNull()
       assertThat(result!!.artist).isEqualTo("The Beatles")
@@ -315,6 +333,11 @@ class ArtistRepositoryTest : KoinTest {
             album = "Compilation Album",
             albumArtist = albumArtist,
             src = "track1.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Various",
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           ),
           TrackEntity(
@@ -323,6 +346,11 @@ class ArtistRepositoryTest : KoinTest {
             album = "Compilation Album",
             albumArtist = albumArtist,
             src = "track2.mp3",
+            trackno = 2,
+            disc = 1,
+            genre = "Various",
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           )
         )
@@ -361,6 +389,11 @@ class ArtistRepositoryTest : KoinTest {
             album = "Regular Album",
             albumArtist = regularAlbumArtist,
             src = "track1.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           ),
           TrackEntity(
@@ -369,6 +402,11 @@ class ArtistRepositoryTest : KoinTest {
             album = "Different Album",
             albumArtist = "Different Album Artist",
             src = "track2.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           )
         )
@@ -438,6 +476,11 @@ class ArtistRepositoryTest : KoinTest {
             album = "Album 1",
             albumArtist = "The Beatles",
             src = "track1.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           ),
           TrackEntity(
@@ -446,6 +489,11 @@ class ArtistRepositoryTest : KoinTest {
             album = "Album 2",
             albumArtist = "Bob Dylan",
             src = "track2.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Folk",
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           ),
           TrackEntity(
@@ -454,6 +502,11 @@ class ArtistRepositoryTest : KoinTest {
             album = "Album 3",
             albumArtist = "The Who",
             src = "track3.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           )
         )

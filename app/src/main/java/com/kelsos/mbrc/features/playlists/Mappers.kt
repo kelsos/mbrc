@@ -4,9 +4,9 @@ import com.kelsos.mbrc.common.data.Mapper
 
 object PlaylistEntityMapper : Mapper<PlaylistEntity, Playlist> {
   override fun map(from: PlaylistEntity): Playlist = Playlist(
-    name = from.name.orEmpty(),
-    url = from.url.orEmpty(),
-    id = from.id ?: 0
+    name = from.name,
+    url = from.url,
+    id = from.id
   )
 }
 

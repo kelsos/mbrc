@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.library.albums
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -11,21 +12,19 @@ data class Album(val id: Long, val artist: String, val album: String, val cover:
 
 @Entity(
   tableName = "album",
-  indices = []
+  indices = [Index("artist", "album", name = "album_info_idx", unique = true)]
 )
 data class AlbumEntity(
   @ColumnInfo
-  val artist: String? = null,
+  val artist: String,
   @ColumnInfo
-  val album: String? = null,
+  val album: String,
   @ColumnInfo
   val cover: String? = null,
   @ColumnInfo(name = "date_added")
-  val dateAdded: Long? = null,
-  @ColumnInfo(name = "count")
-  val count: Int? = null,
+  val dateAdded: Long = 0,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null
+  val id: Long = 0
 )
 
 @JsonClass(generateAdapter = true)

@@ -9,7 +9,7 @@ import androidx.room.Update
 
 @Dao
 interface GenreDao {
-  @Insert(onConflict = OnConflictStrategy.ABORT)
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
   fun insertAll(list: List<GenreEntity>)
 
   @Update

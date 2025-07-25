@@ -5,6 +5,10 @@ import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.utils.testDispatcherModule
 import com.squareup.moshi.Moshi
+import java.net.ServerSocket
+import java.net.Socket
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -15,10 +19,6 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
-import java.net.ServerSocket
-import java.net.Socket
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 @RunWith(AndroidJUnit4::class)
 class ConnectionTest : KoinTest {

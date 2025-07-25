@@ -11,10 +11,10 @@ object AlbumDtoMapper : Mapper<AlbumDto, AlbumEntity> {
 
 object AlbumEntityMapper : Mapper<AlbumEntity, Album> {
   override fun map(from: AlbumEntity): Album = Album(
-    id = from.id ?: 0,
-    artist = from.artist.orEmpty(),
-    album = from.album.orEmpty(),
-    cover = from.cover.orEmpty()
+    id = from.id,
+    artist = from.artist,
+    album = from.album,
+    cover = from.cover
   )
 }
 

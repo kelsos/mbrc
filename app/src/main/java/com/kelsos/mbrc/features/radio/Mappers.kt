@@ -9,9 +9,9 @@ object RadioDtoMapper : Mapper<RadioStationDto, RadioStationEntity> {
 
 object RadioDaoMapper : Mapper<RadioStationEntity, RadioStation> {
   override fun map(from: RadioStationEntity): RadioStation = RadioStation(
-    name = from.name.orEmpty(),
-    url = from.url.orEmpty(),
-    id = from.id ?: 0
+    name = from.name,
+    url = from.url,
+    id = from.id
   )
 }
 

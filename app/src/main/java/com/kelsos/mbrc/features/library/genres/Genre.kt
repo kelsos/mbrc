@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.library.genres
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -18,15 +19,13 @@ data class GenreDto(
 
 @Entity(
   tableName = "genre",
-  indices = []
+  indices = [Index("genre", name = "genre_genre_idx", unique = true)]
 )
 data class GenreEntity(
   @ColumnInfo
-  val genre: String? = null,
-  @ColumnInfo
-  val count: Int? = null,
+  val genre: String,
   @ColumnInfo(name = "date_added")
-  val dateAdded: Long? = null,
+  val dateAdded: Long = 0,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null
+  val id: Long = 0
 )

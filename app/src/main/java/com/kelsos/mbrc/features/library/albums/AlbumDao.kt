@@ -35,7 +35,7 @@ interface AlbumDao {
 
   @Query(
     """
-        select distinct album.artist as artist, album.album as album, album.count as count,
+        select distinct album.artist as artist, album.album as album,
         album.date_added as date_added, album.id as id, album.cover as cover from album
         inner join track where album.album = track.album and track.album_artist = album.artist
         and (track.artist = :artist or track.album_artist = :artist) order by artist collate nocase asc, album collate nocase asc

@@ -55,8 +55,8 @@ class GenreRepositoryImpl(
               }
             }
           withContext(dispatchers.database) {
-            dao.insertAll(items.filter { it.id == null })
-            dao.update(items.filter { it.id != null })
+            dao.insertAll(items.filter { it.id == 0L })
+            dao.update(items.filter { it.id != 0L })
           }
         }
     }

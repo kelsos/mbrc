@@ -43,7 +43,7 @@ class AlbumRepositoryImpl(
       val default = CachedAlbumCover(0, null)
       val cached =
         dao.all().associate { entry ->
-          entry.album + entry.artist to CachedAlbumCover(entry.id ?: 0, entry.cover)
+          entry.album + entry.artist to CachedAlbumCover(entry.id, entry.cover)
         }
       val allPages =
         api.getAllPages(

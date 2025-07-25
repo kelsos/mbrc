@@ -9,6 +9,12 @@ import com.kelsos.mbrc.networking.SocketActivityChecker
 import com.kelsos.mbrc.networking.connections.toSocketAddress
 import com.kelsos.mbrc.networking.discovery.DiscoveryStop
 import com.squareup.moshi.Moshi
+import java.io.IOException
+import java.net.Socket
+import java.net.SocketAddress
+import java.net.SocketException
+import java.net.SocketTimeoutException
+import kotlin.math.pow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
@@ -20,12 +26,6 @@ import okio.buffer
 import okio.sink
 import okio.source
 import timber.log.Timber
-import java.io.IOException
-import java.net.Socket
-import java.net.SocketAddress
-import java.net.SocketException
-import java.net.SocketTimeoutException
-import kotlin.math.pow
 
 interface ClientConnectionManager {
   fun start()

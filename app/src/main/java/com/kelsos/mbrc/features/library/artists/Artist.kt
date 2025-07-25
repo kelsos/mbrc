@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.library.artists
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -18,15 +19,13 @@ data class ArtistDto(
 
 @Entity(
   tableName = "artist",
-  indices = []
+  indices = [Index("artist", name = "artist_artist_idx", unique = true)]
 )
 data class ArtistEntity(
   @ColumnInfo
-  val artist: String? = null,
-  @ColumnInfo
-  val count: Int? = null,
+  val artist: String,
   @ColumnInfo(name = "date_added")
-  val dateAdded: Long? = null,
+  val dateAdded: Long = 0,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null
+  val id: Long = 0
 )

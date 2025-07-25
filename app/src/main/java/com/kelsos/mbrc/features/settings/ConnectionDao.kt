@@ -6,6 +6,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 
 @Dao
@@ -42,4 +43,19 @@ interface ConnectionDao {
 
   @Query("select id from settings where address = :address and port = :port")
   fun findId(address: String, port: Int): Long?
+
+  @Query("select * from settings where is_default = 1")
+  fun getDefault(): ConnectionSettingsEntity?
+
+  @Query("update settings set is_default = 1 where id = :id")
+  fun setDefault(id: Long)
+
+  @Query("update settings set is_default = NULL")
+  fun clearDefaults()
+
+  @Transaction
+  fun updateDefault(id: Long) {
+    clearDefaults()
+    setDefault(id)
+  }
 }

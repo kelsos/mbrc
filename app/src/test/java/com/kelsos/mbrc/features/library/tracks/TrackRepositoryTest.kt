@@ -11,6 +11,7 @@ import com.kelsos.mbrc.common.data.Progress
 import com.kelsos.mbrc.data.Database
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.protocol.Protocol
+import com.kelsos.mbrc.utils.TrackGenerator
 import com.kelsos.mbrc.utils.testDispatcher
 import com.kelsos.mbrc.utils.testDispatcherModule
 import io.mockk.coEvery
@@ -35,8 +36,7 @@ import org.koin.test.inject
 class TrackRepositoryTest : KoinTest {
   // Constants for test data
   private companion object {
-    const val DEFAULT_DATE_ADDED = 1000L
-    const val OLDER_DATE_ADDED = 500L
+    const val OLDER_DATE_ADDED = TrackGenerator.OLDER_DATE_ADDED
   }
 
   private val testModule =
@@ -74,27 +74,6 @@ class TrackRepositoryTest : KoinTest {
   }
 
   // Helper methods for creating test data
-  private fun createTrackEntity(
-    artist: String,
-    title: String,
-    src: String,
-    trackno: Int = 1,
-    disc: Int = 1,
-    albumArtist: String = artist,
-    album: String = "Album $artist",
-    genre: String = "Rock",
-    dateAdded: Long = DEFAULT_DATE_ADDED
-  ): TrackEntity = TrackEntity(
-    artist = artist,
-    title = title,
-    src = src,
-    trackno = trackno,
-    disc = disc,
-    albumArtist = albumArtist,
-    album = album,
-    genre = genre,
-    dateAdded = dateAdded
-  )
 
   private fun createTrackDto(
     artist: String,
@@ -121,28 +100,10 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun countShouldReturnCorrectCount() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Track 1",
-            src = "/path/to/track1.mp3"
-          ),
-          createTrackEntity(
-            artist = "Artist 2",
-            title = "Track 2",
-            src = "/path/to/track2.mp3",
-            trackno = 2,
-            genre = "Pop"
-          ),
-          createTrackEntity(
-            artist = "Artist 3",
-            title = "Track 3",
-            src = "/path/to/track3.mp3",
-            trackno = 3,
-            genre = "Jazz"
-          )
-        )
+      val tracks = TrackGenerator().generateTracks(3) { index, builder ->
+        if (index == 2) builder.genre = "Pop"
+        if (index == 3) builder.genre = "Jazz"
+      }
       dao.insertAll(tracks)
 
       val count = repository.count()
@@ -163,28 +124,10 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getAllShouldReturnAllTracksSorted() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Track 1",
-            src = "/path/to/track1.mp3"
-          ),
-          createTrackEntity(
-            artist = "Artist 2",
-            title = "Track 2",
-            src = "/path/to/track2.mp3",
-            trackno = 2,
-            genre = "Pop"
-          ),
-          createTrackEntity(
-            artist = "Artist 3",
-            title = "Track 3",
-            src = "/path/to/track3.mp3",
-            trackno = 3,
-            genre = "Jazz"
-          )
-        )
+      val tracks = TrackGenerator().generateTracks(3) { index, builder ->
+        if (index == 2) builder.genre = "Pop"
+        if (index == 3) builder.genre = "Jazz"
+      }
       dao.insertAll(tracks)
 
       val result = repository.getAll().asSnapshot()
@@ -206,30 +149,21 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getTracksShouldReturnAlbumTracks() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Album 1 Track 1",
-            src = "/path/to/album1/track1.mp3",
-            album = "Album 1"
-          ),
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Album 1 Track 2",
-            src = "/path/to/album1/track2.mp3",
-            trackno = 2,
-            album = "Album 1"
-          ),
-          createTrackEntity(
-            artist = "Artist 2",
-            title = "Album 2 Track 1",
-            src = "/path/to/album2/track1.mp3",
-            album = "Album 2",
-            genre = "Pop"
-          )
-        )
-      dao.insertAll(tracks)
+      val album1Tracks = TrackGenerator(
+        baseArtist = "Artist 1",
+        baseTitle = "Album 1 Track",
+        basePath = "/path/to/album1",
+        baseAlbum = "Album 1"
+      ).generateTracks(2)
+
+      val album2Track = TrackGenerator(
+        baseArtist = "Artist 2",
+        baseTitle = "Album 2 Track",
+        basePath = "/path/to/album2",
+        baseAlbum = "Album 2",
+        genre = "Pop"
+      ).generateTrack()
+      dao.insertAll(album1Tracks + album2Track)
 
       val query = PagingTrackQuery.Album(album = "Album 1", artist = "Artist 1")
       val result = repository.getTracks(query).asSnapshot()
@@ -246,29 +180,21 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getTracksShouldReturnNonAlbumTracks() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Non-Album Track 1",
-            src = "/path/to/non-album/track1.mp3",
-            album = ""
-          ),
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Non-Album Track 2",
-            src = "/path/to/non-album/track2.mp3",
-            trackno = 2,
-            album = ""
-          ),
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Album Track",
-            src = "/path/to/album/track.mp3",
-            album = "Album"
-          )
-        )
-      dao.insertAll(tracks)
+      val nonAlbumTracks = TrackGenerator(
+        baseArtist = "Artist 1",
+        baseTitle = "Non-Album Track",
+        basePath = "/path/to/non-album",
+        baseAlbum = ""
+      ).generateTracks(2)
+
+      val albumTrack = TrackGenerator(
+        baseArtist = "Artist 1",
+        baseTitle = "Album Track",
+        basePath = "/path/to/album",
+        baseAlbum = "Album"
+      ).generateTrack()
+
+      dao.insertAll(nonAlbumTracks + albumTrack)
 
       val query = PagingTrackQuery.NonAlbum(artist = "Artist 1")
       val result = repository.getTracks(query).asSnapshot()
@@ -285,25 +211,24 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun searchShouldReturnMatchingTracksByTitle() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Rock Track",
-            src = "/path/to/rock_track.mp3"
-          ),
-          createTrackEntity(
-            artist = "Artist 2",
-            title = "Pop Track",
-            src = "/path/to/pop_track.mp3",
-            genre = "Pop"
-          ),
-          createTrackEntity(
-            artist = "Artist 3",
-            title = "Another Rock Track",
-            src = "/path/to/another_rock_track.mp3"
-          )
-        )
+      val tracks = listOf(
+        TrackGenerator(
+          baseArtist = "Artist 1",
+          baseTitle = "Rock Track",
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/rock_track.mp3" },
+        TrackGenerator(
+          baseArtist = "Artist 2",
+          baseTitle = "Pop Track",
+          basePath = "/path/to",
+          genre = "Pop"
+        ).generateTrack { src = "/path/to/pop_track.mp3" },
+        TrackGenerator(
+          baseArtist = "Artist 3",
+          baseTitle = "Another Rock Track",
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/another_rock_track.mp3" }
+      )
       dao.insertAll(tracks)
 
       val result = repository.search("Rock").asSnapshot()
@@ -316,25 +241,24 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun searchShouldReturnMatchingTracksByArtist() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Rock Artist",
-            title = "Track 1",
-            src = "/path/to/track1.mp3"
-          ),
-          createTrackEntity(
-            artist = "Pop Artist",
-            title = "Track 2",
-            src = "/path/to/track2.mp3",
-            genre = "Pop"
-          ),
-          createTrackEntity(
-            artist = "Another Rock Artist",
-            title = "Track 3",
-            src = "/path/to/track3.mp3"
-          )
-        )
+      val tracks = listOf(
+        TrackGenerator(
+          baseArtist = "Rock Artist",
+          baseTitle = "Track 1",
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/track1.mp3" },
+        TrackGenerator(
+          baseArtist = "Pop Artist",
+          baseTitle = "Track 2",
+          basePath = "/path/to",
+          genre = "Pop"
+        ).generateTrack { src = "/path/to/track2.mp3" },
+        TrackGenerator(
+          baseArtist = "Another Rock Artist",
+          baseTitle = "Track 3",
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/track3.mp3" }
+      )
       dao.insertAll(tracks)
 
       val result = repository.search("Rock").asSnapshot()
@@ -347,29 +271,28 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun searchShouldReturnMatchingTracksByTitleOrArtist() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Jazz Artist",
-            title = "Rock Track", // Title matches
-            src = "/path/to/track1.mp3"
-          ),
-          createTrackEntity(
-            artist = "Rock Artist", // Artist matches
-            title = "Pop Track",
-            src = "/path/to/track2.mp3"
-          ),
-          createTrackEntity(
-            artist = "Pop Artist",
-            title = "Blues Track", // No match
-            src = "/path/to/track3.mp3"
-          ),
-          createTrackEntity(
-            artist = "Rock Star", // Artist matches
-            title = "Jazz Track",
-            src = "/path/to/track4.mp3"
-          )
-        )
+      val tracks = listOf(
+        TrackGenerator(
+          baseArtist = "Jazz Artist",
+          baseTitle = "Rock Track", // Title matches
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/track1.mp3" },
+        TrackGenerator(
+          baseArtist = "Rock Artist", // Artist matches
+          baseTitle = "Pop Track",
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/track2.mp3" },
+        TrackGenerator(
+          baseArtist = "Pop Artist",
+          baseTitle = "Blues Track", // No match
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/track3.mp3" },
+        TrackGenerator(
+          baseArtist = "Rock Star", // Artist matches
+          baseTitle = "Jazz Track",
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/track4.mp3" }
+      )
       dao.insertAll(tracks)
 
       val result = repository.search("Rock").asSnapshot()
@@ -386,20 +309,11 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun searchShouldReturnEmptyWhenNoMatches() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Rock Track",
-            src = "/path/to/rock_track.mp3"
-          ),
-          createTrackEntity(
-            artist = "Artist 2",
-            title = "Pop Track",
-            src = "/path/to/pop_track.mp3",
-            genre = "Pop"
-          )
-        )
+      val tracks = TrackGenerator().generateTracks(2) { index, builder ->
+        builder.title = if (index == 1) "Rock Track" else "Pop Track"
+        builder.src = "/path/to/${builder.title.lowercase().replace(" ", "_")}.mp3"
+        if (index == 2) builder.genre = "Pop"
+      }
       dao.insertAll(tracks)
 
       val result = repository.search("Jazz").asSnapshot()
@@ -411,24 +325,23 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun searchShouldBeCaseInsensitive() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "ROCK ARTIST",
-            title = "Classical Music",
-            src = "/path/to/track1.mp3"
-          ),
-          createTrackEntity(
-            artist = "Jazz Musician",
-            title = "ROCK ANTHEM",
-            src = "/path/to/track2.mp3"
-          ),
-          createTrackEntity(
-            artist = "Pop Star",
-            title = "Dancing Queen",
-            src = "/path/to/track3.mp3"
-          )
-        )
+      val tracks = listOf(
+        TrackGenerator(
+          baseArtist = "ROCK ARTIST",
+          baseTitle = "Classical Music",
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/track1.mp3" },
+        TrackGenerator(
+          baseArtist = "Jazz Musician",
+          baseTitle = "ROCK ANTHEM",
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/track2.mp3" },
+        TrackGenerator(
+          baseArtist = "Pop Star",
+          baseTitle = "Dancing Queen",
+          basePath = "/path/to"
+        ).generateTrack { src = "/path/to/track3.mp3" }
+      )
       dao.insertAll(tracks)
 
       val result = repository.search("rock").asSnapshot()
@@ -445,20 +358,9 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getTrackPathsShouldReturnAllTrackPaths() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Track 1",
-            src = "/path/to/track1.mp3"
-          ),
-          createTrackEntity(
-            artist = "Artist 2",
-            title = "Track 2",
-            src = "/path/to/track2.mp3",
-            genre = "Pop"
-          )
-        )
+      val tracks = TrackGenerator().generateTracks(2) { index, builder ->
+        if (index == 2) builder.genre = "Pop"
+      }
       dao.insertAll(tracks)
 
       val result = repository.getTrackPaths(TrackQuery.All)
@@ -471,28 +373,23 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getTrackPathsShouldReturnGenreTrackPaths() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Rock Track 1",
-            src = "/path/to/rock_track1.mp3",
-            genre = "Rock"
-          ),
-          createTrackEntity(
-            artist = "Artist 2",
-            title = "Rock Track 2",
-            src = "/path/to/rock_track2.mp3",
-            genre = "Rock"
-          ),
-          createTrackEntity(
-            artist = "Artist 3",
-            title = "Pop Track",
-            src = "/path/to/pop_track.mp3",
-            genre = "Pop"
-          )
-        )
-      dao.insertAll(tracks)
+      val rockTracks = TrackGenerator(
+        baseTitle = "Rock Track",
+        basePath = "/path/to",
+        genre = "Rock"
+      ).generateTracks(2) { index, builder ->
+        builder.artist = "Artist $index"
+        builder.src = "/path/to/rock_track$index.mp3"
+      }
+
+      val popTrack = TrackGenerator(
+        baseArtist = "Artist 3",
+        baseTitle = "Pop Track",
+        basePath = "/path/to",
+        genre = "Pop"
+      ).generateTrack { src = "/path/to/pop_track.mp3" }
+
+      dao.insertAll(rockTracks + popTrack)
 
       val result = repository.getTrackPaths(TrackQuery.Genre(genre = "Rock"))
 
@@ -504,30 +401,24 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getTrackPathsShouldReturnArtistTrackPaths() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Track 1",
-            src = "/path/to/artist1_track1.mp3",
-            album = "Album 1"
-          ),
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Track 2",
-            src = "/path/to/artist1_track2.mp3",
-            trackno = 2,
-            album = "Album 1"
-          ),
-          createTrackEntity(
-            artist = "Artist 2",
-            title = "Track 1",
-            src = "/path/to/artist2_track1.mp3",
-            album = "Album 2",
-            genre = "Pop"
-          )
-        )
-      dao.insertAll(tracks)
+      val artist1Tracks = TrackGenerator(
+        baseArtist = "Artist 1",
+        baseTitle = "Track",
+        baseAlbum = "Album 1",
+        basePath = "/path/to"
+      ).generateTracks(2) { index, builder ->
+        builder.src = "/path/to/artist1_track$index.mp3"
+      }
+
+      val artist2Track = TrackGenerator(
+        baseArtist = "Artist 2",
+        baseTitle = "Track 1",
+        baseAlbum = "Album 2",
+        basePath = "/path/to",
+        genre = "Pop"
+      ).generateTrack { src = "/path/to/artist2_track1.mp3" }
+
+      dao.insertAll(artist1Tracks + artist2Track)
 
       val result = repository.getTrackPaths(TrackQuery.Artist(artist = "Artist 1"))
 
@@ -541,29 +432,23 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getTrackPathsShouldReturnAlbumTrackPaths() {
     runTest(testDispatcher) {
-      val tracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Album 1 Track 1",
-            src = "/path/to/album1_track1.mp3",
-            album = "Album 1"
-          ),
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Album 1 Track 2",
-            src = "/path/to/album1_track2.mp3",
-            trackno = 2,
-            album = "Album 1"
-          ),
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Album 2 Track 1",
-            src = "/path/to/album2_track1.mp3",
-            album = "Album 2"
-          )
-        )
-      dao.insertAll(tracks)
+      val album1Tracks = TrackGenerator(
+        baseArtist = "Artist 1",
+        baseTitle = "Album 1 Track",
+        baseAlbum = "Album 1",
+        basePath = "/path/to"
+      ).generateTracks(2) { index, builder ->
+        builder.src = "/path/to/album1_track$index.mp3"
+      }
+
+      val album2Track = TrackGenerator(
+        baseArtist = "Artist 1",
+        baseTitle = "Album 2 Track 1",
+        baseAlbum = "Album 2",
+        basePath = "/path/to"
+      ).generateTrack { src = "/path/to/album2_track1.mp3" }
+
+      dao.insertAll(album1Tracks + album2Track)
 
       val result = repository.getTrackPaths(
         TrackQuery.Album(album = "Album 1", artist = "Artist 1")
@@ -577,16 +462,16 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getByIdShouldReturnTrackWhenExists() {
     runTest(testDispatcher) {
-      val track =
-        createTrackEntity(
-          artist = "Artist 1",
-          title = "Track 1",
-          src = "/path/to/track1.mp3"
-        )
+      val track = TrackGenerator(
+        baseArtist = "Artist 1",
+        baseTitle = "Track 1",
+        basePath = "/path/to"
+      ).generateTrack { src = "/path/to/track1.mp3" }
+
       dao.insertAll(listOf(track))
       val insertedTrack = dao.all().first()
 
-      val result = repository.getById(insertedTrack.id!!)
+      val result = repository.getById(insertedTrack.id)
 
       assertThat(result).isNotNull()
       assertThat(result!!.title).isEqualTo("Track 1")
@@ -638,14 +523,14 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getRemoteShouldUpdateExistingTracks() {
     runTest(testDispatcher) {
-      val existingTrack =
-        createTrackEntity(
-          artist = "Artist 1",
-          title = "Track 1 Old",
-          src = "/path/to/track1.mp3",
-          album = "Album 1 Old",
-          dateAdded = OLDER_DATE_ADDED
-        )
+      val existingTrack = TrackGenerator(
+        baseArtist = "Artist 1",
+        baseTitle = "Track 1 Old",
+        baseAlbum = "Album 1 Old",
+        basePath = "/path/to",
+        dateAdded = OLDER_DATE_ADDED
+      ).generateTrack { src = "/path/to/track1.mp3" }
+
       dao.insertAll(listOf(existingTrack))
       val insertedId = dao.all().first { it.src == "/path/to/track1.mp3" }.id
 
@@ -677,15 +562,15 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getRemoteShouldRemovePreviousEntries() {
     runTest(testDispatcher) {
-      val oldTrack =
-        createTrackEntity(
-          artist = "Old Artist",
-          title = "Old Track",
-          src = "/path/to/old_track.mp3",
-          album = "Old Album",
-          genre = "Old Genre",
-          dateAdded = OLDER_DATE_ADDED
-        )
+      val oldTrack = TrackGenerator(
+        baseArtist = "Old Artist",
+        baseTitle = "Old Track",
+        baseAlbum = "Old Album",
+        basePath = "/path/to",
+        genre = "Old Genre",
+        dateAdded = OLDER_DATE_ADDED
+      ).generateTrack { src = "/path/to/old_track.mp3" }
+
       dao.insertAll(listOf(oldTrack))
 
       val remoteTracks =
@@ -739,22 +624,21 @@ class TrackRepositoryTest : KoinTest {
   @Test
   fun getRemoteShouldHandleMixOfNewAndExistingTracks() {
     runTest(testDispatcher) {
-      val existingTracks =
-        listOf(
-          createTrackEntity(
-            artist = "Artist 1",
-            title = "Track 1",
-            src = "/path/to/track1.mp3",
-            dateAdded = OLDER_DATE_ADDED
-          ),
-          createTrackEntity(
-            artist = "Artist 2",
-            title = "Track 2",
-            src = "/path/to/track2.mp3",
-            genre = "Jazz",
-            dateAdded = OLDER_DATE_ADDED
-          )
-        )
+      val existingTracks = listOf(
+        TrackGenerator(
+          baseArtist = "Artist 1",
+          baseTitle = "Track 1",
+          basePath = "/path/to",
+          dateAdded = OLDER_DATE_ADDED
+        ).generateTrack { src = "/path/to/track1.mp3" },
+        TrackGenerator(
+          baseArtist = "Artist 2",
+          baseTitle = "Track 2",
+          basePath = "/path/to",
+          genre = "Jazz",
+          dateAdded = OLDER_DATE_ADDED
+        ).generateTrack { src = "/path/to/track2.mp3" }
+      )
       dao.insertAll(existingTracks)
       val track1Id = dao.all().first { it.src == "/path/to/track1.mp3" }.id
 

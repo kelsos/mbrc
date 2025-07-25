@@ -16,7 +16,7 @@ interface ArtistDao {
 
   @Query(
     """
-      select distinct artist.id, artist.artist, artist.date_added, artist.count
+      select distinct artist.id, artist.artist, artist.date_added
       from artist
         inner join track on artist.artist = track.artist
         inner join genre on genre.genre = track.genre
@@ -65,7 +65,7 @@ interface ArtistDao {
 
   @Query(
     """
-      select distinct artist.id, artist.artist, artist.date_added, artist.count
+      select distinct artist.id, artist.artist, artist.date_added
       from artist inner join track on artist.artist = track.album_artist
       group by artist.artist 
       order by 

@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.library.tracks
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -42,28 +43,32 @@ data class TrackDto(
   val year: String = ""
 )
 
-@Entity(tableName = "track", indices = [])
+@Entity(tableName = "track", indices = [Index("src", name = "track_src_index", unique = true)])
 data class TrackEntity(
   @ColumnInfo
-  val artist: String? = null,
+  val artist: String,
   @ColumnInfo
-  val title: String? = null,
+  val title: String,
   @ColumnInfo
-  val src: String? = null,
+  val src: String,
   @ColumnInfo
-  val trackno: Int? = null,
+  val trackno: Int,
   @ColumnInfo
-  val disc: Int? = null,
+  val disc: Int,
   @ColumnInfo(name = "album_artist")
-  val albumArtist: String? = null,
+  val albumArtist: String,
   @ColumnInfo
-  val album: String? = null,
+  val album: String,
   @ColumnInfo
-  val genre: String? = null,
+  val genre: String,
+  @ColumnInfo
+  val year: String,
+  @ColumnInfo(name = "sortable_year")
+  val sortableYear: String,
   @ColumnInfo(name = "date_added")
-  val dateAdded: Long? = null,
+  val dateAdded: Long = 0,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null
+  val id: Long = 0
 )
 
 class TrackPath(val src: String, val id: Long)

@@ -78,7 +78,7 @@ class PlaylistRepositoryTest : KoinTest {
     name: String,
     url: String,
     dateAdded: Long = DEFAULT_DATE_ADDED,
-    id: Long? = null
+    id: Long = 0
   ): PlaylistEntity = PlaylistEntity(
     name = name,
     url = url,
@@ -222,7 +222,7 @@ class PlaylistRepositoryTest : KoinTest {
       dao.insertAll(listOf(playlist))
       val insertedPlaylist = dao.all().first()
 
-      val result = repository.getById(insertedPlaylist.id!!)
+      val result = repository.getById(insertedPlaylist.id)
 
       assertThat(result).isNotNull()
       assertThat(result!!.name).isEqualTo("Playlist 1")

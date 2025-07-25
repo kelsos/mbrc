@@ -8,8 +8,8 @@ object ArtistDtoMapper : Mapper<ArtistDto, ArtistEntity> {
 
 object ArtistEntityMapper : Mapper<ArtistEntity, Artist> {
   override fun map(from: ArtistEntity): Artist = Artist(
-    id = from.id ?: 0,
-    artist = from.artist.orEmpty()
+    id = from.id,
+    artist = from.artist
   )
 }
 

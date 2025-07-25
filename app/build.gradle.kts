@@ -95,7 +95,6 @@ android {
   testOptions {
     unitTests.isReturnDefaultValues = true
     unitTests.isIncludeAndroidResources = true
-    execution = "ANDROIDX_TEST_ORCHESTRATOR"
   }
 
   compileOptions {
@@ -168,6 +167,12 @@ android {
       excludes += "META-INF/services/javax.annotation.processing.Processor"
       excludes += "**/module-info.class"
       pickFirsts.add("META-INF/atomicfu.kotlin_module")
+    }
+  }
+
+  sourceSets {
+    getByName("androidTest") {
+      assets.srcDirs("$projectDir/schemas")
     }
   }
 
@@ -256,6 +261,11 @@ dependencies {
   testImplementation(libs.kotlin.coroutines.test)
   testImplementation(libs.mockk)
   testImplementation(libs.robolectric)
+
+  androidTestImplementation(libs.androidx.room.testing)
+  androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.androidx.test.junit)
+  androidTestImplementation(libs.truth)
 
   debugImplementation(libs.squareup.leakcanary)
   debugImplementation(libs.androidx.fragment.testing)

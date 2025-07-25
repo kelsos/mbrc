@@ -2,6 +2,7 @@ package com.kelsos.mbrc.features.settings
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 data class ConnectionSettings(
@@ -24,15 +25,17 @@ data class ConnectionSettings(
 
 @Entity(
   tableName = "settings",
-  indices = []
+  indices = [Index(value = ["address", "port"], unique = true)]
 )
 data class ConnectionSettingsEntity(
   @ColumnInfo(name = "address")
-  val address: String? = null,
+  val address: String,
   @ColumnInfo(name = "port")
-  val port: Int? = null,
+  val port: Int,
   @ColumnInfo(name = "name")
-  val name: String? = null,
+  val name: String,
+  @ColumnInfo(name = "is_default")
+  val isDefault: Boolean? = null,
   @PrimaryKey(autoGenerate = true)
-  val id: Long? = null
+  val id: Long = 0
 )

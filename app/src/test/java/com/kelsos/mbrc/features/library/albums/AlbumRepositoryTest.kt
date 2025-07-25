@@ -276,7 +276,7 @@ class AlbumRepositoryTest : KoinTest {
       dao.insert(listOf(album))
       val insertedAlbum = dao.all().first()
 
-      val result = repository.getById(insertedAlbum.id!!)
+      val result = repository.getById(insertedAlbum.id)
 
       assertThat(result).isNotNull()
       assertThat(result!!.album).isEqualTo("Album1")
@@ -313,6 +313,12 @@ class AlbumRepositoryTest : KoinTest {
             albumArtist = "Artist1",
             album = "Album1",
             title = "Track1",
+            src = "track1.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           ),
           TrackEntity(
@@ -320,6 +326,12 @@ class AlbumRepositoryTest : KoinTest {
             albumArtist = "Artist1",
             album = "Album2",
             title = "Track2",
+            src = "track2.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           ),
           TrackEntity(
@@ -327,6 +339,12 @@ class AlbumRepositoryTest : KoinTest {
             albumArtist = "Artist2",
             album = "Album3",
             title = "Track3",
+            src = "track3.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
             dateAdded = 1000L
           )
         )

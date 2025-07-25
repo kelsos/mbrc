@@ -1,32 +1,49 @@
 package com.kelsos.mbrc.features.library.tracks
 
 import com.kelsos.mbrc.common.data.Mapper
+import java.util.regex.Pattern
 
 object TrackDtoMapper : Mapper<TrackDto, TrackEntity> {
+
+  private val pattern = Pattern.compile(""".*(\d{4}).*""")
+  private val matcher = pattern.matcher("")
+
+  private val parseYear: (year: String) -> String = { year ->
+    with(matcher.reset(year)) {
+      if (find()) {
+        group(1).orEmpty()
+      } else {
+        ""
+      }
+    }
+  }
+
   override fun map(from: TrackDto): TrackEntity = TrackEntity(
-    from.artist,
-    from.title,
-    from.src,
-    from.trackno,
-    from.disc,
-    from.albumArtist,
-    from.album,
-    from.genre
+    artist = from.artist,
+    title = from.title,
+    src = from.src,
+    trackno = from.trackno,
+    disc = from.disc,
+    albumArtist = from.albumArtist,
+    album = from.album,
+    genre = from.genre,
+    year = from.year,
+    sortableYear = parseYear(from.year)
   )
 }
 
 object TrackEntityMapper : Mapper<TrackEntity, Track> {
   override fun map(from: TrackEntity): Track = Track(
-    artist = from.artist.orEmpty(),
-    title = from.title.orEmpty(),
-    src = from.src.orEmpty(),
-    trackno = from.trackno ?: 0,
-    disc = from.disc ?: 0,
-    albumArtist = from.albumArtist.orEmpty(),
-    album = from.album.orEmpty(),
-    genre = from.genre.orEmpty(),
-    year = "",
-    id = from.id ?: 0
+    artist = from.artist,
+    title = from.title,
+    src = from.src,
+    trackno = from.trackno,
+    disc = from.disc,
+    albumArtist = from.albumArtist,
+    album = from.album,
+    genre = from.genre,
+    year = from.year,
+    id = from.id
   )
 }
 

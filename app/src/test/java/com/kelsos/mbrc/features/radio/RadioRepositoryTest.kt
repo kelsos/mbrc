@@ -184,7 +184,7 @@ class RadioRepositoryTest : KoinTest {
       dao.insertAll(listOf(radioStation))
       val insertedRadioStation = dao.all().first()
 
-      val result = repository.getById(insertedRadioStation.id!!)
+      val result = repository.getById(insertedRadioStation.id)
 
       assertThat(result).isNotNull()
       assertThat(result!!.name).isEqualTo("Radio 1")
@@ -355,22 +355,6 @@ class RadioRepositoryTest : KoinTest {
       assertThat(storedRadioStations).hasSize(2)
       assertThat(storedRadioStations.map { it.name }).containsExactly("", "Radio 2")
       assertThat(storedRadioStations.map { it.url }).containsExactly("http://radio1.com", "")
-    }
-  }
-
-  @Test
-  fun mappingFromEntityToRadioStationShouldHandleNullValues() {
-    runTest(testDispatcher) {
-      val radioStationWithNulls = RadioStationEntity(name = null, url = null, dateAdded = 1000L)
-      dao.insertAll(listOf(radioStationWithNulls))
-      val insertedRadioStation = dao.all().first()
-
-      val result = repository.getById(insertedRadioStation.id!!)
-
-      assertThat(result).isNotNull()
-      assertThat(result!!.name).isEqualTo("")
-      assertThat(result.url).isEqualTo("")
-      assertThat(result.id).isEqualTo(insertedRadioStation.id)
     }
   }
 

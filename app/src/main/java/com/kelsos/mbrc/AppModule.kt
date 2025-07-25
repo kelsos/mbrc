@@ -14,8 +14,11 @@ import com.kelsos.mbrc.common.state.PlayingTrackCache
 import com.kelsos.mbrc.common.state.PlayingTrackCacheImpl
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.data.Database
+import com.kelsos.mbrc.data.DefaultConnectionMigration
 import com.kelsos.mbrc.data.DeserializationAdapter
 import com.kelsos.mbrc.data.DeserializationAdapterImpl
+import com.kelsos.mbrc.data.MIGRATION_3_4
+import com.kelsos.mbrc.data.MigrationManager
 import com.kelsos.mbrc.data.SerializationAdapter
 import com.kelsos.mbrc.data.SerializationAdapterImpl
 import com.kelsos.mbrc.features.help.FeedbackFragment
@@ -288,8 +291,10 @@ val appModule =
     single {
       Room
         .databaseBuilder(get(), Database::class.java, Database.NAME)
+        .addMigrations(MIGRATION_3_4)
         .build()
     }
+    singleOf(::DefaultConnectionMigration)
     single { get<Database>().genreDao() }
     single { get<Database>().artistDao() }
     single { get<Database>().albumDao() }
@@ -298,6 +303,8 @@ val appModule =
     single { get<Database>().playlistDao() }
     single { get<Database>().radioStationDao() }
     single { get<Database>().connectionDao() }
+
+    singleOf(::MigrationManager)
 
     scope<MiniControlFragment> {
       viewModelOf(::MiniControlViewModel)

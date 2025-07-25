@@ -14,6 +14,7 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.request.crossfade
 import com.kelsos.mbrc.common.utilities.CustomLoggingTree
+import com.kelsos.mbrc.data.MigrationManager
 import com.kelsos.mbrc.features.theme.ThemeManager
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -25,6 +26,9 @@ import org.koin.dsl.module
 import timber.log.Timber
 
 open class App : Application() {
+  val migrationManager: MigrationManager by inject()
+  val themeManager: ThemeManager by inject()
+
   @CallSuper
   override fun onCreate() {
     super.onCreate()
@@ -63,12 +67,8 @@ open class App : Application() {
       modules(appModules())
     }
     initializeTimber()
-    initializeTheme()
-  }
-
-  private fun initializeTheme() {
-    val themeManager: ThemeManager by inject()
     themeManager.applyTheme()
+    migrationManager.runMigrations()
   }
 
   private fun initializeTimber() {

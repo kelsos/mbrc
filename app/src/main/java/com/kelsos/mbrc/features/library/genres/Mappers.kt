@@ -8,8 +8,8 @@ object GenreDtoMapper : Mapper<GenreDto, GenreEntity> {
 
 object GenreEntityMapper : Mapper<GenreEntity, Genre> {
   override fun map(from: GenreEntity): Genre = Genre(
-    genre = from.genre.orEmpty(),
-    id = from.id ?: 0
+    genre = from.genre,
+    id = from.id
   )
 }
 

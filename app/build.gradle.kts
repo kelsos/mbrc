@@ -11,6 +11,7 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlinAndroid)
   alias(libs.plugins.kotlinParcelize)
+  alias(libs.plugins.kotlinCompose)
   alias(libs.plugins.ksp)
   alias(libs.plugins.protobuf)
   alias(libs.plugins.googleServices) apply false
@@ -78,6 +79,7 @@ android {
 
   buildFeatures {
     buildConfig = true
+    compose = true
   }
 
   defaultConfig {
@@ -225,6 +227,7 @@ dependencies {
   implementation(libs.androidx.fragment.ktx)
   implementation(libs.bundles.androidx.media3)
   implementation(libs.androidx.paging.runtime.ktx)
+  implementation(libs.androidx.paging.compose)
   implementation(libs.androidx.preference.ktx)
   implementation(libs.androidx.recyclerview)
   implementation(libs.androidx.core.splashscreen)
@@ -236,6 +239,15 @@ dependencies {
   implementation(libs.bundles.androidx.room)
   implementation(libs.bundles.coil)
   implementation(libs.bundles.koin)
+  
+  // Compose dependencies
+  implementation(platform(libs.androidx.compose.bom))
+  implementation(libs.bundles.androidx.compose)
+  implementation(libs.androidx.activity.compose)
+  implementation(libs.androidx.navigation.compose)
+  implementation(libs.coilKt.compose)
+  debugImplementation(libs.androidx.compose.ui.tooling)
+  
   implementation(libs.google.material)
   implementation(libs.google.protobuf.javalite)
   implementation(libs.squareup.moshi.lib)
@@ -341,14 +353,14 @@ tasks {
       val detektRelease by named<Detekt>("detektGithubRelease")
       val androidLintReportRelease = named<AndroidLintTask>("lintReportGithubRelease")
 
-      dependsOn(detekt, detektRelease, androidLintReportRelease, lintKotlin)
+      dependsOn(detekt, detektRelease, androidLintReportRelease, "lintKotlin")
     }
 
     register<Sync>("collectSarifReports") {
       val detektRelease by named<Detekt>("detektGithubRelease")
       val androidLintReportRelease = named<AndroidLintTask>("lintReportGithubRelease")
 
-      mustRunAfter(detekt, detektRelease, androidLintReportRelease, lintKotlin, staticAnalysis)
+      mustRunAfter(detekt, detektRelease, androidLintReportRelease, "lintKotlin", staticAnalysis)
 
       from(detektRelease.sarifReportFile) {
         rename { "detekt-release.sarif" }

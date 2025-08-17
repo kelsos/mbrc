@@ -203,4 +203,8 @@
   <string name="unknown_artist">Unknown artist</string>
   <string name="update_required__content_description">Update icon</string>
   <string name="action_failed">Oops! Something went wrong with playback. Give it another try.</string>
+  
+  <!-- Compose UI strings -->
+  <string name="navigate_back">Navigate back</string>
+  <string name="no_data">No data available</string>
 </resources>

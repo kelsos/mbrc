@@ -17,8 +17,6 @@
     <item name="windowNoTitle">true</item>
     <item name="windowActionBarOverlay">true</item>
     <item name="android:windowContentTransitions">true</item>
-    <item name="android:windowEnterTransition">@transition/default_window_fade</item>
-    <item name="android:windowExitTransition">@transition/default_window_fade</item>
   </style>
 
   <style name="Theme.App.Starting" parent="Theme.App" />

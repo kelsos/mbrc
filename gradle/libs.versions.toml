@@ -2,34 +2,40 @@
 androidx-annotation = "1.9.1"
 androidx-appcompat = "1.7.1"
 androidx-arch-core-testing = "2.2.0"
+androidx-compose-bom = "2025.08.00"
+androidx-activity-compose = "1.10.1"
+androidx-navigation-compose = "2.9.3"
 androidx-constraintlayout = "2.2.1"
-androidx-core-ktx = "1.16.0"
+androidx-core-ktx = "1.17.0"
 androidx-core-splashscreen = "1.0.1"
 androidx-datastore = "1.1.7"
-androidx-fragment = "1.8.8"
-androidx-lifecycle = "2.9.1"
-androidx-media3 = "1.7.1"
+androidx-fragment = "1.8.9"
+androidx-lifecycle = "2.9.2"
+androidx-lifecycle-viewmodel-compose = "2.9.2"
+androidx-media3 = "1.8.0"
 androidx-paging-runtime-ktx = "3.3.6"
+androidx-paging-compose = "3.3.6"
 androidx-preference-ktx = "1.2.1"
 androidx-recyclerview = "1.4.0"
 androidx-room = "2.7.2"
-androidx-test-core = "1.6.1"
-androidx-test-espresso = "3.6.1"
-androidx-test-junit = "1.2.1"
-androidx-test-runner = "1.6.2"
-androidx-test-truth = "1.6.0"
+androidx-test-core = "1.7.0"
+androidx-test-espresso = "3.7.0"
+androidx-test-junit = "1.3.0"
+androidx-test-runner = "1.7.0"
+androidx-test-truth = "1.7.0"
 androidx-viewpager2 = "1.1.0"
-androidx-work = "2.10.2"
+androidx-work = "2.10.3"
 androidx-swiperefreshlayout = "1.1.0"
-coil = "3.2.0"
+coil = "3.3.0"
+coil-compose = "3.3.0"
 desugar = "2.1.5"
 firebaseBom = "33.16.0"
 google-material = "1.12.0"
-gradlePlugin-agp = "8.11.0"
-gradlePlugin-crashlytics = "3.0.4"
+gradlePlugin-agp = "8.11.1"
+gradlePlugin-crashlytics = "3.0.6"
 gradlePlugin-detekt = "1.23.8"
 gradlePlugin-gms = "4.4.3"
-gradlePlugin-kotlinter = "5.1.1"
+gradlePlugin-kotlinter = "5.2.0"
 gradlePlugin-kover = "0.9.1"
 gradlePlugin-ksp = "2.2.0-2.0.2"
 gradlePlugin-protobuf = "0.9.5"
@@ -38,13 +44,13 @@ gradlePlugin-versionsBenManes = "0.52.0"
 koin = "4.1.0"
 kotlin = "2.2.0"
 kotlinCoroutines = "1.10.2"
-mockk = "1.14.4"
-protobuf = "4.31.1"
+mockk = "1.14.5"
+protobuf = "4.32.0"
 robolectric = "4.15.1"
 squareup-leakcanary = "2.14"
 squareup-moshi = "1.15.2"
-squareup-okhttp = "4.12.0"
-squareup-okio = "3.13.0"
+squareup-okhttp = "5.1.0"
+squareup-okio = "3.16.0"
 timber = "5.0.1"
 truth = "1.4.4"
 turbine = "1.2.1"
@@ -53,6 +59,15 @@ turbine = "1.2.1"
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "androidx-arch-core-testing" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
+androidx-compose-ui = { module = "androidx.compose.ui:ui" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+androidx-compose-material-icons = { module = "androidx.compose.material:material-icons-extended" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation-compose" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle-viewmodel-compose" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-core-splashscreen" }
@@ -66,6 +81,7 @@ androidx-media3-common-ktx = { module = "androidx.media3:media3-common-ktx", ver
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "androidx-media3" }
 androidx-paging-common-ktx = { module = "androidx.paging:paging-common-ktx", version.ref = "androidx-paging-runtime-ktx" }
 androidx-paging-runtime-ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "androidx-paging-runtime-ktx" }
+androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "androidx-paging-compose" }
 androidx-paging-testing = { module = "androidx.paging:paging-testing", version.ref = "androidx-paging-runtime-ktx" }
 androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "androidx-preference-ktx" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerview" }
@@ -86,6 +102,7 @@ androidx-work-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref= "androidx-swiperefreshlayout"}
 coilKt-coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 coilKt-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+coilKt-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil-compose" }
 com-android-tools-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar" }
 google-firebase-analytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx" }
 google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
@@ -112,6 +129,13 @@ truth = { module = "com.google.truth:truth", version.ref = "truth" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 [bundles]
+androidx-compose = [
+    "androidx-compose-ui",
+    "androidx-compose-ui-tooling-preview",
+    "androidx-compose-material3",
+    "androidx-compose-material-icons",
+    "androidx-lifecycle-viewmodel-compose"
+]
 androidx-lifecycle = [
     "androidx-lifecycle-common",
     "androidx-lifecycle-runtime-ktx",
@@ -157,6 +181,7 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "gradlePlugin-detek
 googleServices = { id = "com.google.gms.google-services", version.ref = "gradlePlugin-gms" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinParcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinter = { id = "org.jmailen.kotlinter", version.ref = "gradlePlugin-kotlinter" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "gradlePlugin-kover" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "gradlePlugin-ksp" }

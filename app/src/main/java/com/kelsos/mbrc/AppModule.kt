@@ -3,6 +3,7 @@ package com.kelsos.mbrc
 import androidx.core.app.NotificationManagerCompat
 import androidx.room.Room
 import androidx.work.WorkManager
+import com.kelsos.mbrc.app.DrawerViewModel
 import com.kelsos.mbrc.common.state.AppState
 import com.kelsos.mbrc.common.state.AppStateFlow
 import com.kelsos.mbrc.common.state.AppStateManager
@@ -220,6 +221,7 @@ val appModule =
     singleOf(::SocketActivityChecker)
     singleOf(::CoverCache)
     singleOf(::AppNotificationManagerImpl) { bind<AppNotificationManager>() }
+
     singleOf(::MediaSessionManager)
     singleOf(::NotificationActionManager)
     singleOf(::NotificationBuilder)
@@ -390,4 +392,7 @@ val appModule =
       viewModelOf(::FeedbackViewModel)
       scopedOf(::LogHelperImpl) { bind<LogHelper>() }
     }
+
+    // Global ViewModels
+    singleOf(::DrawerViewModel)
   }

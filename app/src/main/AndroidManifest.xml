@@ -31,11 +31,11 @@
       android:name=".UpdateRequiredActivity"
       android:exported="false" />
 
+    <!-- New Compose-based main entry point -->
     <activity
-      android:name=".features.player.PlayerActivity"
+      android:name=".app.MainActivity"
       android:exported="true"
       android:launchMode="singleTop"
-      android:noHistory="true"
       android:theme="@style/Theme.App.Starting"
       android:windowSoftInputMode="adjustNothing">
       <intent-filter>
@@ -44,6 +44,15 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
+
+    <!-- Legacy player activity - kept for backward compatibility -->
+    <activity
+      android:name=".features.player.PlayerActivity"
+      android:exported="false"
+      android:launchMode="singleTop"
+      android:noHistory="true"
+      android:theme="@style/Theme.App.Starting"
+      android:windowSoftInputMode="adjustNothing" />
 
     <provider
       android:name="androidx.startup.InitializationProvider"

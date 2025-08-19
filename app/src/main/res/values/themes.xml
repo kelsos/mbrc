@@ -19,5 +19,8 @@
     <item name="android:windowContentTransitions">true</item>
   </style>
 
-  <style name="Theme.App.Starting" parent="Theme.App" />
+  <style name="Theme.App.Starting" parent="Theme.App">
+    <item name="windowActionBar">false</item>
+    <item name="windowNoTitle">true</item>
+  </style>
 </resources>

@@ -74,3 +74,15 @@ val md_theme_dark_inversePrimary = Color(0xFFE65100)
 
 val md_theme_light_surfaceTint = Color(0xFFE65100)
 val md_theme_dark_surfaceTint = Color(0xFFFFC107)
+
+// Drawer Header Gradient Colors
+val drawer_header_gradient_top_light = Color(0xFFFF6F00) // Amber 900
+val drawer_header_gradient_bottom_light = Color(0xFFFF8F00) // Amber 800
+val drawer_header_gradient_top_dark = Color(0xFFE65100) // Deep Orange 900
+val drawer_header_gradient_bottom_dark = Color(0xFFBF360C) // Deep Orange 900 darker
+
+// Connection Status Colors
+val connection_status_connected = Color(0xFF4CAF50) // Green
+val connection_status_offline = Color(0xFFF44336) // Red
+val connection_status_card_bg_light = Color(0xFFE0E0E0) // Light gray for better visibility
+val connection_status_card_bg_dark = Color.White.copy(alpha = 0.15f)

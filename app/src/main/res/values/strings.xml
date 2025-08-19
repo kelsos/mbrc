@@ -100,6 +100,7 @@
   <string name="menu_play_queue_all">Play Now (Queue All)</string>
   <string name="menu_queue_last">Queue Last</string>
   <string name="menu_queue_next">Queue Next</string>
+  <string name="nav_queue">Queue</string>
   <string name="musicbee_remote_license_title">MusicBee Remote license</string>
   <string name="nav_exit">Exit</string>
   <string name="nav_help">Help &amp; Feedback</string>

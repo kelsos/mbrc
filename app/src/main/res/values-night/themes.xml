@@ -35,4 +35,9 @@
     <item name="navigationIconTint">?attr/colorOnPrimary</item>
     <item name="android:minHeight">?attr/actionBarSize</item>
   </style>
+
+  <style name="Theme.App.Starting" parent="Theme.App">
+    <item name="windowActionBar">false</item>
+    <item name="windowNoTitle">true</item>
+  </style>
 </resources>

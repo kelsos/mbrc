@@ -111,6 +111,7 @@ google-firebase-perf-ktx = { module = "com.google.firebase:firebase-perf-ktx" }
 google-material = { module = "com.google.android.material:material", version.ref = "google-material" }
 google-protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koin" }
 kotlin-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinCoroutines" }
@@ -170,6 +171,7 @@ google-firebase = [
 ]
 koin = [
     "koin-android",
+    "koin-compose",
     "koin-workmanager",
 ]
 

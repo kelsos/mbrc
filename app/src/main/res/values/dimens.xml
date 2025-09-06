@@ -10,7 +10,6 @@
   <dimen name="empty_view_icon_size">80dp</dimen>
   <dimen name="fab_margin">8dp</dimen>
   <dimen name="list_album_size">48dp</dimen>
-  <dimen name="list_dual_item_height">72dp</dimen>
   <dimen name="list_item_height">60dp</dimen>
   <dimen name="list_item_one">16sp</dimen>
   <dimen name="list_item_single_height">48dp</dimen>

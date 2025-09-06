@@ -10,8 +10,8 @@ import com.kelsos.mbrc.features.library.LibrarySyncUseCase
 import com.kelsos.mbrc.features.queue.Queue
 import com.kelsos.mbrc.features.queue.QueueHandler
 import com.kelsos.mbrc.features.queue.QueueResult
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
 import com.kelsos.mbrc.features.settings.SettingsManager
+import com.kelsos.mbrc.features.settings.TrackAction
 import com.kelsos.mbrc.utils.testDispatcher
 import com.kelsos.mbrc.utils.testDispatcherModule
 import io.mockk.coEvery
@@ -43,7 +43,6 @@ class BrowseArtistViewModelTest : KoinTest {
       single<LibrarySyncUseCase> { mockk(relaxed = true) }
       single<QueueHandler> { mockk(relaxed = true) }
       single<ConnectionStateFlow> { mockk(relaxed = true) }
-      single<BasicSettingsHelper> { mockk(relaxed = true) }
       single<LibrarySearchModel> { mockk(relaxed = true) }
       single<SettingsManager> { mockk(relaxed = true) }
       singleOf(::BrowseArtistViewModel)
@@ -54,7 +53,6 @@ class BrowseArtistViewModelTest : KoinTest {
   private val librarySyncUseCase: LibrarySyncUseCase by inject()
   private val queueHandler: QueueHandler by inject()
   private val connectionStateFlow: ConnectionStateFlow by inject()
-  private val settingsHelper: BasicSettingsHelper by inject()
   private val searchModel: LibrarySearchModel by inject()
   private val settingsManager: SettingsManager by inject()
 
@@ -70,7 +68,7 @@ class BrowseArtistViewModelTest : KoinTest {
     every { repository.getAll() } returns flowOf(PagingData.empty())
     every { repository.getAlbumArtistsOnly() } returns flowOf(PagingData.empty())
     every { repository.search(any()) } returns flowOf(PagingData.empty())
-    every { settingsHelper.defaultAction } returns "Now"
+    every { settingsManager.libraryTrackDefaultActionFlow } returns flowOf(TrackAction.PlayNow)
     coEvery { connectionStateFlow.isConnected() } returns true
   }
 

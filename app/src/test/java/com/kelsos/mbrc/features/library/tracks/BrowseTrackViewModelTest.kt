@@ -10,7 +10,8 @@ import com.kelsos.mbrc.features.library.LibrarySyncUseCase
 import com.kelsos.mbrc.features.queue.Queue
 import com.kelsos.mbrc.features.queue.QueueHandler
 import com.kelsos.mbrc.features.queue.QueueResult
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
+import com.kelsos.mbrc.features.settings.SettingsManager
+import com.kelsos.mbrc.features.settings.TrackAction
 import com.kelsos.mbrc.utils.testDispatcher
 import com.kelsos.mbrc.utils.testDispatcherModule
 import io.mockk.coEvery
@@ -41,7 +42,7 @@ class BrowseTrackViewModelTest : KoinTest {
       single<LibrarySyncUseCase> { mockk(relaxed = true) }
       single<QueueHandler> { mockk(relaxed = true) }
       single<ConnectionStateFlow> { mockk(relaxed = true) }
-      single<BasicSettingsHelper> { mockk(relaxed = true) }
+      single<SettingsManager> { mockk(relaxed = true) }
       single<LibrarySearchModel> { mockk(relaxed = true) }
       singleOf(::BrowseTrackViewModel)
     }
@@ -51,7 +52,7 @@ class BrowseTrackViewModelTest : KoinTest {
   private val librarySyncUseCase: LibrarySyncUseCase by inject()
   private val queueHandler: QueueHandler by inject()
   private val connectionStateFlow: ConnectionStateFlow by inject()
-  private val settingsHelper: BasicSettingsHelper by inject()
+  private val settingsManager: SettingsManager by inject()
   private val searchModel: LibrarySearchModel by inject()
 
   @Before
@@ -64,7 +65,7 @@ class BrowseTrackViewModelTest : KoinTest {
     every { searchModel.term } returns searchTermFlow
     every { repository.getAll() } returns flowOf(PagingData.empty())
     every { repository.search(any()) } returns flowOf(PagingData.empty())
-    every { settingsHelper.defaultAction } returns "now"
+    every { settingsManager.libraryTrackDefaultActionFlow } returns flowOf(TrackAction.PlayNow)
     coEvery { connectionStateFlow.isConnected() } returns true
   }
 
@@ -182,7 +183,7 @@ class BrowseTrackViewModelTest : KoinTest {
     runTest(testDispatcher) {
       // Given
       coEvery { connectionStateFlow.isConnected() } returns true
-      every { settingsHelper.defaultAction } returns "last"
+      every { settingsManager.libraryTrackDefaultActionFlow } returns flowOf(TrackAction.QueueLast)
       val track =
         Track(
           id = 1,

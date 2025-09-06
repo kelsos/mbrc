@@ -7,6 +7,7 @@ import com.squareup.moshi.Moshi
 import java.io.IOException
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import kotlinx.coroutines.flow.first
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -34,7 +35,9 @@ class PluginUpdateCheckUseCaseImpl(
     val now = Instant.now()
 
     if (handleRequiredPluginUpdateCheck(pluginVersion, now)) return
-    if (!manager.isPluginUpdateCheckEnabled()) return
+
+    // Check if plugin updates are enabled using reactive flow
+    if (!manager.pluginUpdateCheckFlow.first()) return
     handleOptionalPluginUpdateCheck(now, pluginVersion)
   }
 
@@ -101,7 +104,7 @@ class PluginUpdateCheckUseCaseImpl(
     manager.setLastUpdated(now, false)
   }
 
-  private fun getNextCheck(required: Boolean = false): Instant {
+  private suspend fun getNextCheck(required: Boolean = false): Instant {
     val lastUpdated = manager.getLastUpdated(required)
     val days = if (required) 1L else 2L
     return lastUpdated.plus(days, ChronoUnit.DAYS)

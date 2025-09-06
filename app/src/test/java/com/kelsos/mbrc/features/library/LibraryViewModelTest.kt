@@ -11,7 +11,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -164,7 +163,7 @@ class LibraryViewModelTest : KoinTest {
     viewModel.updateAlbumArtistOnly(enabled)
 
     // Then
-    verify(exactly = 1) { settingsManager.setShouldDisplayOnlyAlbumArtist(enabled) }
+    coVerify(exactly = 1) { settingsManager.setShouldDisplayOnlyAlbumArtist(enabled) }
   }
 
   @Test

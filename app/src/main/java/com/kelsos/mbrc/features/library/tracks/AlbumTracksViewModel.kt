@@ -5,7 +5,7 @@ import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.albums.AlbumInfo
 import com.kelsos.mbrc.features.queue.Queue
 import com.kelsos.mbrc.features.queue.QueueHandler
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
+import com.kelsos.mbrc.features.settings.SettingsManager
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.launch
@@ -13,9 +13,9 @@ import kotlinx.coroutines.launch
 class AlbumTracksViewModel(
   private val repository: TrackRepository,
   private val queueHandler: QueueHandler,
-  settingsHelper: BasicSettingsHelper,
+  settingsManager: SettingsManager,
   connectionStateFlow: ConnectionStateFlow
-) : BaseTrackViewModel(queueHandler, settingsHelper, connectionStateFlow) {
+) : BaseTrackViewModel(queueHandler, settingsManager, connectionStateFlow) {
   private val albumInfo = MutableSharedFlow<AlbumInfo>(replay = 1)
 
   override val tracks =

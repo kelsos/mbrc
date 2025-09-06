@@ -7,7 +7,7 @@ import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.LibrarySearchModel
 import com.kelsos.mbrc.features.library.LibrarySyncUseCase
 import com.kelsos.mbrc.features.queue.QueueHandler
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
+import com.kelsos.mbrc.features.settings.SettingsManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
@@ -17,10 +17,10 @@ class BrowseAlbumViewModel(
   private val repository: AlbumRepository,
   private val librarySyncUseCase: LibrarySyncUseCase,
   queueHandler: QueueHandler,
-  settingsHelper: BasicSettingsHelper,
+  settingsManager: SettingsManager,
   connectionStateFlow: ConnectionStateFlow,
   searchModel: LibrarySearchModel
-) : BaseAlbumViewModel(queueHandler, settingsHelper, connectionStateFlow) {
+) : BaseAlbumViewModel(queueHandler, settingsManager, connectionStateFlow) {
   override val albums: Flow<PagingData<Album>> =
     searchModel.term
       .flatMapMerge { keyword ->

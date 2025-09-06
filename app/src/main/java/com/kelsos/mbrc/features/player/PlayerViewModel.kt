@@ -57,7 +57,7 @@ class PlayerViewModel(
     }
 
     viewModelScope.launch {
-      if (settingsManager.shouldShowChangeLog()) {
+      if (settingsManager.checkShouldShowChangeLog()) {
         emit(PlayerUiMessage.ShowChangelog)
       }
     }

@@ -1,5 +1,7 @@
 package com.kelsos.mbrc.features.queue
 
+import com.kelsos.mbrc.features.settings.TrackAction
+
 sealed class Queue(val action: String) {
   object Next : Queue(NEXT)
 
@@ -33,6 +35,13 @@ sealed class Queue(val action: String) {
       PLAY_ARTIST -> PlayArtist
       DEFAULT -> Default
       else -> throw IllegalArgumentException("$string is not a recognized option")
+    }
+
+    fun fromTrackAction(trackAction: TrackAction): Queue = when (trackAction) {
+      TrackAction.QueueNext -> Next
+      TrackAction.QueueLast -> Last
+      TrackAction.PlayNow -> Now
+      TrackAction.PlayNowQueueAll -> AddAll
     }
   }
 }

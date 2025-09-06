@@ -7,7 +7,6 @@ import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.LibrarySearchModel
 import com.kelsos.mbrc.features.library.LibrarySyncUseCase
 import com.kelsos.mbrc.features.queue.QueueHandler
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
 import com.kelsos.mbrc.features.settings.SettingsManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -23,9 +22,8 @@ class BrowseArtistViewModel(
   searchModel: LibrarySearchModel,
   settingsManager: SettingsManager,
   queueHandler: QueueHandler,
-  settingsHelper: BasicSettingsHelper,
   connectionStateFlow: ConnectionStateFlow
-) : BaseArtistViewModel(queueHandler, settingsHelper, connectionStateFlow) {
+) : BaseArtistViewModel(queueHandler, settingsManager, connectionStateFlow) {
   val shouldDisplayOnlyArtists = settingsManager.shouldDisplayOnlyArtists
 
   override val artists: Flow<PagingData<Artist>> =

@@ -117,27 +117,6 @@
     </activity>
 
     <activity
-      android:name=".features.settings.SettingsActivity"
-      android:parentActivityName=".features.player.PlayerActivity">
-
-      <!-- Parent activity meta-data to support 4.0 and lower -->
-      <meta-data
-        android:name="android.support.PARENT_ACTIVITY"
-        android:value=".features.player.PlayerActivity" />
-    </activity>
-
-    <activity
-      android:name=".features.settings.ConnectionManagerActivity"
-      android:parentActivityName=".features.settings.SettingsActivity"
-      android:windowSoftInputMode="adjustNothing">
-
-      <!-- Parent activity meta-data to support 4.0 and lower -->
-      <meta-data
-        android:name="android.support.PARENT_ACTIVITY"
-        android:value=".features.settings.SettingsActivity" />
-    </activity>
-
-    <activity
       android:name=".features.help.HelpFeedbackActivity"
       android:label="@string/nav_help"
       android:parentActivityName=".features.player.PlayerActivity"

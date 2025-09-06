@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -12,44 +13,65 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.kelsos.mbrc.features.settings.compose.ConnectionManagerScreenWithConfig
+import com.kelsos.mbrc.features.settings.compose.SettingsScreen
+import com.kelsos.mbrc.features.settings.compose.rememberSettingsScreenConfig
 
 /**
  * Main navigation graph for the MusicBee Remote app.
  * Defines all screen destinations and their navigation arguments.
  */
 @Composable
-fun AppNavGraph(navController: NavHostController, startDestination: String = Screen.Home.route) {
+fun AppNavGraph(
+  navController: NavHostController,
+  startDestination: String = Screen.Home.route,
+  onScreenConfigChange: (ScreenConfig) -> Unit = {}
+) {
   NavHost(
     navController = navController,
     startDestination = startDestination
   ) {
     // Main screens accessible from drawer
     composable(Screen.Home.route) {
+      // Reset screen config for placeholder screens
+      onScreenConfigChange(ScreenConfig.Empty)
       // TODO: Implement HomeScreen (Player/Now Playing)
       PlaceholderScreen("Now Playing")
     }
 
     composable(Screen.Library.route) {
+      // Reset screen config for placeholder screens
+      onScreenConfigChange(ScreenConfig.Empty)
       // TODO: Implement LibraryScreen with tabs
       PlaceholderScreen("Library")
     }
 
     composable(Screen.Playlists.route) {
+      // Reset screen config for placeholder screens
+      onScreenConfigChange(ScreenConfig.Empty)
       // TODO: Implement PlaylistsScreen
       PlaceholderScreen("Playlists")
     }
 
     composable(Screen.Radio.route) {
+      // Reset screen config for placeholder screens
+      onScreenConfigChange(ScreenConfig.Empty)
       // TODO: Implement RadioScreen
       PlaceholderScreen("Radio Stations")
     }
 
     composable(Screen.Settings.route) {
-      // TODO: Implement SettingsScreen (backport from development)
-      PlaceholderScreen("Settings")
+      ConfigurableScreenContainer(
+        configurableScreen = rememberSettingsScreenConfig(),
+        onScreenConfigChange = onScreenConfigChange
+      ) {
+        SettingsScreen()
+      }
     }
 
     composable(Screen.Help.route) {
+      // Reset screen config for placeholder screens
+      onScreenConfigChange(ScreenConfig.Empty)
       // TODO: Implement HelpScreen
       PlaceholderScreen("Help & Feedback")
     }
@@ -110,8 +132,9 @@ fun AppNavGraph(navController: NavHostController, startDestination: String = Scr
     }
 
     composable(Screen.ConnectionManager.route) {
-      // TODO: Implement ConnectionManagerScreen
-      PlaceholderScreen("Connection Manager")
+      ConnectionManagerScreenWithConfig(
+        onScreenConfigChange = onScreenConfigChange
+      )
     }
   }
 }
@@ -171,6 +194,25 @@ val drawerScreens = listOf(
   Screen.Settings,
   Screen.Help
 )
+
+/**
+ * Container that manages ConfigurableScreen instances and applies their configuration
+ * to the scaffold via the onScreenConfigChange callback.
+ */
+@Composable
+fun ConfigurableScreenContainer(
+  configurableScreen: ConfigurableScreen,
+  onScreenConfigChange: (ScreenConfig) -> Unit,
+  content: @Composable () -> Unit
+) {
+  val screenConfig = configurableScreen.getScreenConfig()
+
+  LaunchedEffect(screenConfig) {
+    onScreenConfigChange(screenConfig)
+  }
+
+  content()
+}
 
 /**
  * Temporary placeholder screen for unimplemented screens.

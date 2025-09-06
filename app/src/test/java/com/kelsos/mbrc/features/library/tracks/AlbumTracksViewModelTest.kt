@@ -9,7 +9,8 @@ import com.kelsos.mbrc.features.library.albums.AlbumInfo
 import com.kelsos.mbrc.features.queue.Queue
 import com.kelsos.mbrc.features.queue.QueueHandler
 import com.kelsos.mbrc.features.queue.QueueResult
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
+import com.kelsos.mbrc.features.settings.SettingsManager
+import com.kelsos.mbrc.features.settings.TrackAction
 import com.kelsos.mbrc.utils.testDispatcher
 import com.kelsos.mbrc.utils.testDispatcherModule
 import io.mockk.coEvery
@@ -36,7 +37,7 @@ class AlbumTracksViewModelTest : KoinTest {
       single<TrackRepository> { mockk(relaxed = true) }
       single<QueueHandler> { mockk(relaxed = true) }
       single<ConnectionStateFlow> { mockk(relaxed = true) }
-      single<BasicSettingsHelper> { mockk(relaxed = true) }
+      single<SettingsManager> { mockk(relaxed = true) }
       singleOf(::AlbumTracksViewModel)
     }
 
@@ -44,7 +45,7 @@ class AlbumTracksViewModelTest : KoinTest {
   private val repository: TrackRepository by inject()
   private val queueHandler: QueueHandler by inject()
   private val connectionStateFlow: ConnectionStateFlow by inject()
-  private val settingsHelper: BasicSettingsHelper by inject()
+  private val settingsManager: SettingsManager by inject()
 
   @Before
   fun setUp() {
@@ -54,7 +55,7 @@ class AlbumTracksViewModelTest : KoinTest {
 
     // Setup default mocks
     every { repository.getTracks(any()) } returns flowOf(PagingData.empty())
-    every { settingsHelper.defaultAction } returns "now"
+    every { settingsManager.libraryTrackDefaultActionFlow } returns flowOf(TrackAction.PlayNow)
     coEvery { connectionStateFlow.isConnected() } returns true
   }
 

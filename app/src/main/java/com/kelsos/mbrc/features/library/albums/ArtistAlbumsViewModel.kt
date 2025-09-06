@@ -5,7 +5,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.queue.QueueHandler
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
+import com.kelsos.mbrc.features.settings.SettingsManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flatMapMerge
@@ -14,9 +14,9 @@ import kotlinx.coroutines.launch
 class ArtistAlbumsViewModel(
   private val repository: AlbumRepository,
   queueHandler: QueueHandler,
-  settingsHelper: BasicSettingsHelper,
+  settingsManager: SettingsManager,
   connectionStateFlow: ConnectionStateFlow
-) : BaseAlbumViewModel(queueHandler, settingsHelper, connectionStateFlow) {
+) : BaseAlbumViewModel(queueHandler, settingsManager, connectionStateFlow) {
   private val artistFilter: MutableSharedFlow<String> = MutableSharedFlow(replay = 1)
 
   override val albums: Flow<PagingData<Album>> =

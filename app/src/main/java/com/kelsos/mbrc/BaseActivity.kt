@@ -35,7 +35,6 @@ import com.kelsos.mbrc.features.output.OutputSelectionDialog
 import com.kelsos.mbrc.features.player.PlayerActivity
 import com.kelsos.mbrc.features.playlists.PlaylistActivity
 import com.kelsos.mbrc.features.radio.RadioActivity
-import com.kelsos.mbrc.features.settings.SettingsActivity
 import com.kelsos.mbrc.networking.ClientConnectionUseCase
 import com.kelsos.mbrc.networking.client.UiMessage
 import com.kelsos.mbrc.networking.client.UiMessageQueue
@@ -224,7 +223,8 @@ abstract class BaseActivity(@LayoutRes val contentLayoutId: Int) :
       }
 
       R.id.nav_settings -> {
-        createBackStack(Intent(this, SettingsActivity::class.java))
+        // Settings is now handled in Compose navigation
+        // TODO: Navigate to Compose settings screen
       }
 
       R.id.nav_help -> {

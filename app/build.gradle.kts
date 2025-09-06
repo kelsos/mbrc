@@ -224,6 +224,7 @@ dependencies {
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.constraintlayout)
   implementation(libs.androidx.datastore)
+  implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.fragment.ktx)
   implementation(libs.bundles.androidx.media3)
   implementation(libs.androidx.paging.runtime.ktx)

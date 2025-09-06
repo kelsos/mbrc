@@ -9,7 +9,7 @@ import com.kelsos.mbrc.features.library.LibrarySearchModel
 import com.kelsos.mbrc.features.library.LibrarySyncUseCase
 import com.kelsos.mbrc.features.queue.Queue
 import com.kelsos.mbrc.features.queue.QueueHandler
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
+import com.kelsos.mbrc.features.settings.SettingsManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
@@ -20,9 +20,9 @@ class BrowseGenreViewModel(
   private val librarySyncUseCase: LibrarySyncUseCase,
   private val queueHandler: QueueHandler,
   searchModel: LibrarySearchModel,
-  settingsHelper: BasicSettingsHelper,
+  settingsManager: SettingsManager,
   connectionStateFlow: ConnectionStateFlow
-) : BaseLibraryViewModel<GenreUiMessage>(settingsHelper, connectionStateFlow) {
+) : BaseLibraryViewModel<GenreUiMessage>(settingsManager, connectionStateFlow) {
   val genres: Flow<PagingData<Genre>> =
     searchModel.term
       .flatMapMerge { term ->

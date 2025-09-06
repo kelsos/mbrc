@@ -6,15 +6,15 @@ import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.BaseLibraryViewModel
 import com.kelsos.mbrc.features.queue.Queue
 import com.kelsos.mbrc.features.queue.QueueHandler
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
+import com.kelsos.mbrc.features.settings.SettingsManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 abstract class BaseTrackViewModel(
   private val queueHandler: QueueHandler,
-  settingsHelper: BasicSettingsHelper,
+  settingsManager: SettingsManager,
   connectionStateFlow: ConnectionStateFlow
-) : BaseLibraryViewModel<TrackUiMessage>(settingsHelper, connectionStateFlow) {
+) : BaseLibraryViewModel<TrackUiMessage>(settingsManager, connectionStateFlow) {
   abstract val tracks: Flow<PagingData<Track>>
 
   fun queue(action: Queue, track: Track) {

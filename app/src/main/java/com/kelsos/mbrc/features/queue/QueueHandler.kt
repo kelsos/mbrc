@@ -5,15 +5,16 @@ import com.kelsos.mbrc.features.library.tracks.Track
 import com.kelsos.mbrc.features.library.tracks.TrackQuery
 import com.kelsos.mbrc.features.library.tracks.TrackRepository
 import com.kelsos.mbrc.features.player.CoverPayload
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
+import com.kelsos.mbrc.features.settings.SettingsManager
 import com.kelsos.mbrc.networking.ApiBase
 import com.kelsos.mbrc.networking.protocol.Protocol
 import java.io.IOException
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class QueueHandler(
-  private val settings: BasicSettingsHelper,
+  private val settings: SettingsManager,
   private val trackRepository: TrackRepository,
   private val service: ApiBase,
   private val dispatchers: AppCoroutineDispatchers
@@ -133,6 +134,9 @@ class QueueHandler(
     return QueueResult(success, tracks)
   }
 
-  suspend fun queueTrack(track: Track, queueAlbum: Boolean = false): QueueResult =
-    queueTrack(track, Queue.fromString(settings.defaultAction), queueAlbum)
+  suspend fun queueTrack(track: Track, queueAlbum: Boolean = false): QueueResult = queueTrack(
+    track,
+    Queue.fromTrackAction(settings.libraryTrackDefaultActionFlow.first()),
+    queueAlbum
+  )
 }

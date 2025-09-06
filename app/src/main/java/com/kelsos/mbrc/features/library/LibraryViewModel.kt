@@ -37,7 +37,9 @@ class LibraryViewModel(
   }
 
   fun updateAlbumArtistOnly(bool: Boolean) {
-    settingsManager.setShouldDisplayOnlyAlbumArtist(bool)
+    viewModelScope.launch {
+      settingsManager.setShouldDisplayOnlyAlbumArtist(bool)
+    }
   }
 
   fun displayLibraryStats() {

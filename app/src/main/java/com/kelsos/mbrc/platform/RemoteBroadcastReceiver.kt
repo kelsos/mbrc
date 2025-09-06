@@ -14,6 +14,11 @@ import com.kelsos.mbrc.networking.protocol.UserAction
 import com.kelsos.mbrc.networking.protocol.UserActionUseCase
 import com.kelsos.mbrc.networking.protocol.VolumeModifyUseCase
 import com.kelsos.mbrc.platform.mediasession.RemoteViewIntentBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
@@ -22,6 +27,8 @@ class RemoteBroadcastReceiver(
   private val userActionUseCase: UserActionUseCase,
   private val volumeModifyUseCase: VolumeModifyUseCase
 ) : BroadcastReceiver() {
+  private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
   /**
    * Initialized and installs the IntentFilter listening for the SONG_CHANGED
    * intent fired by the ReplyHandler or the PHONE_STATE intent fired by the
@@ -31,7 +38,11 @@ class RemoteBroadcastReceiver(
     val hasPermission =
       context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) ==
         PackageManager.PERMISSION_GRANTED
-    val handleCallAction = settingsManager.getCallAction() != CallAction.None
+
+    // Get current call action synchronously for filter setup
+    val handleCallAction = runBlocking {
+      settingsManager.incomingCallActionFlow.first() != CallAction.None
+    }
 
     return IntentFilter().apply {
       if (hasPermission && handleCallAction) {
@@ -72,11 +83,14 @@ class RemoteBroadcastReceiver(
   }
 
   private fun handleRinging() {
-    when (settingsManager.getCallAction()) {
-      CallAction.Pause -> performAction(Protocol.PlayerPause)
-      CallAction.Stop -> performAction(Protocol.PlayerStop)
-      CallAction.Reduce -> runBlocking { volumeModifyUseCase.reduceVolume() }
-      else -> Timber.v("No call action set, nothing to do.")
+    scope.launch {
+      val callAction = settingsManager.incomingCallActionFlow.first()
+      when (callAction) {
+        CallAction.Pause -> performAction(Protocol.PlayerPause)
+        CallAction.Stop -> performAction(Protocol.PlayerStop)
+        CallAction.Reduce -> volumeModifyUseCase.reduceVolume()
+        else -> Timber.v("No call action set, nothing to do.")
+      }
     }
   }
 

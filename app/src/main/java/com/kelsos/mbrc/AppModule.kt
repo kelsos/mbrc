@@ -89,15 +89,13 @@ import com.kelsos.mbrc.features.radio.RadioAdapter
 import com.kelsos.mbrc.features.radio.RadioRepository
 import com.kelsos.mbrc.features.radio.RadioRepositoryImpl
 import com.kelsos.mbrc.features.radio.RadioViewModel
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
 import com.kelsos.mbrc.features.settings.ClientInformationStore
 import com.kelsos.mbrc.features.settings.ClientInformationStoreImpl
-import com.kelsos.mbrc.features.settings.ConnectionManagerActivity
 import com.kelsos.mbrc.features.settings.ConnectionManagerViewModel
 import com.kelsos.mbrc.features.settings.ConnectionRepository
 import com.kelsos.mbrc.features.settings.ConnectionRepositoryImpl
 import com.kelsos.mbrc.features.settings.SettingsManager
-import com.kelsos.mbrc.features.settings.SettingsManagerImpl
+import com.kelsos.mbrc.features.settings.SettingsManagerDataStore
 import com.kelsos.mbrc.features.theme.ThemeManager
 import com.kelsos.mbrc.features.theme.ThemeManagerImpl
 import com.kelsos.mbrc.features.widgets.WidgetUpdater
@@ -214,7 +212,7 @@ val appModule =
     single { WorkManager.getInstance(get()) }
 
     singleOf(::RemoteBroadcastReceiver)
-    singleOf(::SettingsManagerImpl) { bind<SettingsManager>() }
+    singleOf(::SettingsManagerDataStore) { bind<SettingsManager>() }
     singleOf(::ThemeManagerImpl) { bind<ThemeManager>() }
     singleOf(::ServiceCheckerImpl) { bind<ServiceChecker>() }
     singleOf(::PlayingTrackCacheImpl) { bind<PlayingTrackCache>() }
@@ -247,8 +245,6 @@ val appModule =
     singleOf(::SerializationAdapterImpl) { bind<SerializationAdapter>() }
     singleOf(::DeserializationAdapterImpl) { bind<DeserializationAdapter>() }
     singleOf(::PluginUpdateCheckUseCaseImpl) { bind<PluginUpdateCheckUseCase>() }
-
-    factoryOf(::BasicSettingsHelper)
 
     factoryOf(::UpdateNowPlayingTrack)
     factoryOf(::UpdateCover)
@@ -371,10 +367,6 @@ val appModule =
       scopedOf(::PlaylistAdapter)
     }
 
-    scope<ConnectionManagerActivity> {
-      viewModelOf(::ConnectionManagerViewModel)
-    }
-
     scope<RadioActivity> {
       viewModelOf(::RadioViewModel)
       scopedOf(::RadioAdapter)
@@ -395,4 +387,5 @@ val appModule =
 
     // Global ViewModels
     singleOf(::DrawerViewModel)
+    singleOf(::ConnectionManagerViewModel)
   }

@@ -6,7 +6,7 @@ import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.features.library.LibrarySearchModel
 import com.kelsos.mbrc.features.library.LibrarySyncUseCase
 import com.kelsos.mbrc.features.queue.QueueHandler
-import com.kelsos.mbrc.features.settings.BasicSettingsHelper
+import com.kelsos.mbrc.features.settings.SettingsManager
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -16,9 +16,9 @@ class BrowseTrackViewModel(
   private val librarySyncUseCase: LibrarySyncUseCase,
   queueHandler: QueueHandler,
   searchModel: LibrarySearchModel,
-  settingsHelper: BasicSettingsHelper,
+  settingsManager: SettingsManager,
   connectionStateFlow: ConnectionStateFlow
-) : BaseTrackViewModel(queueHandler, settingsHelper, connectionStateFlow) {
+) : BaseTrackViewModel(queueHandler, settingsManager, connectionStateFlow) {
   override val tracks =
     searchModel.term
       .flatMapMerge {

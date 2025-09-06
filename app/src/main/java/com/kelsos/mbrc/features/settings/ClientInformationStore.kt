@@ -1,28 +1,29 @@
 package com.kelsos.mbrc.features.settings
 
-import android.content.SharedPreferences
-import androidx.core.content.edit
+import android.app.Application
+import androidx.datastore.preferences.core.edit
+import com.kelsos.mbrc.features.settings.SettingsDataStore.PreferenceKeys
+import com.kelsos.mbrc.features.settings.SettingsDataStore.dataStore
 import java.util.UUID
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 fun interface ClientInformationStore {
   suspend fun getClientId(): String
 }
 
-class ClientInformationStoreImpl(private val sharedPreference: SharedPreferences) :
-  ClientInformationStore {
+class ClientInformationStoreImpl(private val context: Application) : ClientInformationStore {
   override suspend fun getClientId(): String {
-    val uuid = sharedPreference.getString(UUID_KEY, "").orEmpty()
+    val existingUuid = context.dataStore.data.map { preferences ->
+      preferences[PreferenceKeys.CLIENT_UUID] ?: ""
+    }.first()
 
-    return uuid.ifBlank {
+    return existingUuid.ifBlank {
       val newUuid = UUID.randomUUID().toString()
-      sharedPreference.edit {
-        putString(UUID_KEY, newUuid)
+      context.dataStore.edit { preferences ->
+        preferences[PreferenceKeys.CLIENT_UUID] = newUuid
       }
       newUuid
     }
-  }
-
-  companion object {
-    const val UUID_KEY = "uuid"
   }
 }

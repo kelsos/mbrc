@@ -136,11 +136,6 @@ fun AppDrawer(
         ),
         currentRoute = currentRoute,
         onNavigate = { }, // Not used since we provide custom onClick
-        colors = NavigationDrawerItemDefaults.colors(
-          selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-          selectedIconColor = MaterialTheme.colorScheme.tertiary,
-          selectedTextColor = MaterialTheme.colorScheme.tertiary
-        ),
         onClick = {
           scope.launch {
             drawerState.close()
@@ -315,9 +310,12 @@ private fun DrawerNavigationItem(
   currentRoute: String?,
   onNavigate: (Screen) -> Unit,
   colors: NavigationDrawerItemColors = NavigationDrawerItemDefaults.colors(
-    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-    selectedIconColor = MaterialTheme.colorScheme.primary,
-    selectedTextColor = MaterialTheme.colorScheme.primary
+    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    unselectedContainerColor = Color.Transparent,
+    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
   ),
   onClick: (() -> Unit)? = null
 ) {
@@ -331,7 +329,8 @@ private fun DrawerNavigationItem(
     label = {
       Text(
         text = stringResource(item.titleRes),
-        style = MaterialTheme.typography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge,
+        fontWeight = if (currentRoute == item.screen.route) FontWeight.Medium else FontWeight.Normal
       )
     },
     selected = currentRoute == item.screen.route,

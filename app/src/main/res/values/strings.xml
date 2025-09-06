@@ -5,11 +5,13 @@
   <string name="action_play">Play</string>
   <string name="action_previous">Previous</string>
   <string name="action_retry">Retry</string>
+  <string name="action_stop">Stop</string>
+  <string name="action_none">Do nothing</string>
+  <string name="action_reduce_volume">Reduce volume</string>
   <string name="album_tracks__cover_content">The cover of the album</string>
   <string name="album_tracks__play">Play Album</string>
   <string name="album_tracks__play__content_description">Plays all the tracks</string>
   <string name="albums_list_empty">No albums found</string>
-  <string name="alert_invalid_port_number">The valid port range is from 1 to 65535</string>
   <string name="application_description">Remote Control Application for MusicBee</string>
   <string name="application_name">MusicBee Remote</string>
   <string name="application_starting">Attempting to establish connection…</string>
@@ -19,12 +21,7 @@
   <string name="common_edit">Edit</string>
   <string name="common_empty_no_tracks">No tracks found</string>
   <string name="common_feedback">Feedback</string>
-  <string name="common_number">%d</string>
-  <string name="con_man_no_wifi">This service is available only on a wifi connection</string>
-  <string name="con_man_not_found">A remote service could not be found</string>
-  <string name="con_man_success">Service successfully found</string>
   <string name="connect_button_description">Connect Button</string>
-  <string name="connection_default_description">Represents if this connection is the default selected connection</string>
   <string name="connection_error_all_retries_exhausted">Unable to connect after multiple attempts. Please check your connection settings.</string>
   <string name="connection_error_authentication_failed">Authentication failed. The client is not allowed to connect.</string>
   <string name="connection_error_network_unavailable">Network is unreachable. Please check your network connection.</string>
@@ -34,15 +31,21 @@
   <string name="connection_error_unknown">Connection failed: %1$s</string>
   <string name="connection_error_unsupported_protocol">Protocol version is not supported. Please update your plugin or app.</string>
   <string name="connection_manager_scan">SCAN</string>
+  <string name="connection_manager_scanning">Scanning for MusicBee on your network…</string>
   <string name="connection_manager_title">Connection Manager</string>
-  <string name="connectivity_manager_default">Set default</string>
-  <string name="connectivity_manager_delete">Delete</string>
+  <string name="connection_manager_no_connections">No connections configured</string>
+  <string name="connection_manager_no_connections_hint">Add a connection manually or scan your network to discover MusicBee</string>
+  <string name="connection_manager_error_loading">Error loading connections</string>
+  <string name="connection_manager_discovery_no_wifi">No WiFi connection available</string>
+  <string name="connection_manager_discovery_not_found">No MusicBee plugin found on network</string>
+  <string name="connection_manager_discovery_success">Successfully discovered MusicBee plugin</string>
+  <string name="connection_manager_set_default">Set as default</string>
+  <string name="connection_manager_delete">Delete</string>
+  <string name="connection_manager_port_error">Port must be between 1 and 65535</string>
   <string name="content_description__empty_warning">Warning sign showing that there are no entries</string>
   <string name="content_description__speaker_icon">Represents an audio output device</string>
   <string name="dash">-</string>
-  <string name="default_port">3000</string>
   <string name="description_album_cover">It displays the album cover for the current track.</string>
-  <string name="description_computer_icon">Computer icon</string>
   <string name="drag_n_drop_description">Used as an anchor for drag and drop</string>
   <string name="drawer_close">Close navigation drawer</string>
   <string name="drawer_connection_status_active">Connected</string>
@@ -58,7 +61,6 @@
   <string name="feedback_title">How you feel about the application?</string>
   <string name="feedback_version_info">\n\nDevice: %1$s %2$s Android(%3$s)\nMusicBee Remote v%4$s</string>
   <string name="genres_list_empty">No genres found</string>
-  <string name="incoming_action_default_value">none</string>
   <string name="info_service_description">This service is responsible for the communication of the application with the plugin.</string>
   <string name="lastfm_love">Love</string>
   <string name="lastfm_scrobble">Last.fm Scrobbling</string>
@@ -139,16 +141,9 @@
   <string name="playlists_load_success">Your playlists have been successfully loaded</string>
   <string name="plugin_update__description">It seems that you have connected to an older version of the plugin.\n\nSome features will not function properly unless you update the plugin to %1$s.</string>
   <string name="plugin_update__title">Plugin Update Required</string>
-  <string name="pref_key_build_time">build_time_key</string>
-  <string name="pref_key_revision">revision_key</string>
   <string name="preferences_about_version">MusicBee Remote Version</string>
   <string name="preferences_category_about">About MusicBee Remote</string>
-  <string name="preferences_key_connection_manager">manage_connections</string>
-  <string name="preferences_library_track_default_action_default_value">now</string>
-  <string name="preferences_library_track_default_action_key">mbrc.library_track_default</string>
-  <string name="preferences_library_track_default_action_summary">What should happen when you press on a track entry in the library.</string>
   <string name="preferences_library_track_default_action_title">Library Track Action</string>
-  <string name="preferences_open_source">open_source</string>
   <string name="press_to_sync">Press here to sync</string>
   <string name="queue_result__failure">Queueing was unsuccessful</string>
   <string name="queue_result__success">%1$s successfully added to the queue</string>
@@ -160,38 +155,23 @@
   <string name="radio__play_successful">The radio stations has been queued successfully.</string>
   <string name="rate_the_playing_track">Rate the playing track</string>
   <string name="refresh_failed">Refresh was unsuccessful.</string>
-  <string name="semicolon" translatable="false">:</string>
   <string name="setting_miscellaneous_debug_logging">Debug Logging</string>
   <string name="setting_miscellaneous_debug_logging_summary">Enables debug logging for the application. May cause performance degradation since it logs everything.</string>
   <string name="setting_miscellaneous_plugin_updates">Plugin Update Check</string>
   <string name="setting_miscellaneous_plugin_updates_summary">Periodically check for updated versions of the plugin</string>
-  <string name="settings_connection">Connection Settings</string>
-  <string name="settings_dialog__name_placeholder">My Computer</string>
   <string name="settings_dialog_hint_host">Hostname / IP</string>
   <string name="settings_dialog_hint_name">Computer name</string>
   <string name="settings_dialog_hint_port">Port number</string>
   <string name="settings_dialog_save">Save</string>
-  <string name="settings_key_album_artists_only">mbrc.settings.album_artist_only</string>
-  <string name="settings_key_debug_logging">settings_debug_log</string>
-  <string name="settings_key_incoming_call_action">incoming_call_action</string>
-  <string name="settings_key_last_update_check">last_update_check</string>
-  <string name="settings_key_last_version_run">last_version_run</string>
-  <string name="settings_key_license">mbrc_license</string>
-  <string name="settings_key_plugin_check">plugin_update_check</string>
-  <string name="settings_manage_connections">Manage Connections</string>
   <string name="settings_miscellaneous">Miscellaneous</string>
   <string name="settings_miscellaneous_incoming_call_action">Incoming call action</string>
-  <string name="settings_miscellaneous_incoming_call_description">Default action on incoming call \n\nRequires permission to read the Phone State.</string>
   <string name="settings_oss_license">Open source license</string>
   <string name="settings_title_license">License</string>
-  <string name="settings_version">settings_version</string>
   <string name="settings_version_number">v%1$s</string>
 
   <!-- Theme settings -->
   <string name="setting_appearance_theme">Theme</string>
-  <string name="setting_appearance_theme_summary">Choose your preferred theme appearance</string>
   <string name="settings_appearance">Appearance</string>
-  <string name="settings_key_theme">theme_preference</string>
   <string name="theme_system">Follow System</string>
   <string name="theme_light">Light</string>
   <string name="theme_dark">Dark</string>
@@ -204,7 +184,11 @@
   <string name="unknown_artist">Unknown artist</string>
   <string name="update_required__content_description">Update icon</string>
   <string name="action_failed">Oops! Something went wrong with playback. Give it another try.</string>
-  
+
+  <!-- About/Build info strings -->
+  <string name="settings_build_time_title">Build Time</string>
+  <string name="settings_revision_title">Revision</string>
+
   <!-- Compose UI strings -->
   <string name="navigate_back">Navigate back</string>
   <string name="no_data">No data available</string>

@@ -22,7 +22,6 @@ import com.kelsos.mbrc.data.MIGRATION_3_4
 import com.kelsos.mbrc.data.MigrationManager
 import com.kelsos.mbrc.data.SerializationAdapter
 import com.kelsos.mbrc.data.SerializationAdapterImpl
-import com.kelsos.mbrc.features.help.FeedbackFragment
 import com.kelsos.mbrc.features.help.FeedbackViewModel
 import com.kelsos.mbrc.features.library.CoverCache
 import com.kelsos.mbrc.features.library.LibraryActivity
@@ -380,12 +379,10 @@ val appModule =
       viewModelOf(::OutputSelectionViewModel)
     }
 
-    scope<FeedbackFragment> {
-      viewModelOf(::FeedbackViewModel)
-      scopedOf(::LogHelperImpl) { bind<LogHelper>() }
-    }
-
     // Global ViewModels
     singleOf(::DrawerViewModel)
     singleOf(::ConnectionManagerViewModel)
+    // FeedbackViewModel made global for Compose usage
+    viewModelOf(::FeedbackViewModel)
+    singleOf(::LogHelperImpl) { bind<LogHelper>() }
   }

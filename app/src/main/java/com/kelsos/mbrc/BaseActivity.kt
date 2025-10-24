@@ -27,7 +27,6 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.common.state.ConnectionStatus
-import com.kelsos.mbrc.features.help.HelpFeedbackActivity
 import com.kelsos.mbrc.features.library.LibraryActivity
 import com.kelsos.mbrc.features.lyrics.LyricsActivity
 import com.kelsos.mbrc.features.nowplaying.NowPlayingActivity
@@ -228,7 +227,7 @@ abstract class BaseActivity(@LayoutRes val contentLayoutId: Int) :
       }
 
       R.id.nav_help -> {
-        createBackStack(Intent(this, HelpFeedbackActivity::class.java))
+        // TODO: Navigation now handled by Compose MainActivity
       }
 
       R.id.nav_output -> {

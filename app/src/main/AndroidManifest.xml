@@ -116,15 +116,6 @@
         android:value=".features.player.PlayerActivity" />
     </activity>
 
-    <activity
-      android:name=".features.help.HelpFeedbackActivity"
-      android:label="@string/nav_help"
-      android:parentActivityName=".features.player.PlayerActivity"
-      android:windowSoftInputMode="adjustNothing">
-      <meta-data
-        android:name="android.support.PARENT_ACTIVITY"
-        android:value="com.kelsos.mbrc.features.player.PlayerActivity" />
-    </activity>
 
     <activity
       android:name=".features.radio.RadioActivity"

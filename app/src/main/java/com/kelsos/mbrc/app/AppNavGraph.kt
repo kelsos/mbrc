@@ -13,6 +13,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.kelsos.mbrc.features.help.compose.HelpFeedbackScreen
 import com.kelsos.mbrc.features.settings.compose.ConnectionManagerScreenWithConfig
 import com.kelsos.mbrc.features.settings.compose.SettingsScreen
 import com.kelsos.mbrc.features.settings.compose.rememberSettingsScreenConfig
@@ -72,8 +73,7 @@ fun AppNavGraph(
     composable(Screen.Help.route) {
       // Reset screen config for placeholder screens
       onScreenConfigChange(ScreenConfig.Empty)
-      // TODO: Implement HelpScreen
-      PlaceholderScreen("Help & Feedback")
+      HelpFeedbackScreen()
     }
 
     // Detail screens with arguments

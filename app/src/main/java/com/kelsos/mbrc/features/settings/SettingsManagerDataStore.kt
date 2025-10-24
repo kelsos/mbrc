@@ -34,7 +34,9 @@ class SettingsManagerDataStore(
 
   private fun setupManager() {
     scope.launch {
-      debugLoggingFlow.collect { enabled ->
+      dataStore.data.map { preferences ->
+        preferences[PreferenceKeys.DEBUG_LOGGING] ?: DefaultValues.DEBUG_LOGGING
+      }.collect { enabled ->
         if (enabled) {
           Timber.forest().find { it is FileLoggingTree }
             ?: Timber.plant(FileLoggingTree(context.applicationContext))

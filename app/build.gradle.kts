@@ -19,6 +19,7 @@ plugins {
   alias(libs.plugins.kotlinter)
   alias(libs.plugins.kover)
   alias(libs.plugins.detekt)
+  alias(libs.plugins.screenshot)
 }
 
 object KeyLoader {
@@ -81,6 +82,8 @@ android {
     buildConfig = true
     compose = true
   }
+
+  experimentalProperties["android.experimental.enableScreenshotTest"] = true
 
   defaultConfig {
     applicationId = "com.kelsos.mbrc"
@@ -165,6 +168,8 @@ android {
     resources {
       excludes += "META-INF/ASL2.0"
       excludes += "META-INF/LICENSE"
+      excludes += "META-INF/LICENSE.md"
+      excludes += "META-INF/LICENSE-notice.md"
       excludes += "META-INF/NOTICE"
       excludes += "META-INF/services/javax.annotation.processing.Processor"
       excludes += "**/module-info.class"
@@ -279,9 +284,18 @@ dependencies {
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.androidx.test.junit)
   androidTestImplementation(libs.truth)
+  androidTestImplementation(platform(libs.androidx.compose.bom))
+  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+  androidTestImplementation(libs.koin.test)
+  androidTestImplementation(libs.kotlin.coroutines.test)
+  androidTestImplementation(libs.mockk.android)
 
   debugImplementation(libs.squareup.leakcanary)
   debugImplementation(libs.androidx.fragment.testing)
+  debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+  screenshotTestImplementation(libs.screenshot.validation.api)
+  screenshotTestImplementation(libs.androidx.compose.ui.tooling)
 
   "playImplementation"(platform(libs.google.firebase.bom))
   "playImplementation"(libs.bundles.google.firebase) {

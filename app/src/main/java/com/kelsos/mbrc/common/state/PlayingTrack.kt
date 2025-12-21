@@ -54,7 +54,7 @@ fun PlayingTrack?.orEmpty() = this ?: PlayingTrack()
 
 @OptIn(UnstableApi::class)
 fun PlayingTrack.toMediaItem(): MediaItem {
-  val metadata =
+  val metadataBuilder =
     MediaMetadata
       .Builder()
       .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
@@ -66,8 +66,14 @@ fun PlayingTrack.toMediaItem(): MediaItem {
       .setDisplayTitle(title)
       .setSubtitle(artist)
       .setDescription(album)
-      .setDurationMs(duration)
-      .build()
+
+  // Only set duration for valid values (>= 0)
+  // For streams with unknown duration (-1), leave it unset
+  if (duration >= 0) {
+    metadataBuilder.setDurationMs(duration)
+  }
+
+  val metadata = metadataBuilder.build()
 
   return MediaItem
     .Builder()

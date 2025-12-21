@@ -1,56 +1,34 @@
 package com.kelsos.mbrc.features.radio
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.kelsos.mbrc.common.mvvm.BaseViewModel
-import com.kelsos.mbrc.common.mvvm.UiMessageBase
 import com.kelsos.mbrc.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.common.utilities.AppCoroutineDispatchers
 import com.kelsos.mbrc.features.queue.QueueHandler
 import java.io.IOException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-interface RadioActions {
-  fun play(path: String)
-
-  fun reload()
+interface IRadioActions {
+  val play: (path: String) -> Unit
+  val reload: () -> Unit
 }
 
-sealed class RadioUiMessages : UiMessageBase {
-  object QueueFailed : RadioUiMessages()
-
-  object QueueSuccess : RadioUiMessages()
-
-  object RefreshSuccess : RadioUiMessages()
-
-  object RefreshFailed : RadioUiMessages()
-
-  object NetworkUnavailable : RadioUiMessages()
-}
-
-class RadioViewModel(
+class RadioActions(
   private val radioRepository: RadioRepository,
   private val queueUseCase: QueueHandler,
-  private val dispatchers: AppCoroutineDispatchers,
-  private val connectionStateFlow: ConnectionStateFlow
-) : BaseViewModel<RadioUiMessages>() {
-  val actions: RadioActions =
-    object : RadioActions {
-      override fun play(path: String) {
-        this@RadioViewModel.play(path)
-      }
-
-      override fun reload() {
-        this@RadioViewModel.reload()
-      }
-    }
-
-  val radios: Flow<PagingData<RadioStation>> = radioRepository.getAll().cachedIn(viewModelScope)
-
-  fun reload() {
+  private val connectionStateFlow: ConnectionStateFlow,
+  viewModelScope: CoroutineScope,
+  dispatchers: AppCoroutineDispatchers,
+  events: MutableSharedFlow<RadioUiMessages>
+) : IRadioActions {
+  override val reload: () -> Unit = {
     viewModelScope.launch(dispatchers.network) {
       val result =
         if (!connectionStateFlow.isConnected()) {
@@ -64,11 +42,13 @@ class RadioViewModel(
             RadioUiMessages.RefreshFailed
           }
         }
-      emit(result)
+      withContext(dispatchers.main) {
+        events.emit(result)
+      }
     }
   }
 
-  fun play(path: String) {
+  override val play: (path: String) -> Unit = { path ->
     viewModelScope.launch(dispatchers.network) {
       val uiMessage =
         if (!connectionStateFlow.isConnected()) {
@@ -81,7 +61,48 @@ class RadioViewModel(
             RadioUiMessages.QueueFailed
           }
         }
-      emit(uiMessage)
+      withContext(dispatchers.main) {
+        events.emit(uiMessage)
+      }
     }
   }
+}
+
+sealed class RadioUiMessages {
+  object QueueFailed : RadioUiMessages()
+
+  object QueueSuccess : RadioUiMessages()
+
+  object RefreshSuccess : RadioUiMessages()
+
+  object RefreshFailed : RadioUiMessages()
+
+  object NetworkUnavailable : RadioUiMessages()
+}
+
+data class RadioState(val events: Flow<RadioUiMessages>, val radios: Flow<PagingData<RadioStation>>)
+
+class RadioViewModel(
+  radioRepository: RadioRepository,
+  queueUseCase: QueueHandler,
+  connectionStateFlow: ConnectionStateFlow,
+  dispatchers: AppCoroutineDispatchers
+) : ViewModel() {
+  private val events: MutableSharedFlow<RadioUiMessages> = MutableSharedFlow()
+
+  val actions: IRadioActions =
+    RadioActions(
+      radioRepository,
+      queueUseCase,
+      connectionStateFlow,
+      viewModelScope,
+      dispatchers,
+      events
+    )
+
+  val state =
+    RadioState(
+      events = events,
+      radios = radioRepository.getAll().cachedIn(viewModelScope)
+    )
 }

@@ -83,8 +83,6 @@ import com.kelsos.mbrc.features.playlists.PlaylistRepository
 import com.kelsos.mbrc.features.playlists.PlaylistRepositoryImpl
 import com.kelsos.mbrc.features.playlists.PlaylistViewModel
 import com.kelsos.mbrc.features.queue.QueueHandler
-import com.kelsos.mbrc.features.radio.RadioActivity
-import com.kelsos.mbrc.features.radio.RadioAdapter
 import com.kelsos.mbrc.features.radio.RadioRepository
 import com.kelsos.mbrc.features.radio.RadioRepositoryImpl
 import com.kelsos.mbrc.features.radio.RadioViewModel
@@ -366,11 +364,6 @@ val appModule =
       scopedOf(::PlaylistAdapter)
     }
 
-    scope<RadioActivity> {
-      viewModelOf(::RadioViewModel)
-      scopedOf(::RadioAdapter)
-    }
-
     scope<RatingDialogFragment> {
       viewModelOf(::RatingDialogViewModel)
     }
@@ -384,5 +377,7 @@ val appModule =
     singleOf(::ConnectionManagerViewModel)
     // FeedbackViewModel made global for Compose usage
     viewModelOf(::FeedbackViewModel)
+    // RadioViewModel made global for Compose usage
+    viewModelOf(::RadioViewModel)
     singleOf(::LogHelperImpl) { bind<LogHelper>() }
   }

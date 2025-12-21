@@ -69,8 +69,8 @@ class RadioViewModelTest : KoinTest {
       coEvery { connectionStateFlow.isConnected() } returns false
 
       // When & Then
-      viewModel.events.test {
-        viewModel.reload()
+      viewModel.state.events.test {
+        viewModel.actions.reload()
         testDispatcher.scheduler.advanceUntilIdle()
 
         val event = awaitItem()
@@ -90,8 +90,8 @@ class RadioViewModelTest : KoinTest {
       coEvery { radioRepository.getRemote() } returns Unit
 
       // When & Then
-      viewModel.events.test {
-        viewModel.reload()
+      viewModel.state.events.test {
+        viewModel.actions.reload()
         testDispatcher.scheduler.advanceUntilIdle()
 
         val event = awaitItem()
@@ -111,8 +111,8 @@ class RadioViewModelTest : KoinTest {
       coEvery { radioRepository.getRemote() } throws IOException("Network error")
 
       // When & Then
-      viewModel.events.test {
-        viewModel.reload()
+      viewModel.state.events.test {
+        viewModel.actions.reload()
         testDispatcher.scheduler.advanceUntilIdle()
 
         val event = awaitItem()
@@ -132,8 +132,8 @@ class RadioViewModelTest : KoinTest {
       coEvery { connectionStateFlow.isConnected() } returns false
 
       // When & Then
-      viewModel.events.test {
-        viewModel.play(radioPath)
+      viewModel.state.events.test {
+        viewModel.actions.play(radioPath)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val event = awaitItem()
@@ -154,8 +154,8 @@ class RadioViewModelTest : KoinTest {
       coEvery { queueHandler.queuePath(radioPath) } returns QueueResult(success = true, tracks = 1)
 
       // When & Then
-      viewModel.events.test {
-        viewModel.play(radioPath)
+      viewModel.state.events.test {
+        viewModel.actions.play(radioPath)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val event = awaitItem()
@@ -176,8 +176,8 @@ class RadioViewModelTest : KoinTest {
       coEvery { queueHandler.queuePath(radioPath) } returns QueueResult(success = false, tracks = 0)
 
       // When & Then
-      viewModel.events.test {
-        viewModel.play(radioPath)
+      viewModel.state.events.test {
+        viewModel.actions.play(radioPath)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val event = awaitItem()
@@ -199,7 +199,7 @@ class RadioViewModelTest : KoinTest {
       coEvery { radioRepository.getRemote() } returns Unit
 
       // Test actions.play delegates to play method
-      viewModel.events.test {
+      viewModel.state.events.test {
         viewModel.actions.play(radioPath)
         testDispatcher.scheduler.advanceUntilIdle()
 
@@ -224,7 +224,7 @@ class RadioViewModelTest : KoinTest {
     every { radioRepository.getAll() } returns flowOf(mockPagingData)
 
     // Then
-    assertThat(viewModel.radios).isNotNull()
+    assertThat(viewModel.state.radios).isNotNull()
     // Note: PagingData testing requires more setup, this verifies the flow is accessible
   }
 
@@ -236,9 +236,9 @@ class RadioViewModelTest : KoinTest {
       coEvery { radioRepository.getRemote() } returns Unit
 
       // When & Then
-      viewModel.events.test {
-        viewModel.reload()
-        viewModel.reload()
+      viewModel.state.events.test {
+        viewModel.actions.reload()
+        viewModel.actions.reload()
         testDispatcher.scheduler.advanceUntilIdle()
 
         val firstEvent = awaitItem()
@@ -262,8 +262,8 @@ class RadioViewModelTest : KoinTest {
       coEvery { queueHandler.queuePath(emptyPath) } returns QueueResult(success = false, tracks = 0)
 
       // When & Then
-      viewModel.events.test {
-        viewModel.play(emptyPath)
+      viewModel.state.events.test {
+        viewModel.actions.play(emptyPath)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val event = awaitItem()
@@ -283,14 +283,14 @@ class RadioViewModelTest : KoinTest {
       coEvery { radioRepository.getRemote() } returns Unit
 
       // When & Then - First call should succeed, second should fail
-      viewModel.events.test {
-        viewModel.reload() // Should succeed (first call)
+      viewModel.state.events.test {
+        viewModel.actions.reload() // Should succeed (first call)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val firstEvent = awaitItem()
         assertThat(firstEvent).isEqualTo(RadioUiMessages.RefreshSuccess)
 
-        viewModel.reload() // Should fail (second call)
+        viewModel.actions.reload() // Should fail (second call)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val secondEvent = awaitItem()

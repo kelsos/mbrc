@@ -116,16 +116,6 @@
         android:value=".features.player.PlayerActivity" />
     </activity>
 
-
-    <activity
-      android:name=".features.radio.RadioActivity"
-      android:label="@string/title_activity_radios"
-      android:parentActivityName=".features.player.PlayerActivity">
-      <meta-data
-        android:name="android.support.PARENT_ACTIVITY"
-        android:value="com.kelsos.mbrc.features.player.PlayerActivity" />
-    </activity>
-
     <receiver
       android:name=".features.widgets.WidgetNormal"
       android:exported="false">

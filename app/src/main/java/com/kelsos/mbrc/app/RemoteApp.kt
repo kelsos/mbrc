@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.common.ui.compose.DrawerNavigationIcon
@@ -105,6 +106,7 @@ fun RemoteApp() {
         ) {
           AppNavGraph(
             navController = navController,
+            snackbarHostState = snackbarHostState,
             startDestination = Screen.Home.route,
             onScreenConfigChange = { config ->
               currentScreenConfig = config
@@ -122,7 +124,9 @@ fun RemoteApp() {
  */
 @Composable
 private fun getCurrentScreenTitle(navController: androidx.navigation.NavController): String {
-  val currentRoute = navController.currentBackStackEntry?.destination?.route
+  // Collect the current back stack entry as state to trigger recomposition on navigation
+  val currentBackStackEntry by navController.currentBackStackEntryAsState()
+  val currentRoute = currentBackStackEntry?.destination?.route
 
   return currentRoute?.let { route ->
     getScreenTitleForRoute(route)

@@ -99,15 +99,18 @@ class RemotePlayer(
       val playingTrack = appState.playingTrack.firstOrNull().orEmpty()
 
       val item = playingTrack.toMediaItem()
+      val durationUs = if (playingTrack.duration >= 0) {
+        playingTrack.duration.toDuration(DurationUnit.MILLISECONDS).inWholeMicroseconds
+      } else {
+        C.TIME_UNSET
+      }
       val mediaItem =
         MediaItemData
           .Builder(0)
           .setMediaItem(item)
           .setMediaMetadata(item.mediaMetadata)
-          .setIsSeekable(true)
-          .setDurationUs(
-            playingTrack.duration.toDuration(DurationUnit.MILLISECONDS).inWholeMicroseconds
-          )
+          .setIsSeekable(playingTrack.duration >= 0)
+          .setDurationUs(durationUs)
           .build()
 
       val previous = MediaItemData.Builder("previous-track").build()

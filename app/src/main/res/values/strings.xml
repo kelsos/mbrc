@@ -151,6 +151,7 @@
   <string name="radio__loading_failed">There was an error while loading the radio stations</string>
   <string name="radio__loading_success">Radios were successfully refreshed</string>
   <string name="radio__no_radio_stations">No radio stations found</string>
+  <string name="radio__play">Play radio station</string>
   <string name="radio__play_failed">There was an error while trying to play the radio station.</string>
   <string name="radio__play_successful">The radio stations has been queued successfully.</string>
   <string name="rate_the_playing_track">Rate the playing track</string>

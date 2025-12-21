@@ -38,6 +38,7 @@ gradlePlugin-gms = "4.4.3"
 gradlePlugin-kotlinter = "5.2.0"
 gradlePlugin-kover = "0.9.1"
 gradlePlugin-ksp = "2.2.0-2.0.2"
+gradlePlugin-screenshot = "0.0.1-alpha12"
 gradlePlugin-protobuf = "0.9.5"
 gradlePlugin-versionCatalog = "1.0.0"
 gradlePlugin-versionsBenManes = "0.52.0"
@@ -65,6 +66,8 @@ androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 androidx-compose-material-icons = { module = "androidx.compose.material:material-icons-extended" }
+androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation-compose" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle-viewmodel-compose" }
@@ -120,6 +123,7 @@ kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-co
 kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinCoroutines" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 squareup-leakcanary = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "squareup-leakcanary" }
 squareup-moshi-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "squareup-moshi" }
@@ -129,6 +133,7 @@ squareup-okio = { module = "com.squareup.okio:okio", version.ref = "squareup-oki
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+screenshot-validation-api = { group = "com.android.tools.screenshot", name = "screenshot-validation-api", version.ref = "gradlePlugin-screenshot" }
 
 [bundles]
 androidx-compose = [
@@ -189,5 +194,6 @@ kotlinter = { id = "org.jmailen.kotlinter", version.ref = "gradlePlugin-kotlinte
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "gradlePlugin-kover" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "gradlePlugin-ksp" }
 protobuf = { id = "com.google.protobuf", version.ref = "gradlePlugin-protobuf" }
+screenshot = { id = "com.android.compose.screenshot", version.ref = "gradlePlugin-screenshot" }
 versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "gradlePlugin-versionCatalog" }
 versionsBenManes = { id = "com.github.ben-manes.versions", version.ref = "gradlePlugin-versionsBenManes" }

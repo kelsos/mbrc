@@ -3,6 +3,7 @@ package com.kelsos.mbrc.app
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.kelsos.mbrc.features.help.compose.HelpFeedbackScreen
+import com.kelsos.mbrc.features.radio.compose.RadioScreen
 import com.kelsos.mbrc.features.settings.compose.ConnectionManagerScreenWithConfig
 import com.kelsos.mbrc.features.settings.compose.SettingsScreen
 import com.kelsos.mbrc.features.settings.compose.rememberSettingsScreenConfig
@@ -25,6 +27,7 @@ import com.kelsos.mbrc.features.settings.compose.rememberSettingsScreenConfig
 @Composable
 fun AppNavGraph(
   navController: NavHostController,
+  snackbarHostState: SnackbarHostState,
   startDestination: String = Screen.Home.route,
   onScreenConfigChange: (ScreenConfig) -> Unit = {}
 ) {
@@ -55,10 +58,8 @@ fun AppNavGraph(
     }
 
     composable(Screen.Radio.route) {
-      // Reset screen config for placeholder screens
       onScreenConfigChange(ScreenConfig.Empty)
-      // TODO: Implement RadioScreen
-      PlaceholderScreen("Radio Stations")
+      RadioScreen(snackbarHostState = snackbarHostState)
     }
 
     composable(Screen.Settings.route) {

@@ -33,7 +33,6 @@ import com.kelsos.mbrc.features.nowplaying.NowPlayingActivity
 import com.kelsos.mbrc.features.output.OutputSelectionDialog
 import com.kelsos.mbrc.features.player.PlayerActivity
 import com.kelsos.mbrc.features.playlists.PlaylistActivity
-import com.kelsos.mbrc.features.radio.RadioActivity
 import com.kelsos.mbrc.networking.ClientConnectionUseCase
 import com.kelsos.mbrc.networking.client.UiMessage
 import com.kelsos.mbrc.networking.client.UiMessageQueue
@@ -211,10 +210,6 @@ abstract class BaseActivity(@LayoutRes val contentLayoutId: Int) :
 
       R.id.nav_playlists -> {
         createBackStack(Intent(this, PlaylistActivity::class.java))
-      }
-
-      R.id.nav_radio -> {
-        createBackStack(Intent(this, RadioActivity::class.java))
       }
 
       R.id.nav_lyrics -> {

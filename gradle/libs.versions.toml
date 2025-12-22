@@ -55,6 +55,7 @@ squareup-okio = "3.16.0"
 timber = "5.0.1"
 truth = "1.4.4"
 turbine = "1.2.1"
+kotlinx-serialization = "1.8.1"
 
 [libraries]
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
@@ -134,6 +135,7 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 screenshot-validation-api = { group = "com.android.tools.screenshot", name = "screenshot-validation-api", version.ref = "gradlePlugin-screenshot" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 [bundles]
 androidx-compose = [
@@ -197,3 +199,5 @@ protobuf = { id = "com.google.protobuf", version.ref = "gradlePlugin-protobuf" }
 screenshot = { id = "com.android.compose.screenshot", version.ref = "gradlePlugin-screenshot" }
 versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "gradlePlugin-versionCatalog" }
 versionsBenManes = { id = "com.github.ben-manes.versions", version.ref = "gradlePlugin-versionsBenManes" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

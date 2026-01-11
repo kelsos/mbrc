@@ -360,7 +360,11 @@ class AlbumRepositoryTest : KoinTest {
       trackDao.insertAll(tracks)
 
       // When: Get albums by artist
-      val result = repository.getAlbumsByArtist("Artist1").asSnapshot()
+      val result = repository.getAlbumsByArtist(
+        "Artist1",
+        AlbumSortField.YEAR,
+        SortOrder.ASC
+      ).asSnapshot()
 
       // Then: Should be sorted by year (oldest first)
       assertThat(result.map { it.album }).containsExactly(
@@ -428,7 +432,11 @@ class AlbumRepositoryTest : KoinTest {
       trackDao.insertAll(tracks)
 
       // When: Get albums by artist
-      val result = repository.getAlbumsByArtist("Artist1").asSnapshot()
+      val result = repository.getAlbumsByArtist(
+        "Artist1",
+        AlbumSortField.YEAR,
+        SortOrder.ASC
+      ).asSnapshot()
 
       // Then: Known years first (sorted), then unknown years at end
       assertThat(result.map { it.album }).containsExactly(
@@ -449,7 +457,11 @@ class AlbumRepositoryTest : KoinTest {
         )
       dao.insert(albums)
 
-      val result = repository.getAlbumsByArtist("Artist3").asSnapshot()
+      val result = repository.getAlbumsByArtist(
+        "Artist3",
+        AlbumSortField.YEAR,
+        SortOrder.ASC
+      ).asSnapshot()
 
       assertThat(result).isEmpty()
     }

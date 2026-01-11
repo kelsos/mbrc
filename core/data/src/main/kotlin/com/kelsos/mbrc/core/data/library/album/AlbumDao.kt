@@ -173,6 +173,7 @@ interface AlbumDao {
   @Query("delete from album where date_added < :added")
   fun removePreviousEntries(added: Long)
 
+  // Get albums by artist sorted by year ASC (unknown years at end)
   @Query(
     """
         SELECT album.artist AS artist, album.album AS album,
@@ -187,7 +188,52 @@ interface AlbumDao {
           album.album COLLATE NOCASE ASC
     """
   )
-  fun getAlbumsByArtist(artist: String): PagingSource<Int, AlbumEntity>
+  fun getAlbumsByArtistByYearAsc(artist: String): PagingSource<Int, AlbumEntity>
+
+  // Get albums by artist sorted by year DESC (unknown years at end)
+  @Query(
+    """
+        SELECT album.artist AS artist, album.album AS album,
+        album.date_added AS date_added, album.id AS id, album.cover AS cover
+        FROM album
+        INNER JOIN track ON album.album = track.album AND track.album_artist = album.artist
+        WHERE track.artist = :artist OR track.album_artist = :artist
+        GROUP BY album.id
+        ORDER BY
+          CASE WHEN MIN(track.sortable_year) = '' THEN 1 ELSE 0 END ASC,
+          MIN(track.sortable_year) DESC,
+          album.album COLLATE NOCASE ASC
+    """
+  )
+  fun getAlbumsByArtistByYearDesc(artist: String): PagingSource<Int, AlbumEntity>
+
+  // Get albums by artist sorted by album name ASC
+  @Query(
+    """
+        SELECT album.artist AS artist, album.album AS album,
+        album.date_added AS date_added, album.id AS id, album.cover AS cover
+        FROM album
+        INNER JOIN track ON album.album = track.album AND track.album_artist = album.artist
+        WHERE track.artist = :artist OR track.album_artist = :artist
+        GROUP BY album.id
+        ORDER BY album.album COLLATE NOCASE ASC
+    """
+  )
+  fun getAlbumsByArtistByNameAsc(artist: String): PagingSource<Int, AlbumEntity>
+
+  // Get albums by artist sorted by album name DESC
+  @Query(
+    """
+        SELECT album.artist AS artist, album.album AS album,
+        album.date_added AS date_added, album.id AS id, album.cover AS cover
+        FROM album
+        INNER JOIN track ON album.album = track.album AND track.album_artist = album.artist
+        WHERE track.artist = :artist OR track.album_artist = :artist
+        GROUP BY album.id
+        ORDER BY album.album COLLATE NOCASE DESC
+    """
+  )
+  fun getAlbumsByArtistByNameDesc(artist: String): PagingSource<Int, AlbumEntity>
 
   @Query("select album, artist, cover as hash from album")
   fun getCovers(): List<AlbumCover>

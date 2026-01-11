@@ -7,7 +7,11 @@ import com.kelsos.mbrc.core.data.Repository
 import kotlinx.coroutines.flow.Flow
 
 interface AlbumRepository : Repository<Album> {
-  fun getAlbumsByArtist(artist: String): Flow<PagingData<Album>>
+  fun getAlbumsByArtist(
+    artist: String,
+    field: AlbumSortField,
+    order: SortOrder
+  ): Flow<PagingData<Album>>
 
   fun getAll(field: AlbumSortField, order: SortOrder): Flow<PagingData<Album>>
 

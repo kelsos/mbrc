@@ -24,8 +24,28 @@ class AlbumRepositoryImpl(
 ) : AlbumRepository {
   override suspend fun count(): Long = withContext(dispatchers.database) { dao.count() }
 
-  override fun getAlbumsByArtist(artist: String): Flow<PagingData<Album>> = paged({
-    dao.getAlbumsByArtist(artist)
+  override fun getAlbumsByArtist(
+    artist: String,
+    field: AlbumSortField,
+    order: SortOrder
+  ): Flow<PagingData<Album>> = paged({
+    when (field) {
+      AlbumSortField.NAME -> when (order) {
+        SortOrder.ASC -> dao.getAlbumsByArtistByNameAsc(artist)
+        SortOrder.DESC -> dao.getAlbumsByArtistByNameDesc(artist)
+      }
+
+      // For artist albums, sorting by artist doesn't make sense, use year instead
+      AlbumSortField.ARTIST -> when (order) {
+        SortOrder.ASC -> dao.getAlbumsByArtistByYearAsc(artist)
+        SortOrder.DESC -> dao.getAlbumsByArtistByYearDesc(artist)
+      }
+
+      AlbumSortField.YEAR -> when (order) {
+        SortOrder.ASC -> dao.getAlbumsByArtistByYearAsc(artist)
+        SortOrder.DESC -> dao.getAlbumsByArtistByYearDesc(artist)
+      }
+    }
   }) {
     it.toAlbum()
   }

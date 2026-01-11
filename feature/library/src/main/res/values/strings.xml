@@ -64,4 +64,13 @@
   <string name="unknown_album">Unknown album</string>
   <string name="unknown_artist">Unknown artist</string>
   <string name="unknown_title">Unknown title</string>
+
+  <!-- Sorting -->
+  <string name="sort_title">Sort by</string>
+  <string name="sort_by_name">Name</string>
+  <string name="sort_by_artist">Artist</string>
+  <string name="sort_by_year">Year</string>
+  <string name="sort_ascending">Ascending</string>
+  <string name="sort_descending">Descending</string>
+  <string name="sort_button_description">Sort options</string>
 </resources>

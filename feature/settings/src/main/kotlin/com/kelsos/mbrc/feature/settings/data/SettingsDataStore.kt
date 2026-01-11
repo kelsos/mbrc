@@ -37,6 +37,13 @@ object SettingsDataStore {
     val LAST_VERSION_RUN = intPreferencesKey("last_version_run")
     val REQUIRED_UPDATE_CHECK = longPreferencesKey("update_required_check")
     val CLIENT_UUID = stringPreferencesKey("uuid")
+
+    // Library sorting preferences
+    val GENRE_SORT = stringPreferencesKey("mbrc.library.sort.genre")
+    val ARTIST_SORT = stringPreferencesKey("mbrc.library.sort.artist")
+    val ALBUM_SORT = stringPreferencesKey("mbrc.library.sort.album")
+    val GENRE_ARTISTS_SORT = stringPreferencesKey("mbrc.library.sort.genre_artists")
+    val ARTIST_ALBUMS_SORT = stringPreferencesKey("mbrc.library.sort.artist_albums")
   }
 
   object DefaultValues {
@@ -49,5 +56,12 @@ object SettingsDataStore {
     const val LAST_UPDATE_CHECK = 0L
     const val LAST_VERSION_RUN = 0
     const val REQUIRED_UPDATE_CHECK = 0L
+
+    // Library sorting defaults (format: "field:order")
+    const val GENRE_SORT = "name:asc"
+    const val ARTIST_SORT = "name:asc"
+    const val ALBUM_SORT = "name:asc"
+    const val GENRE_ARTISTS_SORT = "name:asc"
+    const val ARTIST_ALBUMS_SORT = "year:asc"
   }
 }

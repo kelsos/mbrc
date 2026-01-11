@@ -4,6 +4,13 @@ import android.app.Application
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import com.kelsos.mbrc.core.common.settings.AlbumSortField
+import com.kelsos.mbrc.core.common.settings.AlbumSortPreference
+import com.kelsos.mbrc.core.common.settings.ArtistSortField
+import com.kelsos.mbrc.core.common.settings.ArtistSortPreference
+import com.kelsos.mbrc.core.common.settings.GenreSortField
+import com.kelsos.mbrc.core.common.settings.GenreSortPreference
+import com.kelsos.mbrc.core.common.settings.SortPreference
 import com.kelsos.mbrc.core.common.settings.TrackAction
 import com.kelsos.mbrc.core.common.utilities.AppInfo
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
@@ -81,6 +88,33 @@ class SettingsManagerDataStore(
     preferences[PreferenceKeys.ALBUM_ARTISTS_ONLY] ?: DefaultValues.ALBUM_ARTISTS_ONLY
   }
 
+  override val genreSortPreferenceFlow: Flow<GenreSortPreference> = dataStore.data.map { prefs ->
+    val encoded = prefs[PreferenceKeys.GENRE_SORT] ?: DefaultValues.GENRE_SORT
+    SortPreference.decode(encoded, GenreSortField::fromString, GenreSortField.NAME)
+  }
+
+  override val artistSortPreferenceFlow: Flow<ArtistSortPreference> = dataStore.data.map { prefs ->
+    val encoded = prefs[PreferenceKeys.ARTIST_SORT] ?: DefaultValues.ARTIST_SORT
+    SortPreference.decode(encoded, ArtistSortField::fromString, ArtistSortField.NAME)
+  }
+
+  override val albumSortPreferenceFlow: Flow<AlbumSortPreference> = dataStore.data.map { prefs ->
+    val encoded = prefs[PreferenceKeys.ALBUM_SORT] ?: DefaultValues.ALBUM_SORT
+    SortPreference.decode(encoded, AlbumSortField::fromString, AlbumSortField.NAME)
+  }
+
+  override val genreArtistsSortPreferenceFlow: Flow<ArtistSortPreference> =
+    dataStore.data.map { prefs ->
+      val encoded = prefs[PreferenceKeys.GENRE_ARTISTS_SORT] ?: DefaultValues.GENRE_ARTISTS_SORT
+      SortPreference.decode(encoded, ArtistSortField::fromString, ArtistSortField.NAME)
+    }
+
+  override val artistAlbumsSortPreferenceFlow: Flow<AlbumSortPreference> =
+    dataStore.data.map { prefs ->
+      val encoded = prefs[PreferenceKeys.ARTIST_ALBUMS_SORT] ?: DefaultValues.ARTIST_ALBUMS_SORT
+      SortPreference.decode(encoded, AlbumSortField::fromString, AlbumSortField.YEAR)
+    }
+
   override suspend fun setTheme(theme: Theme) {
     dataStore.edit { preferences ->
       preferences[PreferenceKeys.THEME] = theme.value
@@ -114,6 +148,41 @@ class SettingsManagerDataStore(
   override suspend fun setShouldDisplayOnlyAlbumArtist(onlyAlbumArtist: Boolean) {
     dataStore.edit { preferences ->
       preferences[PreferenceKeys.ALBUM_ARTISTS_ONLY] = onlyAlbumArtist
+    }
+  }
+
+  override suspend fun setGenreSortPreference(preference: GenreSortPreference) {
+    dataStore.edit { preferences ->
+      preferences[PreferenceKeys.GENRE_SORT] =
+        SortPreference.encode(preference) { it.value }
+    }
+  }
+
+  override suspend fun setArtistSortPreference(preference: ArtistSortPreference) {
+    dataStore.edit { preferences ->
+      preferences[PreferenceKeys.ARTIST_SORT] =
+        SortPreference.encode(preference) { it.value }
+    }
+  }
+
+  override suspend fun setAlbumSortPreference(preference: AlbumSortPreference) {
+    dataStore.edit { preferences ->
+      preferences[PreferenceKeys.ALBUM_SORT] =
+        SortPreference.encode(preference) { it.value }
+    }
+  }
+
+  override suspend fun setGenreArtistsSortPreference(preference: ArtistSortPreference) {
+    dataStore.edit { preferences ->
+      preferences[PreferenceKeys.GENRE_ARTISTS_SORT] =
+        SortPreference.encode(preference) { it.value }
+    }
+  }
+
+  override suspend fun setArtistAlbumsSortPreference(preference: AlbumSortPreference) {
+    dataStore.edit { preferences ->
+      preferences[PreferenceKeys.ARTIST_ALBUMS_SORT] =
+        SortPreference.encode(preference) { it.value }
     }
   }
 

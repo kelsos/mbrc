@@ -6,6 +6,7 @@ import androidx.paging.testing.asSnapshot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.core.common.data.Progress
+import com.kelsos.mbrc.core.common.settings.SortOrder
 import com.kelsos.mbrc.core.common.test.testDispatcher
 import com.kelsos.mbrc.core.common.test.testDispatcherModule
 import com.kelsos.mbrc.core.data.Database
@@ -352,7 +353,7 @@ class ArtistRepositoryTest : KoinTest {
       dao.insertAll(artists)
 
       // When: Get album artists only
-      val albumArtists = repository.getAlbumArtistsOnly().asSnapshot()
+      val albumArtists = repository.getAlbumArtistsOnly(SortOrder.ASC).asSnapshot()
 
       // Then: Should include the compilation album artist
       val artistNames = albumArtists.map { it.artist }
@@ -408,7 +409,7 @@ class ArtistRepositoryTest : KoinTest {
       dao.insertAll(artists)
 
       // When: Get album artists only
-      val albumArtists = repository.getAlbumArtistsOnly().asSnapshot()
+      val albumArtists = repository.getAlbumArtistsOnly(SortOrder.ASC).asSnapshot()
 
       // Then: Should only include artists who are album artists
       val artistNames = albumArtists.map { it.artist }
@@ -508,7 +509,7 @@ class ArtistRepositoryTest : KoinTest {
       dao.insertAll(artists)
 
       // When: Get album artists only
-      val albumArtists = repository.getAlbumArtistsOnly().asSnapshot()
+      val albumArtists = repository.getAlbumArtistsOnly(SortOrder.ASC).asSnapshot()
 
       // Then: Should be sorted ignoring "the" prefix
       // Expected order: The Beatles, Bob Dylan, The Who
@@ -519,6 +520,216 @@ class ArtistRepositoryTest : KoinTest {
           "Bob Dylan",
           "The Who"
         ).inOrder()
+    }
+  }
+
+  @Test
+  fun getAllWithSortOrderAscShouldReturnArtistsSortedAscending() {
+    runTest(testDispatcher) {
+      val artists =
+        listOf(
+          ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
+          ArtistEntity(artist = "Adele", dateAdded = 1000L),
+          ArtistEntity(artist = "The Who", dateAdded = 1000L)
+        )
+      dao.insertAll(artists)
+
+      val result = repository.getAll(SortOrder.ASC).asSnapshot()
+
+      // Should be sorted ascending ignoring "the" prefix
+      assertThat(result.map { it.artist })
+        .containsExactly("Adele", "The Beatles", "The Who")
+        .inOrder()
+    }
+  }
+
+  @Test
+  fun getAllWithSortOrderDescShouldReturnArtistsSortedDescending() {
+    runTest(testDispatcher) {
+      val artists =
+        listOf(
+          ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
+          ArtistEntity(artist = "Adele", dateAdded = 1000L),
+          ArtistEntity(artist = "The Who", dateAdded = 1000L)
+        )
+      dao.insertAll(artists)
+
+      val result = repository.getAll(SortOrder.DESC).asSnapshot()
+
+      // Should be sorted descending ignoring "the" prefix
+      assertThat(result.map { it.artist })
+        .containsExactly("The Who", "The Beatles", "Adele")
+        .inOrder()
+    }
+  }
+
+  @Test
+  fun searchWithSortOrderAscShouldReturnMatchingArtistsSortedAscending() {
+    runTest(testDispatcher) {
+      val artists =
+        listOf(
+          ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
+          ArtistEntity(artist = "The Beach Boys", dateAdded = 1000L),
+          ArtistEntity(artist = "Queen", dateAdded = 1000L),
+          ArtistEntity(artist = "The Who", dateAdded = 1000L)
+        )
+      dao.insertAll(artists)
+
+      val result = repository.search("The", SortOrder.ASC).asSnapshot()
+
+      // Should return matching artists sorted ascending ignoring "the" prefix
+      assertThat(result.map { it.artist })
+        .containsExactly("The Beach Boys", "The Beatles", "The Who")
+        .inOrder()
+    }
+  }
+
+  @Test
+  fun searchWithSortOrderDescShouldReturnMatchingArtistsSortedDescending() {
+    runTest(testDispatcher) {
+      val artists =
+        listOf(
+          ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
+          ArtistEntity(artist = "The Beach Boys", dateAdded = 1000L),
+          ArtistEntity(artist = "Queen", dateAdded = 1000L),
+          ArtistEntity(artist = "The Who", dateAdded = 1000L)
+        )
+      dao.insertAll(artists)
+
+      val result = repository.search("The", SortOrder.DESC).asSnapshot()
+
+      // Should return matching artists sorted descending ignoring "the" prefix
+      assertThat(result.map { it.artist })
+        .containsExactly("The Who", "The Beatles", "The Beach Boys")
+        .inOrder()
+    }
+  }
+
+  @Test
+  fun getAlbumArtistsOnlyWithSortOrderAscShouldReturnArtistsSortedAscending() {
+    runTest(testDispatcher) {
+      val tracks =
+        listOf(
+          TrackEntity(
+            artist = "John Lennon",
+            title = "Track 1",
+            album = "Album 1",
+            albumArtist = "The Beatles",
+            src = "track1.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
+            dateAdded = 1000L
+          ),
+          TrackEntity(
+            artist = "Adele",
+            title = "Track 2",
+            album = "Album 2",
+            albumArtist = "Adele",
+            src = "track2.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Pop",
+            year = "2023",
+            sortableYear = "2023",
+            dateAdded = 1000L
+          ),
+          TrackEntity(
+            artist = "Roger Daltrey",
+            title = "Track 3",
+            album = "Album 3",
+            albumArtist = "The Who",
+            src = "track3.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
+            dateAdded = 1000L
+          )
+        )
+
+      val artists =
+        listOf(
+          ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
+          ArtistEntity(artist = "Adele", dateAdded = 1000L),
+          ArtistEntity(artist = "The Who", dateAdded = 1000L)
+        )
+
+      database.trackDao().insertAll(tracks)
+      dao.insertAll(artists)
+
+      val result = repository.getAlbumArtistsOnly(SortOrder.ASC).asSnapshot()
+
+      assertThat(result.map { it.artist })
+        .containsExactly("Adele", "The Beatles", "The Who")
+        .inOrder()
+    }
+  }
+
+  @Test
+  fun getAlbumArtistsOnlyWithSortOrderDescShouldReturnArtistsSortedDescending() {
+    runTest(testDispatcher) {
+      val tracks =
+        listOf(
+          TrackEntity(
+            artist = "John Lennon",
+            title = "Track 1",
+            album = "Album 1",
+            albumArtist = "The Beatles",
+            src = "track1.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
+            dateAdded = 1000L
+          ),
+          TrackEntity(
+            artist = "Adele",
+            title = "Track 2",
+            album = "Album 2",
+            albumArtist = "Adele",
+            src = "track2.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Pop",
+            year = "2023",
+            sortableYear = "2023",
+            dateAdded = 1000L
+          ),
+          TrackEntity(
+            artist = "Roger Daltrey",
+            title = "Track 3",
+            album = "Album 3",
+            albumArtist = "The Who",
+            src = "track3.mp3",
+            trackno = 1,
+            disc = 1,
+            genre = "Rock",
+            year = "2023",
+            sortableYear = "2023",
+            dateAdded = 1000L
+          )
+        )
+
+      val artists =
+        listOf(
+          ArtistEntity(artist = "The Beatles", dateAdded = 1000L),
+          ArtistEntity(artist = "Adele", dateAdded = 1000L),
+          ArtistEntity(artist = "The Who", dateAdded = 1000L)
+        )
+
+      database.trackDao().insertAll(tracks)
+      dao.insertAll(artists)
+
+      val result = repository.getAlbumArtistsOnly(SortOrder.DESC).asSnapshot()
+
+      assertThat(result.map { it.artist })
+        .containsExactly("The Who", "The Beatles", "Adele")
+        .inOrder()
     }
   }
 }

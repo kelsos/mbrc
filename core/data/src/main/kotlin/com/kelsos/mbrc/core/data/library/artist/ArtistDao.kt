@@ -30,8 +30,31 @@ interface ArtistDao {
   )
   fun getArtistByGenre(genreId: Long): PagingSource<Int, ArtistEntity>
 
-  @Query("select * from artist where artist like '%' || :term || '%' ")
-  fun search(term: String): PagingSource<Int, ArtistEntity>
+  @Query(
+    """
+      select * from artist
+      where artist like '%' || :term || '%'
+      order by
+        CASE
+          WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
+          ELSE artist.artist
+        END COLLATE NOCASE ASC
+    """
+  )
+  fun searchAsc(term: String): PagingSource<Int, ArtistEntity>
+
+  @Query(
+    """
+      select * from artist
+      where artist like '%' || :term || '%'
+      order by
+        CASE
+          WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
+          ELSE artist.artist
+        END COLLATE NOCASE DESC
+    """
+  )
+  fun searchDesc(term: String): PagingSource<Int, ArtistEntity>
 
   @Query("select count(*) from artist")
   fun count(): Long
@@ -49,7 +72,19 @@ interface ArtistDao {
         END COLLATE NOCASE ASC
     """
   )
-  fun getAll(): PagingSource<Int, ArtistEntity>
+  fun getAllAsc(): PagingSource<Int, ArtistEntity>
+
+  @Query(
+    """
+      select * from artist
+      order by
+        CASE
+          WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
+          ELSE artist.artist
+        END COLLATE NOCASE DESC
+    """
+  )
+  fun getAllDesc(): PagingSource<Int, ArtistEntity>
 
   @Query(
     """
@@ -75,7 +110,21 @@ interface ArtistDao {
         END COLLATE NOCASE ASC
     """
   )
-  fun getAlbumArtists(): PagingSource<Int, ArtistEntity>
+  fun getAlbumArtistsAsc(): PagingSource<Int, ArtistEntity>
+
+  @Query(
+    """
+      select distinct artist.id, artist.artist, artist.date_added
+      from artist inner join track on artist.artist = track.album_artist
+      group by artist.artist
+      order by
+        CASE
+          WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
+          ELSE artist.artist
+        END COLLATE NOCASE DESC
+    """
+  )
+  fun getAlbumArtistsDesc(): PagingSource<Int, ArtistEntity>
 
   @Query("select * from artist where id = :id")
   fun getById(id: Long): ArtistEntity?

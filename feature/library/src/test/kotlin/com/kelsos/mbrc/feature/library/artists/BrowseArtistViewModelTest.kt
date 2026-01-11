@@ -4,7 +4,11 @@ import androidx.paging.PagingData
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.kelsos.mbrc.core.common.settings.ArtistSortField
+import com.kelsos.mbrc.core.common.settings.ArtistSortPreference
 import com.kelsos.mbrc.core.common.settings.LibrarySettings
+import com.kelsos.mbrc.core.common.settings.SortOrder
+import com.kelsos.mbrc.core.common.settings.SortPreference
 import com.kelsos.mbrc.core.common.settings.TrackAction
 import com.kelsos.mbrc.core.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.core.common.test.testDispatcher
@@ -69,9 +73,14 @@ class BrowseArtistViewModelTest : KoinTest {
     every { searchModel.term } returns searchTermFlow
     every { librarySettings.shouldDisplayOnlyArtists } returns shouldDisplayOnlyArtistsFlow
     every { repository.getAll() } returns flowOf(PagingData.empty())
-    every { repository.getAlbumArtistsOnly() } returns flowOf(PagingData.empty())
+    every { repository.getAll(any()) } returns flowOf(PagingData.empty())
+    every { repository.getAlbumArtistsOnly(any()) } returns flowOf(PagingData.empty())
     every { repository.search(any()) } returns flowOf(PagingData.empty())
+    every { repository.search(any(), any()) } returns flowOf(PagingData.empty())
     every { librarySettings.libraryTrackDefaultActionFlow } returns flowOf(TrackAction.PlayNow)
+    every { librarySettings.artistSortPreferenceFlow } returns flowOf(
+      SortPreference(ArtistSortField.NAME, SortOrder.ASC)
+    )
     coEvery { connectionStateFlow.isConnected } returns true
   }
 
@@ -259,6 +268,22 @@ class BrowseArtistViewModelTest : KoinTest {
 
       // Verify sync use case was only called once (when connected)
       coVerify(exactly = 1) { librarySyncUseCase.sync() }
+    }
+  }
+
+  @Test
+  fun updateSortPreferenceShouldCallLibrarySettings() {
+    runTest(testDispatcher) {
+      // Given
+      val newPreference = ArtistSortPreference(ArtistSortField.NAME, SortOrder.DESC)
+      coEvery { librarySettings.setArtistSortPreference(any()) } returns Unit
+
+      // When
+      viewModel.updateSortPreference(newPreference)
+      testDispatcher.scheduler.advanceUntilIdle()
+
+      // Then
+      coVerify(exactly = 1) { librarySettings.setArtistSortPreference(newPreference) }
     }
   }
 }

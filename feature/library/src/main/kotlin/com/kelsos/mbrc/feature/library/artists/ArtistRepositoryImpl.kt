@@ -2,6 +2,7 @@ package com.kelsos.mbrc.feature.library.artists
 
 import androidx.paging.PagingData
 import com.kelsos.mbrc.core.common.data.Progress
+import com.kelsos.mbrc.core.common.settings.SortOrder
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.common.utilities.epoch
 import com.kelsos.mbrc.core.data.library.artist.Artist
@@ -28,9 +29,14 @@ class ArtistRepositoryImpl(
     it.toArtist()
   }
 
-  override fun getAll(): Flow<PagingData<Artist>> = paged({ dao.getAll() }) {
-    it.toArtist()
-  }
+  override fun getAll(): Flow<PagingData<Artist>> = getAll(SortOrder.ASC)
+
+  override fun getAll(sortOrder: SortOrder): Flow<PagingData<Artist>> = paged({
+    when (sortOrder) {
+      SortOrder.ASC -> dao.getAllAsc()
+      SortOrder.DESC -> dao.getAllDesc()
+    }
+  }) { it.toArtist() }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -51,12 +57,20 @@ class ArtistRepositoryImpl(
     }
   }
 
-  override fun search(term: String): Flow<PagingData<Artist>> = paged({
-    dao.search(term)
+  override fun search(term: String): Flow<PagingData<Artist>> = search(term, SortOrder.ASC)
+
+  override fun search(term: String, sortOrder: SortOrder): Flow<PagingData<Artist>> = paged({
+    when (sortOrder) {
+      SortOrder.ASC -> dao.searchAsc(term)
+      SortOrder.DESC -> dao.searchDesc(term)
+    }
   }) { it.toArtist() }
 
-  override fun getAlbumArtistsOnly(): Flow<PagingData<Artist>> = paged({
-    dao.getAlbumArtists()
+  override fun getAlbumArtistsOnly(sortOrder: SortOrder): Flow<PagingData<Artist>> = paged({
+    when (sortOrder) {
+      SortOrder.ASC -> dao.getAlbumArtistsAsc()
+      SortOrder.DESC -> dao.getAlbumArtistsDesc()
+    }
   }) { it.toArtist() }
 
   override suspend fun getById(id: Long): Artist? {

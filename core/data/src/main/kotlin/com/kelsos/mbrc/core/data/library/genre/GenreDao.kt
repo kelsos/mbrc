@@ -15,8 +15,11 @@ interface GenreDao {
   @Update
   fun update(list: List<GenreEntity>)
 
-  @Query("select * from genre order by genre collate nocase")
-  fun getAll(): PagingSource<Int, GenreEntity>
+  @Query("select * from genre order by genre collate nocase asc")
+  fun getAllAsc(): PagingSource<Int, GenreEntity>
+
+  @Query("select * from genre order by genre collate nocase desc")
+  fun getAllDesc(): PagingSource<Int, GenreEntity>
 
   @Query("select * from genre order by genre collate nocase")
   fun all(): List<GenreEntity>
@@ -24,8 +27,23 @@ interface GenreDao {
   @Query("select id, genre from genre order by genre collate nocase")
   fun genres(): List<Genre>
 
-  @Query("select * from genre where genre like '%' || :term || '%' order by genre collate nocase")
-  fun search(term: String): PagingSource<Int, GenreEntity>
+  @Query(
+    """
+    select * from genre
+    where genre like '%' || :term || '%'
+    order by genre collate nocase asc
+    """
+  )
+  fun searchAsc(term: String): PagingSource<Int, GenreEntity>
+
+  @Query(
+    """
+    select * from genre
+    where genre like '%' || :term || '%'
+    order by genre collate nocase desc
+    """
+  )
+  fun searchDesc(term: String): PagingSource<Int, GenreEntity>
 
   @Query("select count(*) from genre")
   fun count(): Long

@@ -4,7 +4,11 @@ import androidx.paging.PagingData
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.kelsos.mbrc.core.common.settings.GenreSortField
+import com.kelsos.mbrc.core.common.settings.GenreSortPreference
 import com.kelsos.mbrc.core.common.settings.LibrarySettings
+import com.kelsos.mbrc.core.common.settings.SortOrder
+import com.kelsos.mbrc.core.common.settings.SortPreference
 import com.kelsos.mbrc.core.common.settings.TrackAction
 import com.kelsos.mbrc.core.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.core.common.test.testDispatcher
@@ -67,8 +71,13 @@ class BrowseGenreViewModelTest : KoinTest {
     // Setup default mocks
     every { searchModel.term } returns searchTermFlow
     every { repository.getAll() } returns flowOf(PagingData.empty())
+    every { repository.getAll(any()) } returns flowOf(PagingData.empty())
     every { repository.search(any()) } returns flowOf(PagingData.empty())
+    every { repository.search(any(), any()) } returns flowOf(PagingData.empty())
     every { librarySettings.libraryTrackDefaultActionFlow } returns flowOf(TrackAction.PlayNow)
+    every { librarySettings.genreSortPreferenceFlow } returns flowOf(
+      SortPreference(GenreSortField.NAME, SortOrder.ASC)
+    )
     coEvery { connectionStateFlow.isConnected } returns true
   }
 
@@ -256,6 +265,22 @@ class BrowseGenreViewModelTest : KoinTest {
 
       // Verify sync use case was only called once (when connected)
       coVerify(exactly = 1) { librarySyncUseCase.sync() }
+    }
+  }
+
+  @Test
+  fun updateSortPreferenceShouldCallLibrarySettings() {
+    runTest(testDispatcher) {
+      // Given
+      val newPreference = GenreSortPreference(GenreSortField.NAME, SortOrder.DESC)
+      coEvery { librarySettings.setGenreSortPreference(any()) } returns Unit
+
+      // When
+      viewModel.updateSortPreference(newPreference)
+      testDispatcher.scheduler.advanceUntilIdle()
+
+      // Then
+      coVerify(exactly = 1) { librarySettings.setGenreSortPreference(newPreference) }
     }
   }
 }

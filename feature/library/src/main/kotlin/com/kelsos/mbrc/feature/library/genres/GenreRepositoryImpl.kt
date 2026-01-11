@@ -2,6 +2,7 @@ package com.kelsos.mbrc.feature.library.genres
 
 import androidx.paging.PagingData
 import com.kelsos.mbrc.core.common.data.Progress
+import com.kelsos.mbrc.core.common.settings.SortOrder
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.common.utilities.epoch
 import com.kelsos.mbrc.core.data.library.genre.Genre
@@ -20,9 +21,14 @@ class GenreRepositoryImpl(
 ) : GenreRepository {
   override suspend fun count(): Long = withContext(dispatchers.database) { dao.count() }
 
-  override fun getAll(): Flow<PagingData<Genre>> = paged({ dao.getAll() }) {
-    it.toGenre()
-  }
+  override fun getAll(): Flow<PagingData<Genre>> = getAll(SortOrder.ASC)
+
+  override fun getAll(sortOrder: SortOrder): Flow<PagingData<Genre>> = paged({
+    when (sortOrder) {
+      SortOrder.ASC -> dao.getAllAsc()
+      SortOrder.DESC -> dao.getAllDesc()
+    }
+  }) { it.toGenre() }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -56,9 +62,14 @@ class GenreRepositoryImpl(
     }
   }
 
-  override fun search(term: String): Flow<PagingData<Genre>> = paged({ dao.search(term) }) {
-    it.toGenre()
-  }
+  override fun search(term: String): Flow<PagingData<Genre>> = search(term, SortOrder.ASC)
+
+  override fun search(term: String, sortOrder: SortOrder): Flow<PagingData<Genre>> = paged({
+    when (sortOrder) {
+      SortOrder.ASC -> dao.searchAsc(term)
+      SortOrder.DESC -> dao.searchDesc(term)
+    }
+  }) { it.toGenre() }
 
   override suspend fun getById(id: Long): Genre? {
     return withContext(dispatchers.database) {

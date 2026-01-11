@@ -6,6 +6,7 @@ import androidx.paging.testing.asSnapshot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.core.common.data.Progress
+import com.kelsos.mbrc.core.common.settings.SortOrder
 import com.kelsos.mbrc.core.common.test.testDispatcher
 import com.kelsos.mbrc.core.common.test.testDispatcherModule
 import com.kelsos.mbrc.core.data.Database
@@ -278,6 +279,76 @@ class GenreRepositoryTest : KoinTest {
       assertThat(storedGenres).hasSize(2)
       assertThat(storedGenres.map { it.genre }).containsExactly("Pop", "Rock")
       assertThat(storedGenres.first { it.genre == "Rock" }.id).isEqualTo(rockId)
+    }
+  }
+
+  @Test
+  fun getAllWithSortOrderAscShouldReturnGenresSortedAscending() {
+    runTest(testDispatcher) {
+      val genres =
+        listOf(
+          GenreEntity(genre = "Rock", dateAdded = 1000L),
+          GenreEntity(genre = "Jazz", dateAdded = 1000L),
+          GenreEntity(genre = "Pop", dateAdded = 1000L)
+        )
+      dao.insertAll(genres)
+
+      val result = repository.getAll(SortOrder.ASC).asSnapshot()
+
+      assertThat(result.map { it.genre }).containsExactly("Jazz", "Pop", "Rock").inOrder()
+    }
+  }
+
+  @Test
+  fun getAllWithSortOrderDescShouldReturnGenresSortedDescending() {
+    runTest(testDispatcher) {
+      val genres =
+        listOf(
+          GenreEntity(genre = "Rock", dateAdded = 1000L),
+          GenreEntity(genre = "Jazz", dateAdded = 1000L),
+          GenreEntity(genre = "Pop", dateAdded = 1000L)
+        )
+      dao.insertAll(genres)
+
+      val result = repository.getAll(SortOrder.DESC).asSnapshot()
+
+      assertThat(result.map { it.genre }).containsExactly("Rock", "Pop", "Jazz").inOrder()
+    }
+  }
+
+  @Test
+  fun searchWithSortOrderAscShouldReturnMatchingGenresSortedAscending() {
+    runTest(testDispatcher) {
+      val genres =
+        listOf(
+          GenreEntity(genre = "Rock", dateAdded = 1000L),
+          GenreEntity(genre = "Pop Rock", dateAdded = 1000L),
+          GenreEntity(genre = "Jazz", dateAdded = 1000L),
+          GenreEntity(genre = "Hard Rock", dateAdded = 1000L)
+        )
+      dao.insertAll(genres)
+
+      val result = repository.search("Rock", SortOrder.ASC).asSnapshot()
+
+      assertThat(result.map { it.genre }).containsExactly("Hard Rock", "Pop Rock", "Rock").inOrder()
+    }
+  }
+
+  @Test
+  fun searchWithSortOrderDescShouldReturnMatchingGenresSortedDescending() {
+    runTest(testDispatcher) {
+      val genres =
+        listOf(
+          GenreEntity(genre = "Rock", dateAdded = 1000L),
+          GenreEntity(genre = "Pop Rock", dateAdded = 1000L),
+          GenreEntity(genre = "Jazz", dateAdded = 1000L),
+          GenreEntity(genre = "Hard Rock", dateAdded = 1000L)
+        )
+      dao.insertAll(genres)
+
+      val result = repository.search("Rock", SortOrder.DESC).asSnapshot()
+
+      assertThat(result.map { it.genre }).containsExactly("Rock", "Pop Rock", "Hard Rock").inOrder()
     }
   }
 }

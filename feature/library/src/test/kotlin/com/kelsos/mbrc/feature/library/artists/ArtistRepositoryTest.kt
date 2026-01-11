@@ -164,14 +164,14 @@ class ArtistRepositoryTest : KoinTest {
       database.trackDao().insertAll(tracks)
 
       // When: Get artists by rock genre
-      val rockArtists = repository.getArtistByGenre(rockGenreId).asSnapshot()
+      val rockArtists = repository.getArtistByGenre(rockGenreId, SortOrder.ASC).asSnapshot()
 
       // Then: Should only include rock artists
       val artistNames = rockArtists.map { it.artist }
       assertThat(artistNames).containsExactly("Rock Artist 1", "Rock Artist 2")
 
       // When: Get artists by pop genre
-      val popArtists = repository.getArtistByGenre(popGenreId).asSnapshot()
+      val popArtists = repository.getArtistByGenre(popGenreId, SortOrder.ASC).asSnapshot()
 
       // Then: Should only include pop artists
       val popArtistNames = popArtists.map { it.artist }

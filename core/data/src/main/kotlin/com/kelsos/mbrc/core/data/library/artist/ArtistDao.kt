@@ -28,7 +28,23 @@ interface ArtistDao {
         END COLLATE NOCASE ASC
       """
   )
-  fun getArtistByGenre(genreId: Long): PagingSource<Int, ArtistEntity>
+  fun getArtistByGenreAsc(genreId: Long): PagingSource<Int, ArtistEntity>
+
+  @Query(
+    """
+      select distinct artist.id, artist.artist, artist.date_added
+      from artist
+        inner join track on artist.artist = track.artist
+        inner join genre on genre.genre = track.genre
+      where genre.id = :genreId group by artist.artist
+      order by
+        CASE
+          WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
+          ELSE artist.artist
+        END COLLATE NOCASE DESC
+      """
+  )
+  fun getArtistByGenreDesc(genreId: Long): PagingSource<Int, ArtistEntity>
 
   @Query(
     """

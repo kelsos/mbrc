@@ -23,11 +23,15 @@ class ArtistRepositoryImpl(
     dao.count()
   }
 
-  override fun getArtistByGenre(genreId: Long): Flow<PagingData<Artist>> = paged({
-    dao.getArtistByGenre(genreId)
-  }) {
-    it.toArtist()
-  }
+  override fun getArtistByGenre(genreId: Long, sortOrder: SortOrder): Flow<PagingData<Artist>> =
+    paged({
+      when (sortOrder) {
+        SortOrder.ASC -> dao.getArtistByGenreAsc(genreId)
+        SortOrder.DESC -> dao.getArtistByGenreDesc(genreId)
+      }
+    }) {
+      it.toArtist()
+    }
 
   override fun getAll(): Flow<PagingData<Artist>> = getAll(SortOrder.ASC)
 

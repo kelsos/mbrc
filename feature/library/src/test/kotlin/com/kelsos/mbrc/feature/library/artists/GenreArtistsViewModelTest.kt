@@ -4,7 +4,10 @@ import androidx.paging.PagingData
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.kelsos.mbrc.core.common.settings.ArtistSortField
+import com.kelsos.mbrc.core.common.settings.ArtistSortPreference
 import com.kelsos.mbrc.core.common.settings.LibrarySettings
+import com.kelsos.mbrc.core.common.settings.SortOrder
 import com.kelsos.mbrc.core.common.settings.TrackAction
 import com.kelsos.mbrc.core.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.core.common.test.testDispatcher
@@ -56,8 +59,11 @@ class GenreArtistsViewModelTest : KoinTest {
     }
 
     // Setup default mocks
-    every { repository.getArtistByGenre(any()) } returns flowOf(PagingData.empty())
+    every { repository.getArtistByGenre(any(), any()) } returns flowOf(PagingData.empty())
     every { librarySettings.libraryTrackDefaultActionFlow } returns flowOf(TrackAction.PlayNow)
+    every { librarySettings.artistSortPreferenceFlow } returns flowOf(
+      ArtistSortPreference(ArtistSortField.NAME, SortOrder.ASC)
+    )
     coEvery { connectionStateFlow.isConnected } returns true
   }
 
@@ -199,6 +205,21 @@ class GenreArtistsViewModelTest : KoinTest {
 
       // Verify queue handler was only called once (when connected)
       coVerify(exactly = 1) { queueHandler.queueArtist(any<Queue>(), any<String>()) }
+    }
+  }
+
+  @Test
+  fun updateSortPreferenceShouldCallLibrarySettings() {
+    runTest(testDispatcher) {
+      // Given
+      val preference = ArtistSortPreference(ArtistSortField.NAME, SortOrder.DESC)
+
+      // When
+      viewModel.updateSortPreference(preference)
+      testDispatcher.scheduler.advanceUntilIdle()
+
+      // Then
+      coVerify(exactly = 1) { librarySettings.setArtistSortPreference(preference) }
     }
   }
 }

@@ -4,7 +4,10 @@ import androidx.paging.PagingData
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.kelsos.mbrc.core.common.settings.AlbumSortField
+import com.kelsos.mbrc.core.common.settings.AlbumSortPreference
 import com.kelsos.mbrc.core.common.settings.LibrarySettings
+import com.kelsos.mbrc.core.common.settings.SortOrder
 import com.kelsos.mbrc.core.common.settings.TrackAction
 import com.kelsos.mbrc.core.common.state.ConnectionStateFlow
 import com.kelsos.mbrc.core.common.test.testDispatcher
@@ -66,9 +69,12 @@ class BrowseAlbumViewModelTest : KoinTest {
 
     // Setup default mocks
     every { searchModel.term } returns searchTermFlow
-    every { repository.getAll() } returns flowOf(PagingData.empty())
-    every { repository.search(any()) } returns flowOf(PagingData.empty())
+    every { repository.getAll(any(), any()) } returns flowOf(PagingData.empty())
+    every { repository.search(any(), any(), any()) } returns flowOf(PagingData.empty())
     every { librarySettings.libraryTrackDefaultActionFlow } returns flowOf(TrackAction.PlayNow)
+    every { librarySettings.albumSortPreferenceFlow } returns flowOf(
+      AlbumSortPreference(AlbumSortField.NAME, SortOrder.ASC)
+    )
     coEvery { connectionStateFlow.isConnected } returns true
   }
 
@@ -258,6 +264,21 @@ class BrowseAlbumViewModelTest : KoinTest {
 
       // Verify sync use case was only called once (when connected)
       coVerify(exactly = 1) { librarySyncUseCase.sync() }
+    }
+  }
+
+  @Test
+  fun updateSortPreferenceShouldCallLibrarySettings() {
+    runTest(testDispatcher) {
+      // Given
+      val preference = AlbumSortPreference(AlbumSortField.YEAR, SortOrder.DESC)
+
+      // When
+      viewModel.updateSortPreference(preference)
+      testDispatcher.scheduler.advanceUntilIdle()
+
+      // Then
+      coVerify(exactly = 1) { librarySettings.setAlbumSortPreference(preference) }
     }
   }
 }

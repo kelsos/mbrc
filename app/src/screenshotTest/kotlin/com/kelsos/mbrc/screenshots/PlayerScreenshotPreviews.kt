@@ -30,7 +30,8 @@ private object PreviewPlayerActions : IPlayerActions {
   override val mute: () -> Unit = {}
   override val changeVolume: (Int) -> Unit = {}
   override val seek: (Int) -> Unit = {}
-  override val toggleFavorite: () -> Unit = {}
+  override val toggleFavorite: (Boolean, Boolean) -> Unit = { _, _ -> }
+  override val toggleBan: (Boolean, Boolean) -> Unit = { _, _ -> }
   override val toggleScrobbling: () -> Unit = {}
 }
 

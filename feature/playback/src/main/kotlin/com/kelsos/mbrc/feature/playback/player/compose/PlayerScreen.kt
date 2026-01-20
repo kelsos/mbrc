@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.SpeakerGroup
+import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.outlined.Lyrics
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -280,6 +281,7 @@ fun PlayerScreenContent(
   )
 
   val isFavorite = trackRating.lfmRating == LfmRating.Loved
+  val isBanned = trackRating.lfmRating == LfmRating.Banned
 
   BoxWithConstraints(modifier = modifier) {
     val isTablet = maxWidth >= PlayerConstants.TABLET_WIDTH_THRESHOLD
@@ -290,6 +292,7 @@ fun PlayerScreenContent(
         playingTrack = playingTrack,
         playingPosition = playingPosition,
         isFavorite = isFavorite,
+        isBanned = isBanned,
         hasLyrics = hasLyrics,
         volumeState = volumeState,
         playbackState = playbackState,
@@ -305,6 +308,7 @@ fun PlayerScreenContent(
         playingTrack = playingTrack,
         playingPosition = playingPosition,
         isFavorite = isFavorite,
+        isBanned = isBanned,
         hasLyrics = hasLyrics,
         volumeState = volumeState,
         playbackState = playbackState,
@@ -320,6 +324,7 @@ fun PlayerScreenContent(
         playingTrack = playingTrack,
         playingPosition = playingPosition,
         isFavorite = isFavorite,
+        isBanned = isBanned,
         hasLyrics = hasLyrics,
         volumeState = volumeState,
         playbackState = playbackState,
@@ -467,6 +472,7 @@ private fun PortraitPlayerLayout(
   playingTrack: TrackInfo,
   playingPosition: PlayingPosition,
   isFavorite: Boolean,
+  isBanned: Boolean,
   hasLyrics: Boolean,
   volumeState: VolumeState,
   playbackState: PlaybackState,
@@ -502,14 +508,16 @@ private fun PortraitPlayerLayout(
 
     Spacer(modifier = Modifier.height(32.dp))
 
-    // Track info with favorite button
+    // Track info with favorite/ban buttons
     TrackInfoWithFavorite(
       track = playingTrack,
       isFavorite = isFavorite,
+      isBanned = isBanned,
       isStream = playingPosition.isStream,
       hasLyrics = hasLyrics,
       onTrackClick = onTrackInfoClick,
-      onFavoriteClick = actions.toggleFavorite,
+      onFavoriteClick = { actions.toggleFavorite(isFavorite, isBanned) },
+      onBanClick = { actions.toggleBan(isBanned, isFavorite) },
       onLyricsClick = onLyricsClick,
       modifier = Modifier
         .fillMaxWidth()
@@ -557,6 +565,7 @@ private fun TabletPlayerLayout(
   playingTrack: TrackInfo,
   playingPosition: PlayingPosition,
   isFavorite: Boolean,
+  isBanned: Boolean,
   hasLyrics: Boolean,
   volumeState: VolumeState,
   playbackState: PlaybackState,
@@ -592,14 +601,16 @@ private fun TabletPlayerLayout(
 
       Spacer(modifier = Modifier.height(40.dp))
 
-      // Track info with favorite
+      // Track info with favorite/ban
       TrackInfoWithFavorite(
         track = playingTrack,
         isFavorite = isFavorite,
+        isBanned = isBanned,
         isStream = playingPosition.isStream,
         hasLyrics = hasLyrics,
         onTrackClick = onTrackInfoClick,
-        onFavoriteClick = actions.toggleFavorite,
+        onFavoriteClick = { actions.toggleFavorite(isFavorite, isBanned) },
+        onBanClick = { actions.toggleBan(isBanned, isFavorite) },
         onLyricsClick = onLyricsClick,
         modifier = Modifier.fillMaxWidth()
       )
@@ -640,6 +651,7 @@ private fun LandscapePlayerLayout(
   playingTrack: TrackInfo,
   playingPosition: PlayingPosition,
   isFavorite: Boolean,
+  isBanned: Boolean,
   hasLyrics: Boolean,
   volumeState: VolumeState,
   playbackState: PlaybackState,
@@ -685,14 +697,16 @@ private fun LandscapePlayerLayout(
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.Center
     ) {
-      // Track info with favorite
+      // Track info with favorite/ban
       TrackInfoWithFavorite(
         track = playingTrack,
         isFavorite = isFavorite,
+        isBanned = isBanned,
         isStream = playingPosition.isStream,
         hasLyrics = hasLyrics,
         onTrackClick = onTrackInfoClick,
-        onFavoriteClick = actions.toggleFavorite,
+        onFavoriteClick = { actions.toggleFavorite(isFavorite, isBanned) },
+        onBanClick = { actions.toggleBan(isBanned, isFavorite) },
         onLyricsClick = onLyricsClick,
         modifier = Modifier.fillMaxWidth()
       )
@@ -762,10 +776,12 @@ private fun AlbumCover(painter: AsyncImagePainter, modifier: Modifier = Modifier
 private fun TrackInfoWithFavorite(
   track: TrackInfo,
   isFavorite: Boolean,
+  isBanned: Boolean,
   isStream: Boolean,
   hasLyrics: Boolean,
   onTrackClick: () -> Unit,
   onFavoriteClick: () -> Unit,
+  onBanClick: () -> Unit,
   onLyricsClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -836,6 +852,23 @@ private fun TrackInfoWithFavorite(
       )
     }
 
+    // Ban button - disabled for streams (LFM rating not applicable)
+    IconButton(
+      onClick = onBanClick,
+      enabled = !isStream
+    ) {
+      Icon(
+        imageVector = Icons.Default.ThumbDown,
+        contentDescription = stringResource(R.string.player_lfm_ban),
+        tint = when {
+          isStream -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+          isBanned -> MaterialTheme.colorScheme.error
+          else -> MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        modifier = Modifier.size(24.dp)
+      )
+    }
+
     // Favorite button - disabled for streams (LFM rating not applicable)
     IconButton(
       onClick = onFavoriteClick,
@@ -847,7 +880,7 @@ private fun TrackInfoWithFavorite(
         } else {
           Icons.Default.FavoriteBorder
         },
-        contentDescription = stringResource(R.string.lastfm_love),
+        contentDescription = stringResource(R.string.player_lfm_love),
         tint = when {
           isStream -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
           isFavorite -> MaterialTheme.colorScheme.primary

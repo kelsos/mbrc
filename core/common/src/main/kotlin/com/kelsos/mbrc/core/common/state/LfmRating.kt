@@ -7,9 +7,16 @@ sealed class LfmRating {
 
   data object Normal : LfmRating()
 
+  fun toActionString(): String = when (this) {
+    Loved -> LOVE
+    Banned -> BAN
+    Normal -> NORMAL
+  }
+
   companion object {
     private const val LOVE = "Love"
     private const val BAN = "Ban"
+    private const val NORMAL = "Normal"
 
     fun fromString(value: String?): LfmRating = when (value) {
       LOVE -> Loved

@@ -172,6 +172,7 @@ class NowPlayingViewModel(
     )
 
   init {
+    actions.reload(showUserMessage = false)
     moveManager.onMoveCommit { originalPosition, finalPosition ->
       viewModelScope.launch(dispatchers.network) {
         try {

@@ -5,6 +5,9 @@ Changelog
 ### Added
 - Shows a progress bar at the top of the now playing queue while it is syncing, so a long sync (opening the screen, pull-to-refresh, or a server-side "play all") gives visible feedback instead of appearing stalled. The bar reflects the actual page-load progress reported by the server.
 
+### Changed
+- Reworks the now playing track info into three rows, with the title and album spanning the full width. Long titles and album names now scroll in from the right edge of the screen instead of from the middle, with only the artist line sharing its row with the favorite/ban/lyrics buttons.
+
 ### Fixed
 - Fixes out-of-memory crashes on very large now playing queues. Syncing the queue used to load the entire now playing list into memory at once; it now reconciles one page at a time, so memory stays flat regardless of queue size. As a safeguard, incoming network messages are also capped to a size relative to the available heap.
 - Fixes the now playing queue sometimes loading only part of the list. Refreshes triggered close together (opening the screen, pull-to-refresh, or a server-side queue change) could overlap and overwrite each other's writes; a newer refresh now cancels and restarts the in-flight one, so the full queue is always loaded. A failed or superseded refresh no longer clears the existing queue.

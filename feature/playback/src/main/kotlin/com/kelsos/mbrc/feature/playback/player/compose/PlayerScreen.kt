@@ -523,7 +523,7 @@ private fun PortraitPlayerLayout(
         .aspectRatio(1f)
     )
 
-    Spacer(modifier = Modifier.height(32.dp))
+    Spacer(modifier = Modifier.height(16.dp))
 
     // Track info with favorite/ban buttons
     TrackInfoWithFavorite(
@@ -836,30 +836,29 @@ private fun TrackInfoWithFavorite(
   onLyricsClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  Row(
-    modifier = modifier,
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    // Track info - left aligned with fixed heights to prevent UI jumping
-    Column(
+  // Three rows: title and album span the full width so their marquee scrolls
+  // in from the right edge; only the middle (artist) row shares space with the
+  // action buttons. Fixed heights keep the layout from jumping between tracks.
+  Column(modifier = modifier) {
+    // Row 1: title - full width
+    Text(
+      text = track.title.ifEmpty { stringResource(R.string.unknown_title) },
+      style = MaterialTheme.typography.titleLarge,
+      fontWeight = FontWeight.Bold,
+      color = MaterialTheme.colorScheme.onSurface,
+      maxLines = 1,
+      softWrap = false,
       modifier = Modifier
-        .weight(1f)
+        .fillMaxWidth()
+        .height(28.dp)
         .clickable(onClick = onTrackClick)
-    ) {
-      Text(
-        text = track.title.ifEmpty { stringResource(R.string.unknown_title) },
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurface,
-        maxLines = 1,
-        softWrap = false,
-        modifier = Modifier
-          .height(28.dp)
-          .basicMarquee()
-      )
+        .basicMarquee()
+    )
 
-      Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(2.dp))
 
+    // Row 2: artist - shares the row with the action buttons
+    Row(verticalAlignment = Alignment.CenterVertically) {
       Text(
         text = track.artist.ifEmpty { stringResource(R.string.unknown_artist) },
         style = MaterialTheme.typography.bodyLarge,
@@ -867,85 +866,93 @@ private fun TrackInfoWithFavorite(
         maxLines = 1,
         softWrap = false,
         modifier = Modifier
-          .height(22.dp)
+          .weight(1f)
+          .clickable(onClick = onTrackClick)
           .basicMarquee()
       )
 
-      Spacer(modifier = Modifier.height(2.dp))
-
-      // Album with year - always shown with fixed height
-      val albumText = if (track.album.isNotEmpty()) {
-        if (track.year.isNotEmpty()) {
-          "${track.album} • ${track.year}"
-        } else {
-          track.album
-        }
-      } else {
-        " " // Space to maintain height
+      // Lyrics button - primary color when lyrics available
+      IconButton(
+        onClick = onLyricsClick,
+        modifier = Modifier.size(40.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Outlined.Lyrics,
+          contentDescription = stringResource(R.string.nav_lyrics),
+          tint = if (hasLyrics) {
+            MaterialTheme.colorScheme.primary
+          } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+          },
+          modifier = Modifier.size(24.dp)
+        )
       }
-      Text(
-        text = albumText,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-        maxLines = 1,
-        softWrap = false,
-        modifier = Modifier
-          .height(20.dp)
-          .basicMarquee()
-      )
+
+      // Ban button - disabled for streams (LFM rating not applicable)
+      IconButton(
+        onClick = onBanClick,
+        enabled = !isStream,
+        modifier = Modifier.size(40.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Default.ThumbDown,
+          contentDescription = stringResource(R.string.player_lfm_ban),
+          tint = when {
+            isStream -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+            isBanned -> MaterialTheme.colorScheme.error
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
+          },
+          modifier = Modifier.size(24.dp)
+        )
+      }
+
+      // Favorite button - disabled for streams (LFM rating not applicable)
+      IconButton(
+        onClick = onFavoriteClick,
+        enabled = !isStream,
+        modifier = Modifier.size(40.dp)
+      ) {
+        Icon(
+          imageVector = if (isFavorite) {
+            Icons.Default.Favorite
+          } else {
+            Icons.Default.FavoriteBorder
+          },
+          contentDescription = stringResource(R.string.player_lfm_love),
+          tint = when {
+            isStream -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+            isFavorite -> MaterialTheme.colorScheme.primary
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
+          },
+          modifier = Modifier.size(28.dp)
+        )
+      }
     }
 
-    // Lyrics button - primary color when lyrics available
-    IconButton(onClick = onLyricsClick) {
-      Icon(
-        imageVector = Icons.Outlined.Lyrics,
-        contentDescription = stringResource(R.string.nav_lyrics),
-        tint = if (hasLyrics) {
-          MaterialTheme.colorScheme.primary
-        } else {
-          MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        modifier = Modifier.size(24.dp)
-      )
-    }
+    Spacer(modifier = Modifier.height(2.dp))
 
-    // Ban button - disabled for streams (LFM rating not applicable)
-    IconButton(
-      onClick = onBanClick,
-      enabled = !isStream
-    ) {
-      Icon(
-        imageVector = Icons.Default.ThumbDown,
-        contentDescription = stringResource(R.string.player_lfm_ban),
-        tint = when {
-          isStream -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-          isBanned -> MaterialTheme.colorScheme.error
-          else -> MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        modifier = Modifier.size(24.dp)
-      )
+    // Row 3: album with year - full width, always shown with fixed height
+    val albumText = if (track.album.isNotEmpty()) {
+      if (track.year.isNotEmpty()) {
+        "${track.album} • ${track.year}"
+      } else {
+        track.album
+      }
+    } else {
+      " " // Space to maintain height
     }
-
-    // Favorite button - disabled for streams (LFM rating not applicable)
-    IconButton(
-      onClick = onFavoriteClick,
-      enabled = !isStream
-    ) {
-      Icon(
-        imageVector = if (isFavorite) {
-          Icons.Default.Favorite
-        } else {
-          Icons.Default.FavoriteBorder
-        },
-        contentDescription = stringResource(R.string.player_lfm_love),
-        tint = when {
-          isStream -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-          isFavorite -> MaterialTheme.colorScheme.primary
-          else -> MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        modifier = Modifier.size(28.dp)
-      )
-    }
+    Text(
+      text = albumText,
+      style = MaterialTheme.typography.bodyMedium,
+      color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+      maxLines = 1,
+      softWrap = false,
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(20.dp)
+        .clickable(onClick = onTrackClick)
+        .basicMarquee()
+    )
   }
 }
 

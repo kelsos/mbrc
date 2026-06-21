@@ -4,6 +4,7 @@
     version="1.6.1"
     release="unreleased">
     <feature>Shows a progress bar at the top of the now playing queue while it syncs, so a long sync (opening the screen, pull-to-refresh, or a server-side "play all") gives visible feedback instead of appearing stalled.</feature>
+    <feature>Reworks the now playing track info into three rows, with the title and album spanning the full width so long names scroll in from the right edge instead of from the middle of the screen.</feature>
     <bug>Fixes out-of-memory crashes on very large now playing queues. The queue now syncs one page at a time instead of loading the whole list into memory, so memory stays flat regardless of queue size. Incoming network messages are also capped relative to the available heap as a safeguard.</bug>
     <bug>Fixes the now playing queue sometimes loading only part of the list. Refreshes triggered close together no longer overlap and overwrite each other; a newer refresh cancels and restarts the in-flight one, so the full queue is always loaded.</bug>
     <bug>Fixes a spurious error logged on every "play all" action by handling the play-all confirmation broadcast instead of treating it as an unsupported message.</bug>

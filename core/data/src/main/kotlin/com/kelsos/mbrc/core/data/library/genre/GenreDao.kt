@@ -12,6 +12,14 @@ interface GenreDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   fun insertAll(list: List<GenreEntity>)
 
+  /** Insert derived genres, keeping existing rows (and their ids) untouched. */
+  @Insert(onConflict = OnConflictStrategy.IGNORE)
+  fun insertOrIgnore(list: List<GenreEntity>)
+
+  /** Drops genres no track references anymore (after junctions are rebuilt). */
+  @Query("delete from genre where id not in (select genre_id from track_genre)")
+  fun removeOrphans()
+
   @Update
   fun update(list: List<GenreEntity>)
 

@@ -1,5 +1,6 @@
 package com.kelsos.mbrc.feature.library.domain
 
+import android.database.SQLException
 import com.kelsos.mbrc.core.common.utilities.AppError
 import com.kelsos.mbrc.core.common.utilities.Outcome
 import com.kelsos.mbrc.core.data.library.album.AlbumRepository
@@ -31,6 +32,12 @@ interface LibrarySyncUseCase {
   suspend fun sync(auto: Boolean = false, progress: SyncProgress? = null): SyncOutcome
 
   /**
+   * Ensures the derived tag junctions exist for an already-synced library (used to
+   * backfill after the schema upgrade). Network-free and a no-op once present.
+   */
+  suspend fun ensureDerived()
+
+  /**
    * Provides access to the interactor's current status.
    *
    * @return Should return true if the interactor is active and running, or false if not
@@ -46,6 +53,7 @@ class LibrarySyncUseCaseImpl(
   private val albumRepository: AlbumRepository,
   private val trackRepository: TrackRepository,
   private val playlistRepository: PlaylistRepository,
+  private val libraryDerivationUseCase: LibraryDerivationUseCase,
   private val coverCache: CoverCache
 ) : LibrarySyncUseCase {
   private var running: Boolean = false
@@ -65,18 +73,13 @@ class LibrarySyncUseCaseImpl(
     }
 
     try {
-      genreRepository.getRemote { current, total ->
-        progress?.invoke(LibraryMediaType.Genres, current, total)
-      }
-      artistRepository.getRemote { current, total ->
-        progress?.invoke(LibraryMediaType.Artists, current, total)
-      }
-      albumRepository.getRemote { current, total ->
-        progress?.invoke(LibraryMediaType.Albums, current, total)
-      }
+      // Tracks are the single source of truth; genres, artists and albums are
+      // derived from them (see LibraryDerivationUseCase) instead of being fetched
+      // and reconciled separately.
       trackRepository.getRemote { current, total ->
         progress?.invoke(LibraryMediaType.Tracks, current, total)
       }
+      libraryDerivationUseCase.derive(progress)
       playlistRepository.getRemote { current, total ->
         progress?.invoke(LibraryMediaType.Playlists, current, total)
       }
@@ -88,6 +91,9 @@ class LibrarySyncUseCaseImpl(
     } catch (e: IOException) {
       Timber.e(e, "Refresh couldn't complete")
       return Outcome.Failure(AppError.Message(e.message ?: "Unknown error"))
+    } catch (e: SQLException) {
+      Timber.e(e, "Refresh couldn't complete because the database rejected it")
+      return Outcome.Failure(AppError.Message(e.message ?: "Unknown database error"))
     } finally {
       running = false
     }
@@ -108,6 +114,8 @@ class LibrarySyncUseCaseImpl(
     artistRepository.count() == 0L &&
     albumRepository.count() == 0L &&
     trackRepository.count() == 0L
+
+  override suspend fun ensureDerived() = libraryDerivationUseCase.ensureDerived()
 
   override fun isRunning(): Boolean = running
 }

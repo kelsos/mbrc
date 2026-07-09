@@ -51,4 +51,13 @@ data class TrackEntity(
 
 class TrackPath(val src: String, val id: Long)
 
+/** Minimal projection used to derive the dimension tables and tag junctions from tracks. */
+data class TrackTagRow(
+  val id: Long,
+  val artist: String,
+  @ColumnInfo(name = "album_artist")
+  val albumArtist: String,
+  val genre: String
+)
+
 fun Track.key(): String = "${albumArtist}_$album".encodeUtf8().sha1().hex().uppercase()

@@ -16,6 +16,7 @@ import com.kelsos.mbrc.core.data.library.genre.GenreRepository
 import com.kelsos.mbrc.core.data.library.track.TrackRepository
 import com.kelsos.mbrc.core.data.playlist.PlaylistRepository
 import com.kelsos.mbrc.feature.library.data.CoverCache
+import com.kelsos.mbrc.feature.library.domain.LibraryDerivationUseCase
 import com.kelsos.mbrc.feature.library.domain.LibrarySyncUseCase
 import com.kelsos.mbrc.feature.library.domain.LibrarySyncUseCaseImpl
 import com.kelsos.mbrc.feature.library.domain.SyncOutcome
@@ -53,6 +54,7 @@ class LibrarySyncUseCaseImplTest : KoinTest {
       single<AlbumRepository> { mockk() }
       single<TrackRepository> { mockk() }
       single<PlaylistRepository> { mockk() }
+      single<LibraryDerivationUseCase> { mockk() }
       single<CoverCache> { mockk(relaxed = true) }
     }
 
@@ -61,6 +63,7 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   private val albumRepository: AlbumRepository by inject()
   private val trackRepository: TrackRepository by inject()
   private val playlistRepository: PlaylistRepository by inject()
+  private val derivationUseCase: LibraryDerivationUseCase by inject()
   private val sync: LibrarySyncUseCase by inject()
 
   @Before
@@ -218,18 +221,18 @@ class LibrarySyncUseCaseImplTest : KoinTest {
   }
 
   private fun mockSuccessfulRepositoryResponse() {
-    coEvery { genreRepository.getRemote(any()) } coAnswers { wait() }
-    coEvery { artistRepository.getRemote(any()) } coAnswers { wait() }
-    coEvery { albumRepository.getRemote(any()) } coAnswers { wait() }
+    // Genres, artists and albums are now derived from tracks, not fetched.
     coEvery { trackRepository.getRemote(any()) } coAnswers { wait() }
+    coEvery { derivationUseCase.derive(any()) } coAnswers { wait() }
     coEvery { playlistRepository.getRemote(any()) } coAnswers { wait() }
   }
 
   private fun mockFailedRepositoryResponse() {
-    coEvery { genreRepository.getRemote(any()) } coAnswers { wait() }
-    coEvery { artistRepository.getRemote(any()) } throws SocketTimeoutException()
-    coEvery { albumRepository.getRemote(any()) } coAnswers { wait() }
-    coEvery { trackRepository.getRemote(any()) } coAnswers { wait() }
+    coEvery { trackRepository.getRemote(any()) } coAnswers {
+      wait()
+      throw SocketTimeoutException()
+    }
+    coEvery { derivationUseCase.derive(any()) } coAnswers { wait() }
     coEvery { playlistRepository.getRemote(any()) } coAnswers { wait() }
   }
 

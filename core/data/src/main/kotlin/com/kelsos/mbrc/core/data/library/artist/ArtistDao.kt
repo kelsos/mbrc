@@ -14,13 +14,21 @@ interface ArtistDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   fun insertAll(list: List<ArtistEntity>)
 
+  /** Insert derived artists, keeping existing rows (and their ids) untouched. */
+  @Insert(onConflict = OnConflictStrategy.IGNORE)
+  fun insertOrIgnore(list: List<ArtistEntity>)
+
+  /** Drops artists no track references anymore (after junctions are rebuilt). */
+  @Query("delete from artist where id not in (select artist_id from track_artist)")
+  fun removeOrphans()
+
   @Query(
     """
       select distinct artist.id, artist.artist, artist.date_added
       from artist
-        inner join track on artist.artist = track.artist
-        inner join genre on genre.genre = track.genre
-      where genre.id = :genreId group by artist.artist
+        inner join track_artist ta on ta.artist_id = artist.id and ta.is_album_artist = 0
+        inner join track_genre tg on tg.track_id = ta.track_id
+      where tg.genre_id = :genreId group by artist.artist
       order by
         CASE
           WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
@@ -34,9 +42,9 @@ interface ArtistDao {
     """
       select distinct artist.id, artist.artist, artist.date_added
       from artist
-        inner join track on artist.artist = track.artist
-        inner join genre on genre.genre = track.genre
-      where genre.id = :genreId group by artist.artist
+        inner join track_artist ta on ta.artist_id = artist.id and ta.is_album_artist = 0
+        inner join track_genre tg on tg.track_id = ta.track_id
+      where tg.genre_id = :genreId group by artist.artist
       order by
         CASE
           WHEN LOWER(artist.artist) LIKE 'the %' THEN SUBSTR(artist.artist, 5)
@@ -117,7 +125,8 @@ interface ArtistDao {
   @Query(
     """
       select distinct artist.id, artist.artist, artist.date_added
-      from artist inner join track on artist.artist = track.album_artist
+      from artist
+        inner join track_artist ta on ta.artist_id = artist.id and ta.is_album_artist = 1
       group by artist.artist
       order by
         CASE
@@ -131,7 +140,8 @@ interface ArtistDao {
   @Query(
     """
       select distinct artist.id, artist.artist, artist.date_added
-      from artist inner join track on artist.artist = track.album_artist
+      from artist
+        inner join track_artist ta on ta.artist_id = artist.id and ta.is_album_artist = 1
       group by artist.artist
       order by
         CASE

@@ -1,0 +1,537 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 5,
+    "identityHash": "2fe12c4676993f3e464765b19b3cdf15",
+    "entities": [
+      {
+        "tableName": "genre",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`genre` TEXT NOT NULL, `date_added` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "genre",
+            "columnName": "genre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateAdded",
+            "columnName": "date_added",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "genre_genre_idx",
+            "unique": true,
+            "columnNames": [
+              "genre"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `genre_genre_idx` ON `${TABLE_NAME}` (`genre`)"
+          }
+        ]
+      },
+      {
+        "tableName": "artist",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`artist` TEXT NOT NULL, `date_added` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "artist",
+            "columnName": "artist",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateAdded",
+            "columnName": "date_added",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "artist_artist_idx",
+            "unique": true,
+            "columnNames": [
+              "artist"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `artist_artist_idx` ON `${TABLE_NAME}` (`artist`)"
+          }
+        ]
+      },
+      {
+        "tableName": "album",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`artist` TEXT NOT NULL, `album` TEXT NOT NULL, `cover` TEXT, `date_added` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "artist",
+            "columnName": "artist",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "album",
+            "columnName": "album",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cover",
+            "columnName": "cover",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "dateAdded",
+            "columnName": "date_added",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "album_info_idx",
+            "unique": true,
+            "columnNames": [
+              "artist",
+              "album"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `album_info_idx` ON `${TABLE_NAME}` (`artist`, `album`)"
+          }
+        ]
+      },
+      {
+        "tableName": "track",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`artist` TEXT NOT NULL, `title` TEXT NOT NULL, `src` TEXT NOT NULL, `trackno` INTEGER NOT NULL, `disc` INTEGER NOT NULL, `album_artist` TEXT NOT NULL, `album` TEXT NOT NULL, `genre` TEXT NOT NULL, `year` TEXT NOT NULL, `sortable_year` TEXT NOT NULL, `date_added` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "artist",
+            "columnName": "artist",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "src",
+            "columnName": "src",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "trackno",
+            "columnName": "trackno",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "disc",
+            "columnName": "disc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "albumArtist",
+            "columnName": "album_artist",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "album",
+            "columnName": "album",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "genre",
+            "columnName": "genre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortableYear",
+            "columnName": "sortable_year",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateAdded",
+            "columnName": "date_added",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "track_src_index",
+            "unique": true,
+            "columnNames": [
+              "src"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `track_src_index` ON `${TABLE_NAME}` (`src`)"
+          }
+        ]
+      },
+      {
+        "tableName": "track_genre",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`track_id` INTEGER NOT NULL, `genre_id` INTEGER NOT NULL, PRIMARY KEY(`track_id`, `genre_id`))",
+        "fields": [
+          {
+            "fieldPath": "trackId",
+            "columnName": "track_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "genreId",
+            "columnName": "genre_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "track_id",
+            "genre_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_track_genre_genre_id",
+            "unique": false,
+            "columnNames": [
+              "genre_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_track_genre_genre_id` ON `${TABLE_NAME}` (`genre_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "track_artist",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`track_id` INTEGER NOT NULL, `artist_id` INTEGER NOT NULL, `is_album_artist` INTEGER NOT NULL, PRIMARY KEY(`track_id`, `artist_id`, `is_album_artist`))",
+        "fields": [
+          {
+            "fieldPath": "trackId",
+            "columnName": "track_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artistId",
+            "columnName": "artist_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isAlbumArtist",
+            "columnName": "is_album_artist",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "track_id",
+            "artist_id",
+            "is_album_artist"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_track_artist_artist_id",
+            "unique": false,
+            "columnNames": [
+              "artist_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_track_artist_artist_id` ON `${TABLE_NAME}` (`artist_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "now_playing",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`title` TEXT NOT NULL, `artist` TEXT NOT NULL, `path` TEXT NOT NULL, `position` INTEGER NOT NULL, `date_added` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artist",
+            "columnName": "artist",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "path",
+            "columnName": "path",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateAdded",
+            "columnName": "date_added",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "now_playing_position_idx",
+            "unique": false,
+            "columnNames": [
+              "position"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `now_playing_position_idx` ON `${TABLE_NAME}` (`position`)"
+          },
+          {
+            "name": "now_playing_date_added_idx",
+            "unique": false,
+            "columnNames": [
+              "date_added"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `now_playing_date_added_idx` ON `${TABLE_NAME}` (`date_added`)"
+          }
+        ]
+      },
+      {
+        "tableName": "playlists",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `url` TEXT NOT NULL, `date_added` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateAdded",
+            "columnName": "date_added",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "playlist_name_idx",
+            "unique": true,
+            "columnNames": [
+              "name"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `playlist_name_idx` ON `${TABLE_NAME}` (`name`)"
+          }
+        ]
+      },
+      {
+        "tableName": "radio_station",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `url` TEXT NOT NULL, `date_added` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateAdded",
+            "columnName": "date_added",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "radio_url_idx",
+            "unique": true,
+            "columnNames": [
+              "url"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `radio_url_idx` ON `${TABLE_NAME}` (`url`)"
+          }
+        ]
+      },
+      {
+        "tableName": "settings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `port` INTEGER NOT NULL, `name` TEXT NOT NULL, `is_default` INTEGER, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "port",
+            "columnName": "port",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isDefault",
+            "columnName": "is_default",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_settings_address_port",
+            "unique": true,
+            "columnNames": [
+              "address",
+              "port"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_settings_address_port` ON `${TABLE_NAME}` (`address`, `port`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2fe12c4676993f3e464765b19b3cdf15')"
+    ]
+  }
+}

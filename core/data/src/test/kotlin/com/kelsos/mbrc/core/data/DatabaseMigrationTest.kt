@@ -402,4 +402,76 @@ class DatabaseMigrationTest {
 
     db.close()
   }
+
+  @Test
+  @Throws(IOException::class)
+  fun migrate4To5() {
+    var db = helper.createDatabase(migrationTestDb, 4)
+
+    // A track with a multi-value genre exists before the upgrade.
+    db.execSQL(
+      """
+        INSERT INTO track
+          (artist, title, src, trackno, disc, album_artist, album, genre,
+           year, sortable_year, date_added, id)
+        VALUES
+          ('Leaves'' Eyes', 'Vinland Saga', 'vinland.mp3', 1, 1, 'Leaves'' Eyes',
+           'Vinland Saga', 'Gothic Metal; Power Metal', '2005', '2005', 1, 1)
+      """
+    )
+    db.close()
+
+    db = helper.runMigrationsAndValidate(migrationTestDb, 5, true, MIGRATION_4_5)
+
+    // Junction tables are created empty (backfill happens at runtime on library open).
+    val genreJunction = db.query("SELECT * FROM track_genre")
+    assertThat(genreJunction.count).isEqualTo(0)
+    genreJunction.close()
+
+    val artistJunction = db.query("SELECT * FROM track_artist")
+    assertThat(artistJunction.count).isEqualTo(0)
+    artistJunction.close()
+
+    // The pre-existing track is untouched by the migration.
+    val trackCursor = db.query("SELECT genre FROM track WHERE id = 1")
+    trackCursor.moveToFirst()
+    assertThat(trackCursor.getString(trackCursor.getColumnIndex("genre")))
+      .isEqualTo("Gothic Metal; Power Metal")
+    trackCursor.close()
+
+    db.close()
+  }
+
+  /**
+   * Room's schema export does not record collation and its migration validation ignores it, so a
+   * migration that left these columns on BINARY would still pass `runMigrationsAndValidate`. The
+   * only way to know the upgrade produced case-insensitive dimensions is to make the database
+   * reject a differently-cased duplicate.
+   */
+  @Test
+  fun migrate4To5FoldsDimensionNamesToCaseInsensitive() {
+    var db = helper.createDatabase(migrationTestDb, 4)
+    db.execSQL("INSERT INTO genre (genre, date_added, id) VALUES ('Power Metal', 5, 1)")
+    db.execSQL("INSERT INTO genre (genre, date_added, id) VALUES ('power metal', 9, 2)")
+    db.execSQL("INSERT INTO artist (artist, date_added, id) VALUES ('Keldian', 5, 1)")
+    db.close()
+
+    db = helper.runMigrationsAndValidate(migrationTestDb, 5, true, MIGRATION_4_5)
+
+    val genres = db.query("SELECT genre, date_added, id FROM genre")
+    assertThat(genres.count).isEqualTo(1)
+    genres.moveToFirst()
+    assertThat(genres.getLong(genres.getColumnIndex("id"))).isEqualTo(1)
+    assertThat(genres.getLong(genres.getColumnIndex("date_added"))).isEqualTo(9)
+    genres.close()
+
+    try {
+      db.execSQL("INSERT INTO artist (artist, date_added, id) VALUES ('KELDIAN', 0, 2)")
+      assertThat(false).isTrue()
+    } catch (e: Exception) {
+      assertThat(e.message).contains("UNIQUE constraint failed")
+    }
+
+    db.close()
+  }
 }

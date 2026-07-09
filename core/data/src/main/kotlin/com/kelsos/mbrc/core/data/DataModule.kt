@@ -22,7 +22,7 @@ val dataModule = module {
   single {
     Room
       .databaseBuilder(get<Context>(), Database::class.java, Database.NAME)
-      .addMigrations(MIGRATION_1_4, MIGRATION_2_4, MIGRATION_3_4)
+      .addMigrations(MIGRATION_1_4, MIGRATION_2_4, MIGRATION_3_4, MIGRATION_4_5)
       .build()
   }
 
@@ -31,6 +31,8 @@ val dataModule = module {
   single { get<Database>().artistDao() }
   single { get<Database>().albumDao() }
   single { get<Database>().trackDao() }
+  single { get<Database>().trackGenreDao() }
+  single { get<Database>().trackArtistDao() }
   single { get<Database>().nowPlayingDao() }
   single { get<Database>().playlistDao() }
   single { get<Database>().radioStationDao() }
@@ -39,4 +41,7 @@ val dataModule = module {
   // Migration utilities
   singleOf(::DefaultConnectionMigration)
   singleOf(::MigrationManager)
+
+  // Multi-DAO transaction helper
+  singleOf(::LibraryTransactionRunner)
 }

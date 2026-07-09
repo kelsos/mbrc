@@ -19,6 +19,7 @@ import com.kelsos.mbrc.core.data.test.TrackGenerator
 import com.kelsos.mbrc.core.data.test.testDatabaseModule
 import com.kelsos.mbrc.core.networking.api.LibraryApi
 import com.kelsos.mbrc.core.networking.dto.TrackDto
+import com.kelsos.mbrc.feature.library.deriveLibrary
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -386,6 +387,7 @@ class TrackRepositoryTest : KoinTest {
       ).generateTrack { src = "/path/to/pop_track.mp3" }
 
       dao.insertAll(rockTracks + popTrack)
+      database.deriveLibrary()
 
       val result = repository.getTrackPaths(TrackQuery.Genre(genre = "Rock"))
 
@@ -415,6 +417,7 @@ class TrackRepositoryTest : KoinTest {
       ).generateTrack { src = "/path/to/artist2_track1.mp3" }
 
       dao.insertAll(artist1Tracks + artist2Track)
+      database.deriveLibrary()
 
       val result = repository.getTrackPaths(TrackQuery.Artist(artist = "Artist 1"))
 
@@ -422,6 +425,32 @@ class TrackRepositoryTest : KoinTest {
       assertThat(
         result
       ).containsExactly("/path/to/artist1_track1.mp3", "/path/to/artist1_track2.mp3")
+    }
+  }
+
+  /**
+   * Album artist is not one of MusicBee's multi-value fields, so derivation stores one containing
+   * a ';' verbatim as a single row. Looking it up by its split halves finds neither, which left
+   * such an artist impossible to play or queue even though it was listed.
+   */
+  @Test
+  fun getTrackPathsFindsAnArtistWhoseNameContainsTheSeparator() {
+    runTest(testDispatcher) {
+      val track = TrackGenerator(
+        baseArtist = "Utada",
+        baseTitle = "Track 1",
+        baseAlbum = "Heart Station",
+        basePath = "/path/to"
+      ).generateTrack {
+        src = "/path/to/heart.mp3"
+        albumArtist = "Utada; Bogus"
+      }
+      dao.insertAll(listOf(track))
+      database.deriveLibrary()
+
+      val result = repository.getTrackPaths(TrackQuery.Artist(artist = "Utada; Bogus"))
+
+      assertThat(result).containsExactly("/path/to/heart.mp3")
     }
   }
 

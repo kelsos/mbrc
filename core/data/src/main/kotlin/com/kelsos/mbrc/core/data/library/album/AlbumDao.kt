@@ -201,6 +201,39 @@ interface AlbumDao {
   )
   fun searchByArtistDesc(term: String): PagingSource<Int, AlbumEntity>
 
+  /**
+   * Derives album rows from the track table, keyed by (album_artist, album). Uses
+   * INSERT OR IGNORE so existing rows keep their cover hash and id; orphans are
+   * removed separately by [removeOrphans].
+   */
+  @Query(
+    """
+    INSERT OR IGNORE INTO album (artist, album, date_added)
+    SELECT DISTINCT album_artist, album, :added FROM track
+    """
+  )
+  fun deriveFromTracks(added: Long)
+
+  /**
+   * Drops albums with no backing track.
+   *
+   * Written as `not exists` rather than the row-value form
+   * `where (artist, album) not in (select album_artist, album from track)`, which reads better but
+   * needs SQLite 3.15. That arrives with API 26, and `minSdk` is 23, so on Android 6 and 7 the
+   * statement fails to prepare and takes every sync down with it. Host tests link a modern SQLite
+   * and cannot catch that.
+   */
+  @Query(
+    """
+    delete from album
+    where not exists (
+      select 1 from track
+      where track.album_artist = album.artist and track.album = album.album
+    )
+    """
+  )
+  fun removeOrphans()
+
   @Query("select count(*) from album")
   fun count(): Long
 
@@ -217,7 +250,9 @@ interface AlbumDao {
         album.date_added AS date_added, album.id AS id, album.cover AS cover
         FROM album
         INNER JOIN track ON album.album = track.album AND track.album_artist = album.artist
-        WHERE track.artist = :artist OR track.album_artist = :artist
+        INNER JOIN track_artist ta ON ta.track_id = track.id
+        INNER JOIN artist a ON a.id = ta.artist_id
+        WHERE a.artist = :artist
         GROUP BY album.id
         ORDER BY album.album COLLATE NOCASE ASC
     """
@@ -231,7 +266,9 @@ interface AlbumDao {
         album.date_added AS date_added, album.id AS id, album.cover AS cover
         FROM album
         INNER JOIN track ON album.album = track.album AND track.album_artist = album.artist
-        WHERE track.artist = :artist OR track.album_artist = :artist
+        INNER JOIN track_artist ta ON ta.track_id = track.id
+        INNER JOIN artist a ON a.id = ta.artist_id
+        WHERE a.artist = :artist
         GROUP BY album.id
         ORDER BY album.album COLLATE NOCASE DESC
     """
@@ -270,8 +307,8 @@ interface AlbumDao {
         album.date_added AS date_added, album.id AS id, album.cover AS cover
         FROM album
         INNER JOIN track ON album.album = track.album AND track.album_artist = album.artist
-        INNER JOIN genre ON genre.genre = track.genre
-        WHERE genre.id = :genreId
+        INNER JOIN track_genre ON track_genre.track_id = track.id
+        WHERE track_genre.genre_id = :genreId
         GROUP BY album.id
         ORDER BY album.album COLLATE NOCASE ASC
     """
@@ -285,8 +322,8 @@ interface AlbumDao {
         album.date_added AS date_added, album.id AS id, album.cover AS cover
         FROM album
         INNER JOIN track ON album.album = track.album AND track.album_artist = album.artist
-        INNER JOIN genre ON genre.genre = track.genre
-        WHERE genre.id = :genreId
+        INNER JOIN track_genre ON track_genre.track_id = track.id
+        WHERE track_genre.genre_id = :genreId
         GROUP BY album.id
         ORDER BY album.album COLLATE NOCASE ASC
     """
@@ -300,8 +337,8 @@ interface AlbumDao {
         album.date_added AS date_added, album.id AS id, album.cover AS cover
         FROM album
         INNER JOIN track ON album.album = track.album AND track.album_artist = album.artist
-        INNER JOIN genre ON genre.genre = track.genre
-        WHERE genre.id = :genreId
+        INNER JOIN track_genre ON track_genre.track_id = track.id
+        WHERE track_genre.genre_id = :genreId
         GROUP BY album.id
         ORDER BY album.album COLLATE NOCASE DESC
     """
@@ -315,8 +352,8 @@ interface AlbumDao {
         album.date_added AS date_added, album.id AS id, album.cover AS cover
         FROM album
         INNER JOIN track ON album.album = track.album AND track.album_artist = album.artist
-        INNER JOIN genre ON genre.genre = track.genre
-        WHERE genre.id = :genreId
+        INNER JOIN track_genre ON track_genre.track_id = track.id
+        WHERE track_genre.genre_id = :genreId
         GROUP BY album.id
         ORDER BY
           CASE
@@ -335,8 +372,8 @@ interface AlbumDao {
         album.date_added AS date_added, album.id AS id, album.cover AS cover
         FROM album
         INNER JOIN track ON album.album = track.album AND track.album_artist = album.artist
-        INNER JOIN genre ON genre.genre = track.genre
-        WHERE genre.id = :genreId
+        INNER JOIN track_genre ON track_genre.track_id = track.id
+        WHERE track_genre.genre_id = :genreId
         GROUP BY album.id
         ORDER BY
           CASE

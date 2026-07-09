@@ -13,6 +13,7 @@ import com.kelsos.mbrc.feature.library.artists.ArtistRepositoryImpl
 import com.kelsos.mbrc.feature.library.artists.BrowseArtistViewModel
 import com.kelsos.mbrc.feature.library.artists.GenreArtistsViewModel
 import com.kelsos.mbrc.feature.library.data.CoverCache
+import com.kelsos.mbrc.feature.library.domain.LibraryDerivationUseCase
 import com.kelsos.mbrc.feature.library.domain.LibrarySyncUseCase
 import com.kelsos.mbrc.feature.library.domain.LibrarySyncUseCaseImpl
 import com.kelsos.mbrc.feature.library.domain.LibrarySyncWorkHandler
@@ -53,6 +54,7 @@ val libraryModule = module {
   singleOf(::TrackRepositoryImpl) { bind<TrackRepository>() }
 
   // Library sync
+  singleOf(::LibraryDerivationUseCase)
   singleOf(::LibrarySyncUseCaseImpl) { bind<LibrarySyncUseCase>() }
   singleOf(::LibrarySyncWorkHandlerImpl) { bind<LibrarySyncWorkHandler>() }
   workerOf(::LibrarySyncWorker)

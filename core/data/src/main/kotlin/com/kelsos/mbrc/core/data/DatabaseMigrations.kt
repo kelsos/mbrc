@@ -166,6 +166,80 @@ val MIGRATION_2_4 = object : Migration(2, 4) {
   }
 }
 
+/**
+ * Rebuilds `genre` and `artist` with a `NOCASE` name column, folding rows that differ only by case.
+ *
+ * Dimension names used to come from the plugin's canonical browse lists, which de-duplicated for
+ * us. They are now derived from raw track tags, where "Rock" and "rock" are both common, and the v4
+ * unique indices collate BINARY, so both would be kept and shown as separate entries. The lowest id
+ * of each group survives so existing junction rows keep pointing at a live dimension.
+ */
+private fun SupportSQLiteDatabase.recreateWithCaseInsensitiveName(
+  table: String,
+  column: String,
+  index: String
+) {
+  execSQL(
+    """
+    CREATE TABLE ${table}_new (
+      $column TEXT NOT NULL COLLATE NOCASE,
+      date_added INTEGER NOT NULL,
+      id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL
+    )
+    """
+  )
+  execSQL(
+    """
+    INSERT INTO ${table}_new ($column, date_added, id)
+    SELECT $column, MAX(date_added), MIN(id) FROM $table GROUP BY $column COLLATE NOCASE
+    """
+  )
+  execSQL("DROP TABLE $table")
+  execSQL("ALTER TABLE ${table}_new RENAME TO $table")
+  execSQL("CREATE UNIQUE INDEX IF NOT EXISTS $index ON $table ($column)")
+}
+
+/**
+ * Adds the multi-value tag junction tables. They are created empty here; existing
+ * installs are backfilled from the compound `track.genre`/`track.artist` columns
+ * on library open (LibraryDerivationUseCase.ensureDerived), and every sync rebuilds
+ * them going forward.
+ *
+ * Also folds the genre and artist name columns to `NOCASE`; see
+ * [recreateWithCaseInsensitiveName].
+ */
+val MIGRATION_4_5 = object : Migration(4, 5) {
+  override fun migrate(db: SupportSQLiteDatabase) {
+    db.recreateWithCaseInsensitiveName("genre", "genre", "genre_genre_idx")
+    db.recreateWithCaseInsensitiveName("artist", "artist", "artist_artist_idx")
+
+    db.execSQL(
+      """
+      CREATE TABLE IF NOT EXISTS track_genre (
+        track_id INTEGER NOT NULL,
+        genre_id INTEGER NOT NULL,
+        PRIMARY KEY(track_id, genre_id)
+      )
+      """
+    )
+    db.execSQL("CREATE INDEX IF NOT EXISTS index_track_genre_genre_id ON track_genre (genre_id)")
+
+    db.execSQL(
+      """
+      CREATE TABLE IF NOT EXISTS track_artist (
+        track_id INTEGER NOT NULL,
+        artist_id INTEGER NOT NULL,
+        is_album_artist INTEGER NOT NULL,
+        PRIMARY KEY(track_id, artist_id, is_album_artist)
+      )
+      """
+    )
+    db.execSQL(
+      "CREATE INDEX IF NOT EXISTS index_track_artist_artist_id ON track_artist (artist_id)"
+    )
+  }
+}
+
 val MIGRATION_3_4 = object : Migration(3, 4) {
   override fun migrate(db: SupportSQLiteDatabase) {
     // Add new columns to existing tables before recreation

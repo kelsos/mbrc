@@ -33,6 +33,26 @@ class LibraryViewModel(
 
   val albumArtistsOnly: Flow<Boolean> = librarySettings.shouldDisplayOnlyArtists
 
+  init {
+    backfillDerivedTags()
+  }
+
+  /**
+   * Backfills the derived tag junctions for installs upgraded from a schema that predates them, so
+   * multi-value navigation works without waiting for a sync.
+   *
+   * Failure is logged and swallowed. This runs unprompted when the library screen opens, and the
+   * screen is on the main navigation, so letting a database error escape would crash the app every
+   * time the user goes near the library, with no way out. Browsing still works without the
+   * junctions; only multi-value navigation degrades, and the next sync derives them again.
+   */
+  private fun backfillDerivedTags() {
+    viewModelScope.launch(dispatchers.database) {
+      runCatching { librarySyncUseCase.ensureDerived() }
+        .onFailure { Timber.e(it, "Could not backfill the derived tag junctions") }
+    }
+  }
+
   fun search(string: String = "") {
     viewModelScope.launch {
       searchModel.setTerm(string)

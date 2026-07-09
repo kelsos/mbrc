@@ -6,6 +6,7 @@ import com.kelsos.mbrc.core.common.settings.SortOrder
 import com.kelsos.mbrc.core.common.settings.TrackSortField
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.common.utilities.epoch
+import com.kelsos.mbrc.core.common.utilities.splitTags
 import com.kelsos.mbrc.core.data.library.track.PagingTrackQuery
 import com.kelsos.mbrc.core.data.library.track.Track
 import com.kelsos.mbrc.core.data.library.track.TrackDao
@@ -130,10 +131,21 @@ class TrackRepositoryImpl(
 
   override fun getTrackPaths(query: TrackQuery): List<String> = when (query) {
     is TrackQuery.All -> dao.getAllTrackPaths()
-    is TrackQuery.Genre -> dao.getGenreTrackPaths(query.genre)
-    is TrackQuery.Artist -> dao.getArtistTrackPaths(query.artist)
+    is TrackQuery.Genre -> dao.getGenreTrackPaths(tagLookupFor(query.genre))
+    is TrackQuery.Artist -> dao.getArtistTrackPaths(tagLookupFor(query.artist))
     is TrackQuery.Album -> dao.getAlbumTrackPaths(query.album, query.artist)
   }
+
+  /**
+   * The names to look up for a value the user tapped: its individual tags, plus the value itself.
+   *
+   * Splitting alone is not enough. Derivation stores an album artist verbatim, because album artist
+   * is not one of MusicBee's multi-value fields, so a row can legitimately contain a ';'. Looking
+   * that row up by its split halves would find neither, and playing it would queue nothing or the
+   * wrong artist. Keeping the whole value in the lookup matches both a genuine multi-value tag and
+   * a name that merely contains the separator.
+   */
+  private fun tagLookupFor(value: String): List<String> = (splitTags(value) + value).distinct()
 
   override suspend fun getById(id: Long): Track? {
     return withContext(dispatchers.database) {

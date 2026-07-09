@@ -14,7 +14,7 @@ data class Artist(val artist: String, val id: Long)
   indices = [Index("artist", name = "artist_artist_idx", unique = true)]
 )
 data class ArtistEntity(
-  @ColumnInfo
+  @ColumnInfo(collate = ColumnInfo.NOCASE)
   val artist: String,
   @ColumnInfo(name = "date_added")
   val dateAdded: Long = 0,

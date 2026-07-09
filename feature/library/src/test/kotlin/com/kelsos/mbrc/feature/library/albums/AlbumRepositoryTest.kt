@@ -22,6 +22,7 @@ import com.kelsos.mbrc.core.data.library.track.TrackEntity
 import com.kelsos.mbrc.core.data.test.testDatabaseModule
 import com.kelsos.mbrc.core.networking.api.LibraryApi
 import com.kelsos.mbrc.core.networking.dto.AlbumDto
+import com.kelsos.mbrc.feature.library.deriveLibrary
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -355,6 +356,7 @@ class AlbumRepositoryTest : KoinTest {
           )
         )
       trackDao.insertAll(tracks)
+      database.deriveLibrary()
 
       val result = repository.getAlbumsByArtist(
         "Artist1",
@@ -424,6 +426,7 @@ class AlbumRepositoryTest : KoinTest {
           )
         )
       trackDao.insertAll(tracks)
+      database.deriveLibrary()
 
       val result = repository.getAlbumsByArtist(
         "Artist1",
@@ -721,6 +724,7 @@ class AlbumRepositoryTest : KoinTest {
           )
         )
       trackDao.insertAll(tracks)
+      database.deriveLibrary()
 
       val result = repository.getAlbumsByGenre(
         1L,
@@ -758,6 +762,7 @@ class AlbumRepositoryTest : KoinTest {
           )
         )
       trackDao.insertAll(tracks)
+      database.deriveLibrary()
 
       val result = repository.getAlbumsByGenre(
         1L,
@@ -826,6 +831,7 @@ class AlbumRepositoryTest : KoinTest {
           )
         )
       trackDao.insertAll(tracks)
+      database.deriveLibrary()
 
       val result = repository.getAlbumsByGenre(
         1L,
@@ -896,6 +902,7 @@ class AlbumRepositoryTest : KoinTest {
           )
         )
       trackDao.insertAll(tracks)
+      database.deriveLibrary()
 
       val result = repository.getAlbumsByGenre(
         1L,
@@ -967,6 +974,7 @@ class AlbumRepositoryTest : KoinTest {
           )
         )
       trackDao.insertAll(tracks)
+      database.deriveLibrary()
 
       val result = repository.getAlbumsByGenre(
         1L,

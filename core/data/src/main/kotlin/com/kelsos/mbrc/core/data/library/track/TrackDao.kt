@@ -55,19 +55,27 @@ interface TrackDao {
 
   @Query(
     """
-    select src from track where genre = :genre
-    order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
+    select distinct track.src from track
+      inner join track_genre tg on tg.track_id = track.id
+      inner join genre g on g.id = tg.genre_id
+    where g.genre in (:genres)
+    order by track.album_artist collate nocase asc, track.album collate nocase asc,
+      track.disc asc, track.trackno asc
     """
   )
-  fun getGenreTrackPaths(genre: String): List<String>
+  fun getGenreTrackPaths(genres: List<String>): List<String>
 
   @Query(
     """
-    select src from track where artist = :artist or album_artist = :artist
-    order by album_artist collate nocase asc, album collate nocase asc, disc asc, trackno asc
+    select distinct track.src from track
+      inner join track_artist ta on ta.track_id = track.id
+      inner join artist a on a.id = ta.artist_id
+    where a.artist in (:artists)
+    order by track.album_artist collate nocase asc, track.album collate nocase asc,
+      track.disc asc, track.trackno asc
     """
   )
-  fun getArtistTrackPaths(artist: String): List<String>
+  fun getArtistTrackPaths(artists: List<String>): List<String>
 
   @Query(
     """
@@ -88,6 +96,9 @@ interface TrackDao {
 
   @Query("select count(*) from track")
   fun count(): Long
+
+  @Query("select id, artist, album_artist, genre from track")
+  fun tagRows(): List<TrackTagRow>
 
   @Query("delete from track where src in (:paths)")
   fun deletePaths(paths: List<String>)

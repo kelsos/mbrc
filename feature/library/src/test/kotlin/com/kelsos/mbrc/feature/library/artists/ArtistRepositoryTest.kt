@@ -18,6 +18,7 @@ import com.kelsos.mbrc.core.data.library.track.TrackEntity
 import com.kelsos.mbrc.core.data.test.testDatabaseModule
 import com.kelsos.mbrc.core.networking.api.LibraryApi
 import com.kelsos.mbrc.core.networking.dto.ArtistDto
+import com.kelsos.mbrc.feature.library.deriveLibrary
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -162,6 +163,7 @@ class ArtistRepositoryTest : KoinTest {
           )
         )
       database.trackDao().insertAll(tracks)
+      database.deriveLibrary()
 
       // When: Get artists by rock genre
       val rockArtists = repository.getArtistByGenre(rockGenreId, SortOrder.ASC).asSnapshot()
@@ -243,6 +245,7 @@ class ArtistRepositoryTest : KoinTest {
           )
         )
       database.trackDao().insertAll(tracks)
+      database.deriveLibrary()
 
       val result = repository.getArtistByGenre(rockGenreId, SortOrder.DESC).asSnapshot()
 
@@ -424,6 +427,7 @@ class ArtistRepositoryTest : KoinTest {
       // Insert test data
       database.trackDao().insertAll(tracks)
       dao.insertAll(artists)
+      database.deriveLibrary()
 
       // When: Get album artists only
       val albumArtists = repository.getAlbumArtistsOnly(SortOrder.ASC).asSnapshot()
@@ -480,6 +484,7 @@ class ArtistRepositoryTest : KoinTest {
       // Insert test data
       database.trackDao().insertAll(tracks)
       dao.insertAll(artists)
+      database.deriveLibrary()
 
       // When: Get album artists only
       val albumArtists = repository.getAlbumArtistsOnly(SortOrder.ASC).asSnapshot()
@@ -580,6 +585,7 @@ class ArtistRepositoryTest : KoinTest {
       // Insert test data
       database.trackDao().insertAll(tracks)
       dao.insertAll(artists)
+      database.deriveLibrary()
 
       // When: Get album artists only
       val albumArtists = repository.getAlbumArtistsOnly(SortOrder.ASC).asSnapshot()
@@ -733,6 +739,7 @@ class ArtistRepositoryTest : KoinTest {
 
       database.trackDao().insertAll(tracks)
       dao.insertAll(artists)
+      database.deriveLibrary()
 
       val result = repository.getAlbumArtistsOnly(SortOrder.ASC).asSnapshot()
 
@@ -797,6 +804,7 @@ class ArtistRepositoryTest : KoinTest {
 
       database.trackDao().insertAll(tracks)
       dao.insertAll(artists)
+      database.deriveLibrary()
 
       val result = repository.getAlbumArtistsOnly(SortOrder.DESC).asSnapshot()
 

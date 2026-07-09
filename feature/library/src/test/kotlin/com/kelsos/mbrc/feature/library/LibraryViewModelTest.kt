@@ -74,6 +74,18 @@ class LibraryViewModelTest : KoinTest {
   }
 
   @Test
+  fun initShouldBackfillDerivedTagJunctions() {
+    runTest(testDispatcher) {
+      // The v4->v5 migration only creates the junction tables; ensureDerived() on
+      // library open is the sole thing that populates them for upgraded installs.
+      assertThat(viewModel).isNotNull()
+      testDispatcher.scheduler.advanceUntilIdle()
+
+      coVerify(exactly = 1) { librarySyncUseCase.ensureDerived() }
+    }
+  }
+
+  @Test
   fun syncShouldEmitNetworkUnavailableWhenNotConnected() {
     runTest(testDispatcher) {
       // Given

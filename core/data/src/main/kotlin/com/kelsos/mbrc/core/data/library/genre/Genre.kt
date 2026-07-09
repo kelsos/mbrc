@@ -14,7 +14,7 @@ data class Genre(val genre: String, val id: Long)
   indices = [Index("genre", name = "genre_genre_idx", unique = true)]
 )
 data class GenreEntity(
-  @ColumnInfo
+  @ColumnInfo(collate = ColumnInfo.NOCASE)
   val genre: String,
   @ColumnInfo(name = "date_added")
   val dateAdded: Long = 0,

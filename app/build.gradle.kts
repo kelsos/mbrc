@@ -93,7 +93,9 @@ val buildTimeProvider = providers.provider {
 val appVersionName = "1.6.1"
 val appVersionCode = 131
 val minSDKVersion = 23
-val compileSDKVersion = 36
+val compileSDKVersion = 37
+// targetSdk 37 opts into Android 17 behaviors (see ACCESS_LOCAL_NETWORK handling in MainActivity).
+val targetSDKVersion = 37
 
 android {
   compileSdk = compileSDKVersion
@@ -110,7 +112,7 @@ android {
   defaultConfig {
     applicationId = "com.kelsos.mbrc"
     minSdk = minSDKVersion
-    targetSdk = compileSDKVersion
+    targetSdk = targetSDKVersion
     versionCode = appVersionCode
     versionName = appVersionName
     buildConfigField("String", "GIT_SHA", "\"${gitHashProvider.get()}\"")

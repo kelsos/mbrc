@@ -4,7 +4,7 @@ plugins {
 
 android {
   namespace = "com.kelsos.mbrc.core.queue"
-  compileSdk = 36
+  compileSdk = 37
 
   defaultConfig {
     minSdk = 23

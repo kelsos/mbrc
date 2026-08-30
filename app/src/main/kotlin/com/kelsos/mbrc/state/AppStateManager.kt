@@ -96,7 +96,6 @@ class AppStateManager(
 
           ConnectionStatus.Authenticating -> {
             wasConnectionAttempted = true
-            serviceLifecycleManager.onConnectionRestored()
           }
 
           is ConnectionStatus.Connecting -> {

@@ -6,8 +6,13 @@ import com.kelsos.mbrc.core.common.state.ConnectionStatePublisher
 import com.kelsos.mbrc.core.common.state.ConnectionStatus
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.networking.ClientConnectionUseCase
+import com.kelsos.mbrc.core.networking.Connection
+import com.kelsos.mbrc.core.networking.ConnectionConfig
 import com.kelsos.mbrc.core.networking.ConnectionCycleInfo
 import com.kelsos.mbrc.core.networking.LocalNetworkAccess
+import com.kelsos.mbrc.core.networking.client.UiMessage
+import com.kelsos.mbrc.core.networking.client.UiMessageQueue
+import com.kelsos.mbrc.core.networking.discovery.DiscoveryTiming
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +50,14 @@ interface ServiceLifecycleManager {
   fun onIntentionalDisconnect()
 
   /**
+   * Resets every latch to its cold-start value before a reconnect the user asked for.
+   *
+   * Giving up leaves the manager unable to reconnect for the life of the process: nothing
+   * guarantees the reset that [onConnectionLost] and [onConnectionRestored] would perform.
+   */
+  fun onManualReconnect()
+
+  /**
    * Check if the service is in the process of stopping due to connection failures.
    */
   val isStopPending: Boolean
@@ -55,11 +68,21 @@ class ServiceLifecycleManagerImpl(
   private val connectionUseCase: ClientConnectionUseCase,
   private val connectionState: ConnectionStatePublisher,
   private val localNetworkAccess: LocalNetworkAccess,
+  private val uiMessageQueue: UiMessageQueue,
   dispatchers: AppCoroutineDispatchers
 ) : ServiceLifecycleManager {
   private val scope = CoroutineScope(SupervisorJob() + dispatchers.main)
   private var reconnectionJob: Job? = null
+
+  /**
+   * Set the moment this manager decides to give up, before the Offline that announces it.
+   *
+   * That Offline comes straight back as a connection loss while the service is still tearing down,
+   * so this is what tells the two apart. Without it a second full loop starts and the retry budget
+   * doubles.
+   */
   private val stopPending = AtomicBoolean(false)
+
   private val reconnectionCycle = AtomicInteger(0)
   private val isReconnecting = AtomicBoolean(false)
   private val intentionalDisconnect = AtomicBoolean(false)
@@ -76,6 +99,11 @@ class ServiceLifecycleManagerImpl(
 
     if (!ServiceState.isRunning || ServiceState.isStopping) {
       Timber.v("Service not running or already stopping, ignoring connection loss")
+      return
+    }
+
+    if (stopPending.get()) {
+      Timber.v("Already giving up on this connection, not starting another reconnection loop")
       return
     }
 
@@ -112,6 +140,21 @@ class ServiceLifecycleManagerImpl(
     stopService()
   }
 
+  override fun onManualReconnect() {
+    Timber.d("Manual reconnect requested, clearing reconnection state")
+    intentionalDisconnect.set(false)
+    isReconnecting.set(false)
+    reconnectionCycle.set(0)
+    stopPending.set(false)
+    reconnectionJob?.cancel()
+    reconnectionJob = null
+  }
+
+  /**
+   * Clears the loop's flags without cancelling its job, because the job is what is running the
+   * attempt that just succeeded. Cancelling it here killed the attempt mid-handshake; the loop
+   * checks [isReconnecting] each pass and stops on its own.
+   */
   override fun onConnectionRestored() {
     val wasReconnecting = isReconnecting.getAndSet(false)
     val cycle = reconnectionCycle.getAndSet(0)
@@ -121,8 +164,6 @@ class ServiceLifecycleManagerImpl(
     }
 
     stopPending.set(false)
-    reconnectionJob?.cancel()
-    reconnectionJob = null
   }
 
   private fun startReconnectionLoop() {
@@ -130,43 +171,44 @@ class ServiceLifecycleManagerImpl(
     reconnectionJob = scope.launch {
       while (isReconnecting.get() && reconnectionCycle.get() < MAX_RECONNECTION_CYCLES) {
         val cycle = reconnectionCycle.incrementAndGet()
-        Timber.d(
-          "Reconnection cycle $cycle/$MAX_RECONNECTION_CYCLES, " +
-            "waiting ${RECONNECTION_DELAY_MS}ms before attempt"
-        )
+        val backoff = backoffFor(cycle)
+        Timber.d("Reconnection cycle $cycle/$MAX_RECONNECTION_CYCLES, waiting ${backoff}ms")
 
-        // Update state to show we're reconnecting (before the delay)
         connectionState.updateConnection(
           ConnectionStatus.Connecting(cycle = cycle, maxCycles = MAX_RECONNECTION_CYCLES)
         )
 
-        // Wait before attempting reconnection
-        delay(RECONNECTION_DELAY_MS)
+        delay(backoff)
 
-        // Check if we're still supposed to be reconnecting
         if (!isReconnecting.get()) {
           Timber.d("Reconnection cancelled during delay")
           return@launch
         }
 
         Timber.d("Triggering reconnection attempt (cycle $cycle)")
-        connectionUseCase.connect(
+        val connected = connectionUseCase.connect(
           cycleInfo = ConnectionCycleInfo(cycle = cycle, maxCycles = MAX_RECONNECTION_CYCLES)
         )
 
-        // Wait for connection attempt to complete
-        // The connection manager has its own retry logic (3 attempts with backoff)
-        // which takes roughly 5-10 seconds total
-        delay(CONNECTION_ATTEMPT_TIMEOUT_MS)
+        if (connected) {
+          Timber.d("Reconnected on cycle $cycle")
+          return@launch
+        }
       }
 
-      // If we exit the loop and still reconnecting, we've exhausted all cycles
       if (isReconnecting.get()) {
         Timber.d("All $MAX_RECONNECTION_CYCLES reconnection cycles exhausted, stopping service")
+        uiMessageQueue.messages.emit(UiMessage.ConnectionError.AllRetriesExhausted)
         stopService()
       }
     }
   }
+
+  /**
+   * Widens the gap between attempts, so a server that is briefly unreachable is found quickly
+   * while one that is genuinely gone is not polled every few seconds for the whole budget.
+   */
+  private fun backoffFor(cycle: Int): Long = minOf(BACKOFF_STEP_MS * cycle, MAX_BACKOFF_MS)
 
   /**
    * @param publishOffline false when the caller has already published a more specific reason for
@@ -177,8 +219,6 @@ class ServiceLifecycleManagerImpl(
       Timber.d("Stopping service due to connection failure")
       isReconnecting.set(false)
       reconnectionCycle.set(0)
-      reconnectionJob?.cancel()
-      reconnectionJob = null
       if (publishOffline) {
         // Set state to Offline since all reconnection attempts have failed
         connectionState.updateConnection(ConnectionStatus.Offline)
@@ -189,21 +229,37 @@ class ServiceLifecycleManagerImpl(
 
   companion object {
     /**
-     * Maximum number of reconnection cycles before stopping the service.
-     * Each cycle triggers a full connection attempt (which itself has 3 internal retries).
+     * Number of attempts before the service gives up and stops.
+     *
+     * Each cycle is one attempt now, not a nested retry sequence, so the loop is what bounds the
+     * whole effort. Derived from [RECONNECTION_BUDGET_MS] rather than chosen on its own.
      */
-    const val MAX_RECONNECTION_CYCLES = 3
+    const val MAX_RECONNECTION_CYCLES = 5
 
     /**
-     * Delay between reconnection cycles.
-     * This gives time for network conditions to potentially improve.
+     * Ceiling on how long reconnection may run before the service gives up and stops. Holding a
+     * foreground service open past this keeps a process alive the OS would otherwise reclaim.
+     *
+     * A test pins the worst case of the constants below to this budget.
      */
-    const val RECONNECTION_DELAY_MS = 15_000L
+    const val RECONNECTION_BUDGET_MS = 180_000L
+
+    /** Growth step of the wait before each attempt: 5s, 10s, 15s, and so on. */
+    const val BACKOFF_STEP_MS = 5_000L
+
+    /** Ceiling on a single backoff, so late attempts stay within a useful distance of each other. */
+    const val MAX_BACKOFF_MS = 30_000L
 
     /**
-     * Time to wait for a connection attempt to complete before starting next cycle.
-     * The connection manager's internal retry logic takes roughly 5-10 seconds.
+     * Worst case duration of one attempt: a discovery scan that finds nothing, a connect that runs
+     * to its timeout, then a handshake that never answers.
+     *
+     * Discovery only runs when no default connection is set, but the budget has to hold in that
+     * case too.
      */
-    const val CONNECTION_ATTEMPT_TIMEOUT_MS = 12_000L
+    val ATTEMPT_WORST_CASE_MS =
+      DiscoveryTiming.SHIPPED.collectionWindowMs +
+        Connection.CONNECT_TIMEOUT.toLong() +
+        ConnectionConfig().handshakeTimeoutMs
   }
 }

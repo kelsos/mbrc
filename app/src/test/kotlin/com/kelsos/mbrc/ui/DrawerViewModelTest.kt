@@ -15,6 +15,7 @@ import com.kelsos.mbrc.service.ServiceLifecycleManager
 import com.kelsos.mbrc.utils.testDispatcher
 import com.kelsos.mbrc.utils.testDispatcherModule
 import com.kelsos.mbrc.utils.testDispatchers
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -172,7 +173,7 @@ class DrawerViewModelTest : KoinTest {
     runTest(testDispatcher) {
       // Given
       connectionStatusFlow.value = ConnectionStatus.Offline
-      coEvery { clientConnectionUseCase.connect(any(), any()) } returns Unit
+      coEvery { clientConnectionUseCase.connect(any(), any()) } returns true
 
       // When
       viewModel.toggleConnection()
@@ -185,33 +186,64 @@ class DrawerViewModelTest : KoinTest {
   }
 
   @Test
-  fun `toggleConnection should disconnect when currently authenticating`() {
+  fun `toggleConnection restarts the attempt when currently authenticating`() {
     runTest(testDispatcher) {
-      // Given
       connectionStatusFlow.value = ConnectionStatus.Authenticating
-      coEvery { clientConnectionUseCase.disconnect() } returns Unit
+      coEvery { clientConnectionUseCase.connect(any(), any()) } returns true
 
-      // When
       viewModel.toggleConnection()
 
-      // Then - should disconnect, not connect
-      verify(exactly = 1) { serviceLifecycleManager.onIntentionalDisconnect() }
-      coVerify(exactly = 1) { clientConnectionUseCase.disconnect() }
-      coVerify(exactly = 0) { clientConnectionUseCase.connect(any(), any()) }
+      coVerify(exactly = 1) { clientConnectionUseCase.connect(any(), any()) }
+      verify(exactly = 0) { serviceLifecycleManager.onIntentionalDisconnect() }
+      coVerify(exactly = 0) { clientConnectionUseCase.disconnect() }
     }
   }
 
   @Test
-  fun `toggleConnection should disconnect when currently connecting`() {
+  fun `toggleConnection restarts the attempt when currently connecting`() {
     runTest(testDispatcher) {
-      // Given
       connectionStatusFlow.value = ConnectionStatus.Connecting(cycle = 1, maxCycles = 3)
-      coEvery { clientConnectionUseCase.disconnect() } returns Unit
+      coEvery { clientConnectionUseCase.connect(any(), any()) } returns true
 
-      // When
       viewModel.toggleConnection()
 
-      // Then - should disconnect, not connect
+      coVerify(exactly = 1) { clientConnectionUseCase.connect(any(), any()) }
+      verify(exactly = 0) { serviceLifecycleManager.onIntentionalDisconnect() }
+      coVerify(exactly = 0) { clientConnectionUseCase.disconnect() }
+    }
+  }
+
+  @Test
+  fun `toggleConnection never leaves a stuck connecting state without a fresh attempt`() {
+    runTest(testDispatcher) {
+      coEvery { clientConnectionUseCase.connect(any(), any()) } returns true
+
+      val reachable = listOf(
+        ConnectionStatus.Offline,
+        ConnectionStatus.Connecting(cycle = 3, maxCycles = 5),
+        ConnectionStatus.Authenticating
+      )
+
+      reachable.forEach { status ->
+        clearMocks(clientConnectionUseCase, answers = false)
+        connectionStatusFlow.value = status
+
+        assertThat(viewModel.toggleConnection()).isTrue()
+
+        coVerify(exactly = 1) { clientConnectionUseCase.connect(any(), any()) }
+        coVerify(exactly = 0) { clientConnectionUseCase.disconnect() }
+      }
+    }
+  }
+
+  @Test
+  fun `toggleConnection disconnects only when connected`() {
+    runTest(testDispatcher) {
+      connectionStatusFlow.value = ConnectionStatus.Connected
+      coEvery { clientConnectionUseCase.disconnect() } returns Unit
+
+      viewModel.toggleConnection()
+
       verify(exactly = 1) { serviceLifecycleManager.onIntentionalDisconnect() }
       coVerify(exactly = 1) { clientConnectionUseCase.disconnect() }
       coVerify(exactly = 0) { clientConnectionUseCase.connect(any(), any()) }

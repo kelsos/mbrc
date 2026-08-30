@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Dialog state for the connection manager.
@@ -229,8 +230,8 @@ class ConnectionManagerViewModel(
    * Sets a connection as the default.
    */
   fun setDefaultConnection(connection: ConnectionSettings) {
-    viewModelScope.launch(dispatchers.database) {
-      repository.setDefault(connection)
+    viewModelScope.launch {
+      withContext(dispatchers.database) { repository.setDefault(connection) }
       clientConnectionUseCase.connect(reset = true)
     }
   }

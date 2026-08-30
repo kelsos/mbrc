@@ -13,7 +13,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -560,7 +559,7 @@ class ConnectionManagerViewModelTest : KoinTest {
       advanceUntilIdle()
 
       coVerify { repository.setDefault(connection) }
-      verify { clientConnectionUseCase.connect(reset = true) }
+      coVerify { clientConnectionUseCase.connect(reset = true) }
     }
 
   // endregion

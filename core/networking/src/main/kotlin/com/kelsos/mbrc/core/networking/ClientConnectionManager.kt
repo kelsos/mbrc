@@ -15,7 +15,6 @@ import java.net.Socket
 import java.net.SocketAddress
 import java.net.SocketException
 import java.net.SocketTimeoutException
-import kotlin.math.pow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -24,15 +23,29 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import okio.buffer
 import okio.sink
 import okio.source
 import timber.log.Timber
 
 interface ClientConnectionManager {
+  /**
+   * Makes one connection attempt without waiting for it. Used by callers that have no coroutine to
+   * suspend in, such as the service starting up.
+   */
   fun start(cycleInfo: ConnectionCycleInfo? = null)
+
+  /**
+   * Makes one connection attempt and reports whether it reached [ConnectionStatus.Connected].
+   *
+   * Exactly one attempt: retrying is the retry driver's job, and having both layers retry meant
+   * each restart cancelled the attempt already in flight.
+   */
+  suspend fun connect(cycleInfo: ConnectionCycleInfo? = null): Boolean
 
   fun stop()
 }
@@ -55,10 +68,12 @@ sealed class NetworkError : Exception() {
 }
 
 data class ConnectionConfig(
-  val maxRetries: Int = 3,
-  val initialDelay: Long = 1000L,
-  val maxDelay: Long = 30000L,
-  val backoffMultiplier: Double = 2.0,
+  /**
+   * How long a socket may sit in [ConnectionStatus.Authenticating] before the attempt is treated
+   * as failed. The handshake is a round trip that a wedged server can leave unanswered forever,
+   * and without a deadline the retry driver would wait on an attempt that never resolves.
+   */
+  val handshakeTimeoutMs: Long = 8000L,
   // Slightly less than ping timeout
   val readTimeoutMs: Long = 35000L,
   // Healthcheck every 20 seconds
@@ -105,115 +120,128 @@ class ClientConnectionManagerImpl(
   @Volatile
   private var pendingSocket: Socket? = null
 
+  /**
+   * Yields to an attempt that is already under way, unlike [connect], which always restarts.
+   *
+   * The service is asked to start asynchronously, so its own start can land after the drawer or
+   * the retry driver has already opened a socket. Restarting here would tear that attempt down and
+   * leave the caller waiting on a handshake for a connection that no longer exists.
+   */
   override fun start(cycleInfo: ConnectionCycleInfo?) {
-    // Every path into a connection ends up here: the service starting, the reconnection loop, the
-    // drawer toggle, the connection manager screen. Refusing here means a missing permission can
-    // never be presented as a connection attempt, whichever of them asked.
+    if (attemptInFlight()) {
+      Timber.v("A connection attempt is already in flight, not starting another")
+      return
+    }
+    prepareForAttempt(cycleInfo) ?: return
+    launch { runAttempt() }
+  }
+
+  private fun attemptInFlight(): Boolean = when (connectionState.connection.value) {
+    is ConnectionStatus.Connecting, ConnectionStatus.Authenticating -> true
+    else -> false
+  }
+
+  /**
+   * Runs on [AppCoroutineDispatchers.io] whatever the caller's context is: the attempt blocks in
+   * [Socket.connect], and both callers suspend on the main dispatcher.
+   */
+  override suspend fun connect(cycleInfo: ConnectionCycleInfo?): Boolean =
+    withContext(dispatchers.io) {
+      prepareForAttempt(cycleInfo)
+        ?: return@withContext connectionState.connection.value == ConnectionStatus.Connected
+      runAttempt()
+    }
+
+  /**
+   * Tears down whatever came before and publishes [ConnectionStatus.Connecting], or returns null
+   * when there is nothing to attempt.
+   *
+   * Refusing a missing permission here means it can never be presented as a connection attempt,
+   * whichever caller asked. Being connected already is the other case worth refusing: an attempt
+   * would drop a working session to rebuild the same one.
+   */
+  private fun prepareForAttempt(cycleInfo: ConnectionCycleInfo?): Unit? {
     if (!localNetworkAccess.isPermitted()) {
       Timber.d("Local network access is not permitted, refusing to connect")
       connectionState.updateConnection(ConnectionStatus.LocalNetworkDenied)
-      return
+      return null
     }
 
-    // Don't restart if already connected
-    val currentStatus = connectionState.connection.value
-    if (currentStatus == ConnectionStatus.Connected) {
+    if (connectionState.connection.value == ConnectionStatus.Connected) {
       Timber.v("Already connected, ignoring start request")
-      return
+      return null
     }
 
-    stop()
+    tearDown(publishOffline = false)
     isStopping = false
-    onStart() // Reset coroutine scope after stop
+    onStart()
     currentCycleInfo = cycleInfo
-    launch {
-      delay(DELAY_MS)
-      if (isStopping) return@launch
-      // Double-check in case connection succeeded during delay
-      val statusAfterDelay = connectionState.connection.firstOrNull()
-      if (statusAfterDelay == ConnectionStatus.Connected) {
-        return@launch
-      }
-      // Emit connecting state only if not already connected
-      connectionState.updateConnection(
-        ConnectionStatus.Connecting(
-          cycle = cycleInfo?.cycle,
-          maxCycles = cycleInfo?.maxCycles ?: DEFAULT_MAX_CYCLES
-        )
+    connectionState.updateConnection(
+      ConnectionStatus.Connecting(
+        cycle = cycleInfo?.cycle,
+        maxCycles = cycleInfo?.maxCycles ?: DEFAULT_MAX_CYCLES
       )
-      attemptConnection()
-    }
+    )
+    return Unit
   }
 
-  private suspend fun attemptConnection() {
+  private suspend fun runAttempt(): Boolean {
     val connectionSettings = getConnectionSettings()
     if (connectionSettings == null) {
       Timber.v("No connection settings available, going offline")
       connectionState.updateConnection(ConnectionStatus.Offline)
-      return
+      notifyUser(UiMessage.ConnectionError.ServerNotFound)
+      return false
     }
     Timber.v("Attempting connection on $connectionSettings")
-
-    attemptConnectionWithRetry(connectionSettings.toSocketAddress())
+    return attemptConnectionOnce(connectionSettings.toSocketAddress())
   }
 
-  private suspend fun attemptConnectionWithRetry(address: SocketAddress) {
-    repeat(connectionConfig.maxRetries) { attempt ->
-      // Check if stop was requested
+  /**
+   * One attempt, reporting whether the handshake completed.
+   *
+   * A socket that opens is not yet a usable connection: the handshake is a round trip a wedged
+   * server can leave unanswered, so the attempt is only a success once the state reaches
+   * [ConnectionStatus.Connected] within [ConnectionConfig.handshakeTimeoutMs].
+   */
+  private suspend fun attemptConnectionOnce(address: SocketAddress): Boolean {
+    val result = runCatching { connectWithTracking(address) }
+
+    result.onFailure { exception ->
       if (isStopping) {
         Timber.v("Connection attempt cancelled - stop requested")
-        return
+        return false
       }
-
-      if (attempt > 0) {
-        val delayMs =
-          minOf(
-            connectionConfig.initialDelay *
-              connectionConfig.backoffMultiplier.pow(attempt - 1).toLong(),
-            connectionConfig.maxDelay
-          )
-        Timber.v(
-          "Retrying connection in ${delayMs}ms (attempt ${attempt + 1}/${connectionConfig.maxRetries})"
-        )
-        delay(delayMs)
-
-        // Check again after delay
-        if (isStopping) {
-          Timber.v("Connection attempt cancelled after delay - stop requested")
-          return
-        }
-      }
-
-      val result = runCatching { connectWithTracking(address) }
-      result.fold(
-        onSuccess = { socket ->
-          if (isStopping) {
-            // Stop was requested during connect, close the socket
-            Timber.v("Connection cancelled during connect - closing socket")
-            runCatching { socket.close() }
-            return
-          }
-          Timber.v("Connection successful on attempt ${attempt + 1}")
-          setupConnection(socket)
-          return
-        },
-        onFailure = { exception ->
-          if (isStopping) {
-            Timber.v("Connection attempt cancelled - stop requested")
-            return
-          }
-
-          val networkError = classifyNetworkError(exception)
-          Timber.w("Connection attempt ${attempt + 1} failed: ${networkError::class.simpleName}")
-
-          if (attempt == connectionConfig.maxRetries - 1) {
-            Timber.e(exception, "All connection attempts failed")
-            handleConnectionFailure(networkError)
-            uiMessageQueue.messages.emit(UiMessage.ConnectionError.AllRetriesExhausted)
-          }
-        }
-      )
+      val networkError = classifyNetworkError(exception)
+      Timber.w("Connection attempt failed: ${networkError::class.simpleName}")
+      handleConnectionFailure(networkError)
+      return false
     }
+
+    val socket = result.getOrThrow()
+    if (isStopping) {
+      Timber.v("Connection cancelled during connect - closing socket")
+      runCatching { socket.close() }
+      return false
+    }
+
+    setupConnection(socket)
+    return awaitHandshake()
+  }
+
+  private suspend fun awaitHandshake(): Boolean {
+    val connected = withTimeoutOrNull(connectionConfig.handshakeTimeoutMs) {
+      connectionState.connection.first { it == ConnectionStatus.Connected }
+    } != null
+
+    if (!connected) {
+      Timber.w("Handshake did not complete within ${connectionConfig.handshakeTimeoutMs}ms")
+      teardownConnection()
+      activityChecker.stop()
+      connectionState.updateConnection(ConnectionStatus.Offline)
+      notifyUser(UiMessage.ConnectionError.ConnectionTimeout)
+    }
+    return connected
   }
 
   private fun connectWithTracking(address: SocketAddress): Socket {
@@ -245,13 +273,26 @@ class ClientConnectionManagerImpl(
     else -> NetworkError.UnknownError(exception)
   }
 
-  private suspend fun handleConnectionFailure(networkError: NetworkError) {
-    // Only set Offline if we're not in a reconnection loop
-    // When cycleInfo is present, ServiceLifecycleManager is managing reconnection
-    // and will update the state with the next cycle
+  /**
+   * Reports a failed attempt to the user, unless the retry driver is the one attempting: it
+   * announces the whole sequence once when it gives up, and a message per cycle would queue five
+   * snackbars across a single outage.
+   */
+  private suspend fun notifyUser(message: UiMessage) {
     if (currentCycleInfo == null) {
-      connectionState.updateConnection(ConnectionStatus.Offline)
+      uiMessageQueue.messages.emit(message)
     }
+  }
+
+  /**
+   * A failed attempt always lands on [ConnectionStatus.Offline].
+   *
+   * The retry driver publishes its own [ConnectionStatus.Connecting] before each attempt, so
+   * reporting the failure truthfully cannot be mistaken for giving up, and leaving the state on
+   * Connecting instead would strand the UI there whenever the driver was not the caller.
+   */
+  private suspend fun handleConnectionFailure(networkError: NetworkError) {
+    connectionState.updateConnection(ConnectionStatus.Offline)
 
     val uiMessage =
       when (networkError) {
@@ -281,7 +322,7 @@ class ClientConnectionManagerImpl(
           )
       }
 
-    uiMessageQueue.messages.emit(uiMessage)
+    notifyUser(uiMessage)
   }
 
   private suspend fun getConnectionSettings() =
@@ -409,17 +450,19 @@ class ClientConnectionManagerImpl(
     }
   }
 
+  /**
+   * Drops the connection and reports it, leaving the reconnect to the retry driver.
+   *
+   * Retrying here as well used to race the driver: two attempts ran against the same socket, each
+   * restart cancelling the other's in flight.
+   */
   private fun setupActivityChecker(connection: Connection) {
     activityChecker.start()
     activityChecker.setPingTimeoutListener {
       Timber.v("Ping timeout received - resetting socket")
       connection.cleanup()
       activityChecker.stop()
-      launch {
-        connectionState.updateConnection(ConnectionStatus.Offline)
-        delay(RECONNECT_DELAY_MS) // Brief delay before attempting reconnection
-        attemptConnection()
-      }
+      launch { connectionState.updateConnection(ConnectionStatus.Offline) }
     }
   }
 
@@ -462,7 +505,14 @@ class ClientConnectionManagerImpl(
     }
   }
 
-  override fun stop() {
+  override fun stop() = tearDown(publishOffline = true)
+
+  /**
+   * @param publishOffline false when an attempt is about to start. Offline is what drives the
+   * reconnection loop, so announcing it on the way into a connection makes the state manager treat
+   * a restart as a fresh connection loss and start a second retry loop alongside this attempt.
+   */
+  private fun tearDown(publishOffline: Boolean) {
     Timber.v("Stopping connection manager")
     isStopping = true
     currentCycleInfo = null
@@ -484,15 +534,19 @@ class ClientConnectionManagerImpl(
     // is no connection. Denied local network access is terminal, and a stop is part of how that
     // state is reached (the service is torn down), so overwriting it here would put the UI back to
     // "not connected" and hide the only thing the user can act on.
-    if (connectionState.connection.value !is ConnectionStatus.LocalNetworkDenied) {
+    if (publishOffline &&
+      connectionState.connection.value !is ConnectionStatus.LocalNetworkDenied
+    ) {
       connectionState.updateConnection(ConnectionStatus.Offline)
     }
   }
 
   companion object {
-    private const val DELAY_MS = 2000L
-    private const val RECONNECT_DELAY_MS = 1000L
-    private const val DEFAULT_MAX_CYCLES = 3
+    /**
+     * Denominator shown while connecting outside the retry loop, where there is no cycle to count.
+     * Kept equal to the driver's cycle count so the UI does not change denominator mid-reconnect.
+     */
+    private const val DEFAULT_MAX_CYCLES = 5
   }
 }
 
@@ -681,7 +735,13 @@ class Connection(
 
   companion object {
     internal const val SO_TIMEOUT = 30_000
-    internal const val CONNECT_TIMEOUT = 15_000
+
+    /**
+     * On a local network a TCP connect either completes in milliseconds or the host is not
+     * reachable, so this is generous rather than tight. It is public because the retry driver
+     * sizes its budget against it.
+     */
+    const val CONNECT_TIMEOUT = 8_000
     private const val NEWLINE = "\r\n"
     private const val LINE_FEED = '\n'.code.toByte()
     private const val MAX_PARSE_FAILURES = 5

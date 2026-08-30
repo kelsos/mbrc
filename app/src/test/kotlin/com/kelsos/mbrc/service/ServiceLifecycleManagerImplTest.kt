@@ -12,14 +12,15 @@ import com.kelsos.mbrc.core.common.test.testDispatcherModule
 import com.kelsos.mbrc.core.networking.ClientConnectionUseCase
 import com.kelsos.mbrc.core.networking.ConnectionCycleInfo
 import com.kelsos.mbrc.core.networking.LocalNetworkAccess
-import io.mockk.Runs
+import com.kelsos.mbrc.core.networking.client.UiMessage
+import com.kelsos.mbrc.core.networking.client.UiMessageQueue
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -41,6 +42,8 @@ class ServiceLifecycleManagerImplTest : KoinTest {
   private val application: Application = mockk(relaxed = true)
   private val connectionUseCase: ClientConnectionUseCase = mockk(relaxed = true)
   private val connectionState: ConnectionStatePublisher = mockk(relaxed = true)
+  private val uiMessageQueue: UiMessageQueue = mockk(relaxed = true)
+  private val uiMessages: MutableSharedFlow<UiMessage> = mockk(relaxed = true)
   private var localNetworkPermitted = true
 
   private val testModule = module {
@@ -48,10 +51,21 @@ class ServiceLifecycleManagerImplTest : KoinTest {
     single { connectionUseCase }
     single { connectionState }
     single<LocalNetworkAccess> { LocalNetworkAccess { localNetworkPermitted } }
+    single<UiMessageQueue> { uiMessageQueue }
     single<ServiceLifecycleManager> {
-      ServiceLifecycleManagerImpl(get(), get(), get(), get(), get())
+      ServiceLifecycleManagerImpl(get(), get(), get(), get(), get(), get())
     }
   }
+
+  private fun backoffFor(cycle: Int): Long = minOf(
+    ServiceLifecycleManagerImpl.BACKOFF_STEP_MS * cycle,
+    ServiceLifecycleManagerImpl.MAX_BACKOFF_MS
+  )
+
+  private val firstBackoff get() = backoffFor(1)
+
+  private fun totalBackoff(): Long =
+    (1..ServiceLifecycleManagerImpl.MAX_RECONNECTION_CYCLES).sumOf { backoffFor(it) }
 
   private val serviceLifecycleManager: ServiceLifecycleManager by inject()
 
@@ -67,8 +81,9 @@ class ServiceLifecycleManagerImplTest : KoinTest {
     localNetworkPermitted = true
 
     // Setup default mocks
-    coEvery { connectionUseCase.connect(any(), any()) } just Runs
+    coEvery { connectionUseCase.connect(any(), any()) } returns false
     every { application.stopService(any()) } returns true
+    every { uiMessageQueue.messages } returns uiMessages
   }
 
   @Test
@@ -149,7 +164,7 @@ class ServiceLifecycleManagerImplTest : KoinTest {
 
       // Advance past first delay (15s) to trigger first reconnection attempt
       testDispatcher.scheduler.advanceTimeBy(
-        ServiceLifecycleManagerImpl.RECONNECTION_DELAY_MS + 100
+        firstBackoff + 100
       )
 
       // Then - at least one reconnection attempt should be made
@@ -170,7 +185,7 @@ class ServiceLifecycleManagerImplTest : KoinTest {
 
       // Advance past first delay to trigger reconnection
       testDispatcher.scheduler.advanceTimeBy(
-        ServiceLifecycleManagerImpl.RECONNECTION_DELAY_MS + 100
+        firstBackoff + 100
       )
 
       // Then - should only have one reconnection cycle running
@@ -187,14 +202,14 @@ class ServiceLifecycleManagerImplTest : KoinTest {
       serviceLifecycleManager.onConnectionLost()
 
       // Advance a bit but not past the first delay
-      testDispatcher.scheduler.advanceTimeBy(5_000L)
+      testDispatcher.scheduler.advanceTimeBy(firstBackoff / 2)
 
       // When - connection is restored
       serviceLifecycleManager.onConnectionRestored()
 
       // Advance past the reconnection delay
       testDispatcher.scheduler.advanceTimeBy(
-        ServiceLifecycleManagerImpl.RECONNECTION_DELAY_MS + 100
+        firstBackoff + 100
       )
 
       // Then - no reconnection attempts should be made
@@ -266,6 +281,102 @@ class ServiceLifecycleManagerImplTest : KoinTest {
   }
 
   @Test
+  fun `reconnection gives up inside the three minute budget`() {
+    val attempts = ServiceLifecycleManagerImpl.MAX_RECONNECTION_CYCLES *
+      ServiceLifecycleManagerImpl.ATTEMPT_WORST_CASE_MS
+    val total = totalBackoff() + attempts
+
+    assertThat(total).isAtMost(ServiceLifecycleManagerImpl.RECONNECTION_BUDGET_MS)
+  }
+
+  /**
+   * The loop awaits each attempt's real outcome rather than sleeping a fixed guess, so a cycle that
+   * connects has to end the sequence instead of letting the next cycle tear the connection down.
+   */
+  @Test
+  fun `a successful attempt ends the reconnection loop`() {
+    runTest(testDispatcher) {
+      coEvery { connectionUseCase.connect(any(), any()) } returns false andThen true
+      ServiceState.setRunning(true)
+
+      serviceLifecycleManager.onConnectionLost()
+      advanceThroughAllReconnectionCycles()
+
+      coVerify(exactly = 2) { connectionUseCase.connect(any(), any()) }
+      verify(exactly = 0) { application.stopService(any()) }
+    }
+  }
+
+  /**
+   * Only the driver speaks for the whole sequence, and only once: the attempts themselves stay
+   * quiet so a single outage does not queue a snackbar per cycle.
+   */
+  @Test
+  fun `giving up tells the user once`() {
+    runTest(testDispatcher) {
+      ServiceState.setRunning(true)
+
+      serviceLifecycleManager.onConnectionLost()
+      advanceThroughAllReconnectionCycles()
+
+      coVerify(exactly = 1) {
+        uiMessages.emit(UiMessage.ConnectionError.AllRetriesExhausted)
+      }
+    }
+  }
+
+  @Test
+  fun `giving up does not start a second reconnection loop`() {
+    runTest(testDispatcher) {
+      ServiceState.setRunning(true)
+      serviceLifecycleManager.onConnectionLost()
+      advanceThroughAllReconnectionCycles()
+
+      val attemptsBeforeTheOfflineFromGivingUp =
+        ServiceLifecycleManagerImpl.MAX_RECONNECTION_CYCLES
+
+      serviceLifecycleManager.onConnectionLost()
+      advanceThroughAllReconnectionCycles()
+
+      coVerify(exactly = attemptsBeforeTheOfflineFromGivingUp) {
+        connectionUseCase.connect(any(), any())
+      }
+    }
+  }
+
+  @Test
+  fun `manual reconnect clears the stop pending latch left by a give up`() {
+    runTest(testDispatcher) {
+      ServiceState.setRunning(true)
+      serviceLifecycleManager.onConnectionLost()
+      advanceThroughAllReconnectionCycles()
+      assertThat(serviceLifecycleManager.isStopPending).isTrue()
+
+      serviceLifecycleManager.onManualReconnect()
+
+      assertThat(serviceLifecycleManager.isStopPending).isFalse()
+    }
+  }
+
+  @Test
+  fun `connection lost after a disconnect then a manual reconnect still reconnects`() {
+    runTest(testDispatcher) {
+      ServiceState.setRunning(true)
+      serviceLifecycleManager.onIntentionalDisconnect()
+
+      serviceLifecycleManager.onManualReconnect()
+
+      ServiceState.setRunning(true)
+      serviceLifecycleManager.onConnectionLost()
+      testDispatcher.scheduler.advanceTimeBy(
+        firstBackoff + 1000
+      )
+
+      coVerify(atLeast = 1) { connectionUseCase.connect(any(), any()) }
+    }
+  }
+
+  @Test
   fun isStopPendingShouldBeFalseInitially() {
     runTest(testDispatcher) {
       // Then
@@ -281,16 +392,13 @@ class ServiceLifecycleManagerImplTest : KoinTest {
       serviceLifecycleManager.onConnectionLost()
 
       // Advance partway through the first delay
-      testDispatcher.scheduler.advanceTimeBy(10_000L)
+      testDispatcher.scheduler.advanceTimeBy(firstBackoff / 2)
 
       // When - connection is restored during the delay
       serviceLifecycleManager.onConnectionRestored()
 
       // Advance past what would have been the reconnection time
-      testDispatcher.scheduler.advanceTimeBy(
-        ServiceLifecycleManagerImpl.RECONNECTION_DELAY_MS +
-          ServiceLifecycleManagerImpl.CONNECTION_ATTEMPT_TIMEOUT_MS
-      )
+      testDispatcher.scheduler.advanceTimeBy(totalBackoff())
 
       // Then - no connect calls should have been made
       coVerify(exactly = 0) { connectionUseCase.connect(any(), any()) }
@@ -305,11 +413,7 @@ class ServiceLifecycleManagerImplTest : KoinTest {
       ServiceState.setRunning(true)
       serviceLifecycleManager.onConnectionLost()
 
-      // Advance past first cycle (delay + timeout)
-      testDispatcher.scheduler.advanceTimeBy(
-        ServiceLifecycleManagerImpl.RECONNECTION_DELAY_MS +
-          ServiceLifecycleManagerImpl.CONNECTION_ATTEMPT_TIMEOUT_MS + 100
-      )
+      testDispatcher.scheduler.advanceTimeBy(firstBackoff + 100)
 
       // Verify first connect was called
       coVerify(exactly = 1) { connectionUseCase.connect(any(), any()) }
@@ -318,13 +422,7 @@ class ServiceLifecycleManagerImplTest : KoinTest {
       serviceLifecycleManager.onConnectionRestored()
 
       // Advance through remaining cycles
-      testDispatcher.scheduler.advanceTimeBy(
-        (
-          ServiceLifecycleManagerImpl.RECONNECTION_DELAY_MS +
-            ServiceLifecycleManagerImpl.CONNECTION_ATTEMPT_TIMEOUT_MS
-          ) *
-          (ServiceLifecycleManagerImpl.MAX_RECONNECTION_CYCLES - 1)
-      )
+      testDispatcher.scheduler.advanceTimeBy(totalBackoff())
 
       // Then - no additional connect calls should have been made
       coVerify(exactly = 1) { connectionUseCase.connect(any(), any()) }
@@ -340,7 +438,7 @@ class ServiceLifecycleManagerImplTest : KoinTest {
 
       // First connection loss and restore
       serviceLifecycleManager.onConnectionLost()
-      testDispatcher.scheduler.advanceTimeBy(5_000L)
+      testDispatcher.scheduler.advanceTimeBy(firstBackoff / 2)
       serviceLifecycleManager.onConnectionRestored()
       testDispatcher.scheduler.advanceUntilIdle()
 
@@ -352,7 +450,7 @@ class ServiceLifecycleManagerImplTest : KoinTest {
 
       // Advance past first delay
       testDispatcher.scheduler.advanceTimeBy(
-        ServiceLifecycleManagerImpl.RECONNECTION_DELAY_MS + 100
+        firstBackoff + 100
       )
 
       // Then - new reconnection attempt should be made
@@ -361,9 +459,6 @@ class ServiceLifecycleManagerImplTest : KoinTest {
   }
 
   private fun advanceThroughAllReconnectionCycles() {
-    val totalTimePerCycle = ServiceLifecycleManagerImpl.RECONNECTION_DELAY_MS +
-      ServiceLifecycleManagerImpl.CONNECTION_ATTEMPT_TIMEOUT_MS
-    val totalTime = totalTimePerCycle * ServiceLifecycleManagerImpl.MAX_RECONNECTION_CYCLES + 1000
-    testDispatcher.scheduler.advanceTimeBy(totalTime)
+    testDispatcher.scheduler.advanceTimeBy(totalBackoff() + 1000)
   }
 }

@@ -9,7 +9,12 @@ import com.kelsos.mbrc.core.networking.client.PendingCommandBuffer
 data class ConnectionCycleInfo(val cycle: Int, val maxCycles: Int)
 
 interface ClientConnectionUseCase {
-  fun connect(reset: Boolean = false, cycleInfo: ConnectionCycleInfo? = null)
+  /**
+   * Makes one connection attempt and reports whether it succeeded. Retrying a failure is the
+   * caller's decision, so that only one layer ever schedules attempts.
+   */
+  suspend fun connect(reset: Boolean = false, cycleInfo: ConnectionCycleInfo? = null): Boolean
+
   fun disconnect()
 }
 
@@ -17,11 +22,11 @@ class ClientConnectionUseCaseImpl(
   private val connectionManager: ClientConnectionManager,
   private val pendingCommands: PendingCommandBuffer
 ) : ClientConnectionUseCase {
-  override fun connect(reset: Boolean, cycleInfo: ConnectionCycleInfo?) {
+  override suspend fun connect(reset: Boolean, cycleInfo: ConnectionCycleInfo?): Boolean {
     if (reset) {
       connectionManager.stop()
     }
-    connectionManager.start(cycleInfo)
+    return connectionManager.connect(cycleInfo)
   }
 
   override fun disconnect() {

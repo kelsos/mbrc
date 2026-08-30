@@ -58,34 +58,30 @@ class DrawerViewModel(
 
   fun isConnected(): Boolean = connectionStatus.value is ConnectionStatus.Connected
 
-  private fun isConnectingOrConnected(): Boolean = when (connectionStatus.value) {
-    is ConnectionStatus.Connected,
-    is ConnectionStatus.Connecting,
-    is ConnectionStatus.Authenticating -> true
-
-    is ConnectionStatus.Offline,
-    is ConnectionStatus.LocalNetworkDenied -> false
-  }
-
   /**
-   * Attempts to connect, unless local network access is denied: there is nothing to attempt in that
-   * case, and showing a connection cycle would blame the network for a permission problem. Returns
-   * false so the caller can ask the user for access instead.
+   * Disconnects only from [ConnectionStatus.Connected]; every other state starts a fresh attempt.
+   *
+   * A tap while connecting used to disconnect and stop the service, so the one gesture the user has
+   * for reaching MusicBee moved them further from it. Restarting instead means that whenever the
+   * network is up and the plugin is listening, tapping converges on a connection.
+   *
+   * Returns false when local network access is denied, so the caller can ask for access rather than
+   * showing an attempt that cannot succeed.
    */
   fun toggleConnection(): Boolean {
-    if (!isConnectingOrConnected() && !localNetworkAccess.isPermitted()) {
+    val disconnecting = isConnected()
+    if (!disconnecting && !localNetworkAccess.isPermitted()) {
       connectionStatePublisher.updateConnection(ConnectionStatus.LocalNetworkDenied)
       return false
     }
     viewModelScope.launch {
-      if (isConnectingOrConnected()) {
-        // Notify that this is an intentional disconnect to prevent reconnection
+      if (disconnecting) {
         serviceLifecycleManager.onIntentionalDisconnect()
         clientConnectionUseCase.disconnect()
       } else {
-        // Ensure service is running before connecting (same as BaseActivity)
+        serviceLifecycleManager.onManualReconnect()
         serviceChecker.startServiceIfNotRunning()
-        clientConnectionUseCase.connect()
+        clientConnectionUseCase.connect(reset = true)
       }
     }
     return true

@@ -8,7 +8,9 @@ import com.kelsos.mbrc.core.common.state.ConnectionStatus
 import com.kelsos.mbrc.core.common.test.coroutineTestTimeout
 import com.kelsos.mbrc.core.common.test.testDispatcher
 import com.kelsos.mbrc.core.common.test.testDispatcherModule
+import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.networking.ClientConnectionManagerImpl
+import com.kelsos.mbrc.core.networking.ConnectionCycleInfo
 import com.kelsos.mbrc.core.networking.ConnectionProvider
 import com.kelsos.mbrc.core.networking.Listener
 import com.kelsos.mbrc.core.networking.LocalNetworkAccess
@@ -29,10 +31,13 @@ import io.mockk.verify
 import java.net.ServerSocket
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -66,6 +71,7 @@ class ClientConnectionManagerImplTest : KoinTest {
     }
 
   private var localNetworkPermitted = true
+  private var attemptThread: String? = null
 
   private val connectionManager: ClientConnectionManagerImpl by inject()
   private val activityChecker: SocketActivityChecker by inject()
@@ -76,7 +82,8 @@ class ClientConnectionManagerImplTest : KoinTest {
   private val uiMessageQueue: UiMessageQueue by inject()
 
   private val connectionStateFlow = MutableStateFlow<ConnectionStatus>(ConnectionStatus.Offline)
-  private val uiMessageFlow = MutableSharedFlow<UiMessage>(extraBufferCapacity = 5)
+  private val publishedStates = mutableListOf<ConnectionStatus>()
+  private val uiMessageFlow = MutableSharedFlow<UiMessage>(replay = 10, extraBufferCapacity = 5)
 
   @Before
   fun setUp() {
@@ -84,9 +91,12 @@ class ClientConnectionManagerImplTest : KoinTest {
       modules(listOf(testModule, testDispatcherModule))
     }
 
+    publishedStates.clear()
+
     // Setup mock connection state flow
     every { connectionState.connection } returns connectionStateFlow
     coEvery { connectionState.updateConnection(any()) } answers {
+      publishedStates += firstArg<ConnectionStatus>()
       connectionStateFlow.value = firstArg()
     }
 
@@ -252,6 +262,213 @@ class ClientConnectionManagerImplTest : KoinTest {
 
       // Then - Should handle multiple starts without issues
       verify(atLeast = 1) { connectionProvider.getDefault() }
+    }
+  }
+
+  /**
+   * The blocking socket connect must not run on the caller's dispatcher. Both production callers
+   * suspend on the main dispatcher, where a blocking connect throws NetworkOnMainThreadException
+   * on a device and runCatching would swallow it into a permanently failing attempt.
+   *
+   * Built by hand rather than through Koin because the shared test dispatchers are one instance
+   * for all four roles, which cannot tell the io dispatcher apart from the caller's. The thread
+   * name is asserted as a prefix because the coroutine debug agent appends a "@coroutine#n" suffix.
+   */
+  @Test
+  fun `connect performs socket work on the io dispatcher`() {
+    val ioThreads = Executors.newSingleThreadExecutor { runnable ->
+      Thread(runnable, IO_THREAD_NAME)
+    }
+    try {
+      val dispatchers = object : AppCoroutineDispatchers {
+        override val main: CoroutineDispatcher = testDispatcher
+        override val io: CoroutineDispatcher = ioThreads.asCoroutineDispatcher()
+        override val database: CoroutineDispatcher = testDispatcher
+        override val network: CoroutineDispatcher = testDispatcher
+      }
+      val manager = ClientConnectionManagerImpl(
+        activityChecker,
+        messageHandler,
+        Moshi.Builder().build(),
+        connectionProvider,
+        connectionState,
+        dispatchers,
+        uiMessageQueue,
+        pendingCommands,
+        LocalNetworkAccess { true }
+      )
+
+      val unusedPort = ServerSocket(0).use { it.localPort }
+      every { connectionProvider.getDefault() } answers {
+        attemptThread = Thread.currentThread().name
+        createConnectionSettings(unusedPort)
+      }
+
+      runBlocking { manager.connect() }
+
+      assertThat(attemptThread).startsWith(IO_THREAD_NAME)
+      manager.stop()
+    } finally {
+      ioThreads.shutdownNow()
+    }
+  }
+
+  /**
+   * The service is started asynchronously and calls start() itself, so it can land on top of an
+   * attempt the drawer or the retry driver already has in flight. Tearing that down would leave
+   * the caller awaiting a handshake for a connection that no longer exists.
+   */
+  @Test
+  fun `start yields to an attempt that is already in flight`() {
+    runTest(testDispatcher) {
+      connectionStateFlow.value = ConnectionStatus.Connecting(cycle = 1, maxCycles = 5)
+      every { connectionProvider.getDefault() } returns null
+
+      connectionManager.start()
+      testDispatcher.scheduler.advanceUntilIdle()
+
+      verify(exactly = 0) { connectionProvider.getDefault() }
+    }
+  }
+
+  @Test
+  fun `start yields while a handshake is in progress`() {
+    runTest(testDispatcher) {
+      connectionStateFlow.value = ConnectionStatus.Authenticating
+      every { connectionProvider.getDefault() } returns null
+
+      connectionManager.start()
+      testDispatcher.scheduler.advanceUntilIdle()
+
+      verify(exactly = 0) { connectionProvider.getDefault() }
+    }
+  }
+
+  @Test
+  fun `a failed connect makes exactly one attempt`() {
+    runTest(testDispatcher) {
+      val unusedPort = ServerSocket(0).use { it.localPort }
+      every { connectionProvider.getDefault() } returns createConnectionSettings(unusedPort)
+
+      val connected = connectionManager.connect()
+
+      assertThat(connected).isFalse()
+      verify(exactly = 1) { connectionProvider.getDefault() }
+      verify { connectionState.updateConnection(ConnectionStatus.Offline) }
+    }
+  }
+
+  /**
+   * The handshake is the one round trip with no timeout of its own, so a server that accepts the
+   * socket and then says nothing used to leave the app in Authenticating forever.
+   *
+   * Reaching Authenticating is asserted alongside the failure, because it is what proves the
+   * attempt died on the silent handshake rather than on the connect.
+   *
+   * This is the one test that has to run on wall-clock time. The handshake deadline is a
+   * `withTimeoutOrNull`, and on [testDispatcher] its clock is the same single thread that the
+   * blocking socket read parks: virtual time cannot advance, so the deadline never fires and the
+   * attempt escapes only when the socket's own [Connection.SO_TIMEOUT] expires 30s later. A real
+   * pool lets the deadline fire on schedule, at the cost of the handshake timeout in real seconds.
+   */
+  @Test
+  fun `a socket that never completes the handshake is reported as a failed attempt`() {
+    val server = ServerSocket(0)
+    val executor = Executors.newCachedThreadPool()
+    val ioThreads = Executors.newCachedThreadPool { runnable ->
+      Thread(runnable, IO_THREAD_NAME)
+    }
+    try {
+      val accepted = mutableListOf<java.net.Socket>()
+      executor.execute {
+        while (!server.isClosed) {
+          runCatching { accepted += server.accept() }
+        }
+      }
+      every { connectionProvider.getDefault() } returns
+        createConnectionSettings(server.localPort)
+      coEvery { messageHandler.processOutgoing(any()) } coAnswers { awaitCancellation() }
+
+      val manager = ClientConnectionManagerImpl(
+        activityChecker,
+        messageHandler,
+        Moshi.Builder().build(),
+        connectionProvider,
+        connectionState,
+        realIoDispatchers(ioThreads.asCoroutineDispatcher()),
+        uiMessageQueue,
+        pendingCommands,
+        LocalNetworkAccess { true }
+      )
+
+      val connected = runBlocking { manager.connect() }
+
+      assertThat(connected).isFalse()
+      verify { connectionState.updateConnection(ConnectionStatus.Authenticating) }
+      verify { connectionState.updateConnection(ConnectionStatus.Offline) }
+      verify { activityChecker.stop() }
+      manager.stop()
+    } finally {
+      server.close()
+      executor.shutdownNow()
+      ioThreads.shutdownNow()
+    }
+  }
+
+  private fun realIoDispatchers(io: CoroutineDispatcher): AppCoroutineDispatchers =
+    object : AppCoroutineDispatchers {
+      override val main: CoroutineDispatcher = testDispatcher
+      override val io: CoroutineDispatcher = io
+      override val database: CoroutineDispatcher = testDispatcher
+      override val network: CoroutineDispatcher = testDispatcher
+    }
+
+  companion object {
+    private const val IO_THREAD_NAME = "mbrc-test-io"
+  }
+
+  /**
+   * Offline is what the state manager reads as a connection loss, so publishing it on the way into
+   * an attempt makes a restart look like a fresh drop and starts a second retry loop alongside the
+   * attempt that is already running.
+   */
+  @Test
+  fun `starting an attempt does not announce offline first`() {
+    runTest(testDispatcher) {
+      val unusedPort = ServerSocket(0).use { it.localPort }
+      every { connectionProvider.getDefault() } returns createConnectionSettings(unusedPort)
+
+      connectionManager.connect()
+
+      assertThat(publishedStates.first()).isInstanceOf(ConnectionStatus.Connecting::class.java)
+    }
+  }
+
+  /**
+   * The retry driver reports the whole sequence once when it gives up, so an attempt it made must
+   * stay quiet. Otherwise a single outage queues one long snackbar per cycle.
+   */
+  @Test
+  fun `a failed attempt inside the retry loop tells the user nothing`() {
+    runTest(testDispatcher) {
+      val unusedPort = ServerSocket(0).use { it.localPort }
+      every { connectionProvider.getDefault() } returns createConnectionSettings(unusedPort)
+
+      connectionManager.connect(ConnectionCycleInfo(cycle = 2, maxCycles = 5))
+
+      assertThat(uiMessageFlow.replayCache).isEmpty()
+    }
+  }
+
+  @Test
+  fun `a failed attempt the user asked for tells them why`() {
+    runTest(testDispatcher) {
+      val unusedPort = ServerSocket(0).use { it.localPort }
+      every { connectionProvider.getDefault() } returns createConnectionSettings(unusedPort)
+
+      connectionManager.connect()
+
+      assertThat(uiMessageFlow.replayCache).isNotEmpty()
     }
   }
 

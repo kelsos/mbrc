@@ -31,6 +31,7 @@ class RemoteService : Service() {
       return
     }
     ServiceState.setRunning(true)
+    ServiceState.setStopping(false)
     ContextCompat.registerReceiver(
       this,
       receiver,
@@ -79,6 +80,7 @@ class RemoteService : Service() {
     appStateManager.stop()
     connectionManager.stop()
     ServiceState.setStopping(true)
+    ServiceState.setRunning(false)
     ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
     if (receiverRegistered) {
       unregisterReceiver(receiver)
@@ -87,7 +89,6 @@ class RemoteService : Service() {
     handler.postDelayed(
       {
         ServiceState.setStopping(false)
-        ServiceState.setRunning(false)
         Timber.d("Background Service::Destroyed")
       },
       DESTROY_DELAY_MS

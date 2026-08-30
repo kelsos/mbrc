@@ -153,9 +153,12 @@ class PendingCommandBuffer(
   companion object {
     /**
      * A dropped command is worth replaying only while the user still expects it to happen, but the
-     * window has to outlast a reconnect or nothing is ever replayed: the service waits
-     * `ServiceLifecycleManager.RECONNECTION_DELAY_MS` (15s) before reconnecting, and the connection
-     * manager adds its own start delay on top of that.
+     * window has to outlast a reconnect or nothing is ever replayed.
+     *
+     * The retry driver waits 5s before its first attempt and widens the gap by 5s each time, so
+     * this covers roughly the first three cycles. That is deliberately short of the driver's full
+     * budget: a reconnect that succeeds does so early, and a command the user issued a minute ago
+     * is no longer one they are waiting on.
      */
     const val DEFAULT_TTL_MS = 45_000L
     const val DEFAULT_CAPACITY = 16

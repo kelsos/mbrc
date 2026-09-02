@@ -120,6 +120,7 @@ androidx-test-runner = { module = "androidx.test:runner", version.ref = "android
 androidx-test-truth = { module = "androidx.test.ext:truth", version.ref = "androidx-test-truth" }
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "androidx-viewpager2" }
 androidx-work-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "androidx-work" }
+androidx-work-testing = { module = "androidx.work:work-testing", version.ref = "androidx-work" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref= "androidx-swiperefreshlayout"}
 coilKt-coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 coilKt-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }

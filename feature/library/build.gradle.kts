@@ -33,6 +33,15 @@ android {
       ))
     }
   }
+
+  testOptions {
+    unitTests {
+      // Without this the module's Robolectric tests run with no resources at all, so anything
+      // reaching for a string fails with `Resources$NotFoundException`. That ruled out testing
+      // LibrarySyncWorker, whose notification text comes from this module's strings.
+      isIncludeAndroidResources = true
+    }
+  }
 }
 
 dependencies {
@@ -77,4 +86,5 @@ dependencies {
   testImplementation(libs.mockk)
   testImplementation(libs.robolectric)
   testImplementation(libs.androidx.room.testing)
+  testImplementation(libs.androidx.work.testing)
 }

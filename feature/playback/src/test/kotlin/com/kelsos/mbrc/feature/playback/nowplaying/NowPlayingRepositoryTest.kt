@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.core.common.data.Progress
+import com.kelsos.mbrc.core.common.test.coroutineTestTimeout
 import com.kelsos.mbrc.core.common.test.testDispatcher
 import com.kelsos.mbrc.core.common.test.testDispatcherModule
 import com.kelsos.mbrc.core.data.Database
@@ -25,7 +26,9 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -37,6 +40,9 @@ import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
 class NowPlayingRepositoryTest : KoinTest {
+  @get:Rule
+  val timeout: Timeout = coroutineTestTimeout()
+
   private val testModule =
     module {
       single<PlaybackApi> { mockk(relaxed = true) }

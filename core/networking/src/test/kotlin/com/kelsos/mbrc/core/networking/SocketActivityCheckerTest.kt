@@ -2,6 +2,7 @@ package com.kelsos.mbrc.core.networking
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.kelsos.mbrc.core.common.test.coroutineTestTimeout
 import com.kelsos.mbrc.core.common.test.testDispatcher
 import com.kelsos.mbrc.core.common.test.testDispatcherModule
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
@@ -11,7 +12,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -24,6 +27,9 @@ class SocketActivityCheckerTest : KoinTest {
 
   private val dispatchers by inject<AppCoroutineDispatchers>()
   private lateinit var activityChecker: SocketActivityChecker
+
+  @get:Rule
+  val timeout: Timeout = coroutineTestTimeout()
 
   @Before
   fun setUp() {

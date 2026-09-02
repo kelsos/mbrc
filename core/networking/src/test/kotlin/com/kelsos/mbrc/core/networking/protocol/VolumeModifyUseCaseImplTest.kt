@@ -3,6 +3,7 @@ package com.kelsos.mbrc.core.networking.protocol
 import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.core.common.state.AppStateFlow
 import com.kelsos.mbrc.core.common.state.PlayerStatusModel
+import com.kelsos.mbrc.core.common.test.coroutineTestTimeout
 import com.kelsos.mbrc.core.common.test.testDispatcher
 import com.kelsos.mbrc.core.common.test.testDispatchers
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
@@ -22,9 +23,14 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
 
 class VolumeModifyUseCaseImplTest {
+  @get:Rule
+  val timeout: Timeout = coroutineTestTimeout()
+
   private lateinit var appStateFlow: AppStateFlow
   private lateinit var messageQueue: MessageQueue
   private lateinit var volumeModifyUseCase: VolumeModifyUseCaseImpl

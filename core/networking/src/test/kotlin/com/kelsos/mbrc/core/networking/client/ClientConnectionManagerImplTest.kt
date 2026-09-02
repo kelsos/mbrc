@@ -5,6 +5,7 @@ import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.core.common.data.ConnectionSettings
 import com.kelsos.mbrc.core.common.state.ConnectionStatePublisher
 import com.kelsos.mbrc.core.common.state.ConnectionStatus
+import com.kelsos.mbrc.core.common.test.coroutineTestTimeout
 import com.kelsos.mbrc.core.common.test.testDispatcher
 import com.kelsos.mbrc.core.common.test.testDispatcherModule
 import com.kelsos.mbrc.core.networking.ClientConnectionManagerImpl
@@ -35,7 +36,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -46,6 +49,9 @@ import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
 class ClientConnectionManagerImplTest : KoinTest {
+  @get:Rule
+  val timeout: Timeout = coroutineTestTimeout()
+
   private val testModule =
     module {
       single<SocketActivityChecker> { mockk(relaxed = true) }

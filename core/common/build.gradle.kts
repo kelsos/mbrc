@@ -39,6 +39,7 @@ dependencies {
   testImplementation(libs.androidx.test.junit)
 
   // Test fixtures dependencies
+  testFixturesApi(libs.androidx.test.junit)
   testFixturesImplementation(libs.kotlin.coroutines.test)
   testFixturesImplementation(libs.koin.test)
   testFixturesImplementation(libs.squareup.moshi.lib)

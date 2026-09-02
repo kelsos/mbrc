@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.core.common.state.ConnectionStatePublisher
 import com.kelsos.mbrc.core.common.state.ConnectionStatus
+import com.kelsos.mbrc.core.common.test.coroutineTestTimeout
 import com.kelsos.mbrc.core.common.test.testDispatcher
 import com.kelsos.mbrc.core.common.test.testDispatcherModule
 import com.kelsos.mbrc.core.networking.ClientConnectionUseCase
@@ -22,7 +23,9 @@ import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -32,6 +35,9 @@ import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
 class ServiceLifecycleManagerImplTest : KoinTest {
+  @get:Rule
+  val timeout: Timeout = coroutineTestTimeout()
+
   private val application: Application = mockk(relaxed = true)
   private val connectionUseCase: ClientConnectionUseCase = mockk(relaxed = true)
   private val connectionState: ConnectionStatePublisher = mockk(relaxed = true)

@@ -29,6 +29,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import timber.log.Timber
 
+/**
+ * The range `PlayerStatusModel.volume` declares with `@IntRange`, which nothing else enforces.
+ * Inbound values are clamped to it so a plugin reporting something outside cannot drive the volume
+ * slider off its track.
+ */
+private val VOLUME_RANGE = 0..100
+
 class UpdateLastFm(private val stateHandler: PlayerStateHandler) : ProtocolAction {
   override suspend fun execute(message: ProtocolMessage) {
     val previousState = stateHandler.playerStatus.firstOrNull() ?: PlayerStatusModel()
@@ -122,7 +129,7 @@ class UpdatePlayerStatus(private val stateHandler: PlayerStateHandler, moshi: Mo
         repeat = Repeat.fromString(status.repeat),
         shuffle = ShuffleMode.fromString(status.shuffle),
         scrobbling = status.scrobbling,
-        volume = status.volume
+        volume = status.volume.coerceIn(VOLUME_RANGE)
       )
     )
   }
@@ -181,11 +188,17 @@ class UpdateShuffle(private val stateHandler: PlayerStateHandler) : ProtocolActi
   }
 }
 
+/**
+ * Applies a volume the plugin reports, sent as either a number or a string.
+ *
+ * A value that is neither leaves the volume untouched. It used to be cast straight to `Number`, so
+ * anything else threw and the update was dropped by the dispatcher's catch-all.
+ */
 class UpdateVolume(private val stateHandler: PlayerStateHandler) : ProtocolAction {
   override suspend fun execute(message: ProtocolMessage) {
-    val volume = message.data as Number
+    val volume = message.data.toString().toDoubleOrNull()?.toInt() ?: return
     val previousState = stateHandler.playerStatus.firstOrNull() ?: PlayerStatusModel()
-    stateHandler.updatePlayerStatus(previousState.copy(volume = volume.toInt()))
+    stateHandler.updatePlayerStatus(previousState.copy(volume = volume.coerceIn(VOLUME_RANGE)))
   }
 }
 

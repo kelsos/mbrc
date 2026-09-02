@@ -133,7 +133,32 @@ subprojects {
 }
 
 
-kover {}
+/**
+ * Coverage is only meaningful over code somebody wrote. Room DAO/database implementations, Moshi
+ * adapters, protobuf message classes and Compose's lambda singletons are all emitted by a tool, so
+ * counting them measures the code generators rather than this project. Left in, they contributed
+ * roughly 2,200 uncovered lines and pulled the reported figure several points below the real one.
+ */
+kover {
+  reports {
+    filters {
+      excludes {
+        androidGeneratedClasses()
+        // The `$*` variants are not redundant: a glob on the class name stops at the `$`, so
+        // `*_Impl` alone leaves Room's nested query classes (`TrackDao_Impl$searchByTitleDesc$1`)
+        // counted as hand-written code. They were the entire remainder of the generated bucket.
+        classes(
+          "*JsonAdapter",
+          "*JsonAdapter$*",
+          "*_Impl",
+          "*_Impl$*",
+          "*ComposableSingletons*",
+          "com.kelsos.mbrc.store.*"
+        )
+      }
+    }
+  }
+}
 
 val dummyGoogleServices: Configuration by configurations.creating {
   isCanBeConsumed = true

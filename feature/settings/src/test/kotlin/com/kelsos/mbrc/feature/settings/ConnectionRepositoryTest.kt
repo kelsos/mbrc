@@ -8,14 +8,17 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import com.kelsos.mbrc.core.common.data.ConnectionSettings
 import com.kelsos.mbrc.core.common.test.testDispatcher
 import com.kelsos.mbrc.core.common.test.testDispatcherModule
 import com.kelsos.mbrc.core.data.Database
 import com.kelsos.mbrc.core.data.settings.ConnectionDao
+import com.kelsos.mbrc.core.networking.discovery.DiscoveryStop
 import com.kelsos.mbrc.core.networking.discovery.RemoteServiceDiscovery
 import com.kelsos.mbrc.feature.settings.domain.ConnectionRepository
 import com.kelsos.mbrc.feature.settings.domain.ConnectionRepositoryImpl
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -36,6 +39,8 @@ class ConnectionRepositoryTest : KoinTest {
   private val repository: ConnectionRepository by inject()
 
   private val db: Database by inject()
+
+  private val discovery: RemoteServiceDiscovery by inject()
 
   private val testModule =
     module {
@@ -264,6 +269,61 @@ class ConnectionRepositoryTest : KoinTest {
       repository.save(withId[0].copy(address = newAddress))
 
       assertThat(repository.getDefault()?.address).isEqualTo(newAddress)
+    }
+  }
+
+  @Test
+  fun discoveredHostsAreSaved() {
+    runTest(testDispatcher) {
+      val (_, withoutId) = generateSettings(2)
+      coEvery { discovery.discover() } returns DiscoveryStop.Complete(withoutId)
+
+      repository.discover()
+
+      assertThat(repository.count()).isEqualTo(2)
+      val snapshot = repository.getAll().asSnapshot()
+      assertThat(snapshot.map { it.address })
+        .containsExactlyElementsIn(withoutId.map { it.address })
+    }
+  }
+
+  @Test
+  fun discoveringAKnownHostDoesNotDuplicateIt() {
+    runTest(testDispatcher) {
+      val (_, withoutId) = generateSettings(2)
+      repository.save(withoutId[0])
+      coEvery { discovery.discover() } returns DiscoveryStop.Complete(withoutId)
+
+      repository.discover()
+
+      assertWithMessage("the already saved host should not be stored twice")
+        .that(repository.count())
+        .isEqualTo(2)
+    }
+  }
+
+  @Test
+  fun rescanningDoesNotGrowTheStoredHosts() {
+    runTest(testDispatcher) {
+      val (_, withoutId) = generateSettings(3)
+      coEvery { discovery.discover() } returns DiscoveryStop.Complete(withoutId)
+
+      repository.discover()
+      repository.discover()
+
+      assertThat(repository.count()).isEqualTo(3)
+    }
+  }
+
+  @Test
+  fun anUnsuccessfulDiscoveryIsReportedUnchanged() {
+    runTest(testDispatcher) {
+      coEvery { discovery.discover() } returns DiscoveryStop.NotFound
+
+      val result = repository.discover()
+
+      assertThat(result).isEqualTo(DiscoveryStop.NotFound)
+      assertThat(repository.count()).isEqualTo(0)
     }
   }
 

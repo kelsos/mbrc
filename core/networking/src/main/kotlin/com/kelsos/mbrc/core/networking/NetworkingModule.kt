@@ -21,8 +21,11 @@ import com.kelsos.mbrc.core.networking.data.DeserializationAdapter
 import com.kelsos.mbrc.core.networking.data.DeserializationAdapterImpl
 import com.kelsos.mbrc.core.networking.data.SerializationAdapter
 import com.kelsos.mbrc.core.networking.data.SerializationAdapterImpl
+import com.kelsos.mbrc.core.networking.discovery.DiscoveryNetwork
+import com.kelsos.mbrc.core.networking.discovery.DiscoveryTiming
 import com.kelsos.mbrc.core.networking.discovery.RemoteServiceDiscovery
 import com.kelsos.mbrc.core.networking.discovery.RemoteServiceDiscoveryImpl
+import com.kelsos.mbrc.core.networking.discovery.SystemDiscoveryNetwork
 import com.kelsos.mbrc.core.networking.protocol.Clock
 import com.kelsos.mbrc.core.networking.protocol.SelfMutationConfig
 import com.kelsos.mbrc.core.networking.protocol.SelfMutationTracker
@@ -103,6 +106,8 @@ val networkingModule = module {
   singleOf(::MessageHandlerImpl) { bind<MessageHandler>() }
 
   // Discovery
+  singleOf(::SystemDiscoveryNetwork) { bind<DiscoveryNetwork>() }
+  single { DiscoveryTiming.SHIPPED }
   singleOf(::RemoteServiceDiscoveryImpl) { bind<RemoteServiceDiscovery>() }
 
   // Domain-specific API implementations

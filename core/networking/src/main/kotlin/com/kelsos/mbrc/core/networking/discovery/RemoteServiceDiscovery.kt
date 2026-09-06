@@ -23,11 +23,91 @@ fun interface RemoteServiceDiscovery {
   suspend fun discover(): DiscoveryStop
 }
 
+/**
+ * The networking primitives a scan needs, behind an interface so a test can drive a fake LAN
+ * instead of real multicast traffic.
+ */
+interface DiscoveryNetwork {
+  /** Opens a socket joined to [group] on [port], giving up on a read after [timeoutMs]. */
+  fun open(group: InetAddress, port: Int, timeoutMs: Int): MulticastSocket
+
+  /** The local IPv4 address announced to the plugin, or null when the host has none. */
+  fun localAddress(): String?
+}
+
+class SystemDiscoveryNetwork : DiscoveryNetwork {
+  override fun open(group: InetAddress, port: Int, timeoutMs: Int): MulticastSocket =
+    MulticastSocket(port).apply {
+      soTimeout = timeoutMs
+      joinGroup(group)
+    }
+
+  override fun localAddress(): String? = try {
+    findIpV4Address()
+  } catch (e: SocketException) {
+    Timber.e(e, "Failed to get wifi address")
+    null
+  }
+
+  private fun findIpV4Address(): String? {
+    val interfaces = NetworkInterface.getNetworkInterfaces()
+    for (networkInterface in interfaces) {
+      if (!networkInterface.isUp || networkInterface.isLoopback) continue
+      for (address in networkInterface.inetAddresses) {
+        if (address !is Inet4Address || address.isLoopbackAddress) continue
+        return address.hostAddress
+      }
+    }
+    return null
+  }
+}
+
+/**
+ * How long a scan listens and how often it repeats itself. [SHIPPED] carries the tuned values; a
+ * test substitutes shorter ones so a scan does not take the seconds those are tuned for.
+ */
+data class DiscoveryTiming(
+  val responseTimeoutMs: Int,
+  val collectionWindowMs: Long,
+  val postFirstGatherMs: Long,
+  val rebroadcastIntervalMs: Long
+) {
+  companion object {
+    val SHIPPED = DiscoveryTiming(
+      responseTimeoutMs = RESPONSE_TIMEOUT,
+      collectionWindowMs = COLLECTION_WINDOW_MS,
+      postFirstGatherMs = POST_FIRST_GATHER_MS,
+      rebroadcastIntervalMs = REBROADCAST_INTERVAL_MS
+    )
+
+    private const val RESPONSE_TIMEOUT = 500
+
+    // Maximum time the receiver listens for NOTIFY messages on a single
+    // scan when nobody has answered yet. Long enough for slow first
+    // responders without making the no-host case painful.
+    private const val COLLECTION_WINDOW_MS = 4000L
+
+    // Once the first NOTIFY has arrived, the loop keeps listening for
+    // this much longer to collect siblings on multi-host LANs, then
+    // returns. Tuned so single-host auto-connect doesn't pay the full
+    // collection window and so peers responding to the same broadcast
+    // (which generally answer within a few hundred ms of each other) all
+    // make it into the result.
+    private const val POST_FIRST_GATHER_MS = 1000L
+
+    // How often the discovery packet is re-broadcast inside the collection
+    // window so a single dropped multicast packet doesn't hide a host.
+    private const val REBROADCAST_INTERVAL_MS = 1000L
+  }
+}
+
 class RemoteServiceDiscoveryImpl(
   private val manager: WifiManager,
   private val connectivityManager: ConnectivityManager,
   private val localNetworkAccess: LocalNetworkAccess,
-  moshi: Moshi
+  moshi: Moshi,
+  private val network: DiscoveryNetwork,
+  private val timing: DiscoveryTiming
 ) : RemoteServiceDiscovery {
   private val adapter = moshi.adapter(DiscoveryMessage::class.java)
 
@@ -50,11 +130,7 @@ class RemoteServiceDiscoveryImpl(
     val group = InetAddress.getByName(DISCOVERY_ADDRESS)
     var socket: MulticastSocket? = null
     try {
-      socket =
-        MulticastSocket(MULTICAST_PORT).apply {
-          soTimeout = RESPONSE_TIMEOUT
-          joinGroup(group)
-        }
+      socket = network.open(group, MULTICAST_PORT, timing.responseTimeoutMs)
 
       val data =
         adapter
@@ -82,12 +158,12 @@ class RemoteServiceDiscoveryImpl(
 
   /**
    * Collects every unique NOTIFY response that arrives within
-   * [COLLECTION_WINDOW_MS]. Re-broadcasts the discovery packet every
-   * [REBROADCAST_INTERVAL_MS] to combat UDP/multicast packet loss on
+   * [DiscoveryTiming.collectionWindowMs]. Re-broadcasts the discovery packet every
+   * [DiscoveryTiming.rebroadcastIntervalMs] to combat UDP/multicast packet loss on
    * multi-host LANs (the original single-broadcast scan often missed
    * peers on the first try). De-duplicates by `(address, port)`.
    *
-   * Returns early [POST_FIRST_GATHER_MS] after the first NOTIFY arrives
+   * Returns early [DiscoveryTiming.postFirstGatherMs] after the first NOTIFY arrives
    * — siblings on the same LAN typically answer within ~1s of each
    * other, so the full 4s window is only paid when nobody answers.
    * This keeps the auto-connect cold-start path fast.
@@ -105,8 +181,8 @@ class RemoteServiceDiscoveryImpl(
     while (true) {
       yield()
       val now = System.currentTimeMillis()
-      if (now - startTime >= COLLECTION_WINDOW_MS) break
-      if (firstResponseAt != null && now - firstResponseAt >= POST_FIRST_GATHER_MS) break
+      if (now - startTime >= timing.collectionWindowMs) break
+      if (firstResponseAt != null && now - firstResponseAt >= timing.postFirstGatherMs) break
 
       val message = getDiscoveryMessage(socket)
       if (message != null && message.context == NOTIFY) {
@@ -115,7 +191,7 @@ class RemoteServiceDiscoveryImpl(
           firstResponseAt = System.currentTimeMillis()
         }
       }
-      if (System.currentTimeMillis() - lastBroadcast >= REBROADCAST_INTERVAL_MS) {
+      if (System.currentTimeMillis() - lastBroadcast >= timing.rebroadcastIntervalMs) {
         rebroadcastDiscovery(socket)
         lastBroadcast = System.currentTimeMillis()
       }
@@ -179,30 +255,7 @@ class RemoteServiceDiscoveryImpl(
     null
   }
 
-  private fun getWifiAddress(): String? {
-    if (!isWifiConnected()) {
-      return null
-    }
-
-    return try {
-      findIpV4Address()
-    } catch (e: SocketException) {
-      Timber.e(e, "Failed to get wifi address")
-      null
-    }
-  }
-
-  private fun findIpV4Address(): String? {
-    val interfaces = NetworkInterface.getNetworkInterfaces()
-    for (networkInterface in interfaces) {
-      if (!networkInterface.isUp || networkInterface.isLoopback) continue
-      for (address in networkInterface.inetAddresses) {
-        if (address !is Inet4Address || address.isLoopbackAddress) continue
-        return address.hostAddress
-      }
-    }
-    return null
-  }
+  private fun getWifiAddress(): String? = if (isWifiConnected()) network.localAddress() else null
 
   private fun isWifiConnected(): Boolean {
     val network = connectivityManager.activeNetwork
@@ -238,25 +291,7 @@ class RemoteServiceDiscoveryImpl(
   companion object {
     private const val BUFFER_SIZE = 1024
     private const val NOTIFY = "notify"
-    private const val RESPONSE_TIMEOUT = 500
     private const val MULTICAST_PORT = 45345
     private const val DISCOVERY_ADDRESS = "239.1.5.10"
-
-    // Maximum time the receiver listens for NOTIFY messages on a single
-    // scan when nobody has answered yet. Long enough for slow first
-    // responders without making the no-host case painful.
-    private const val COLLECTION_WINDOW_MS = 4000L
-
-    // Once the first NOTIFY has arrived, the loop keeps listening for
-    // this much longer to collect siblings on multi-host LANs, then
-    // returns. Tuned so single-host auto-connect doesn't pay the full
-    // COLLECTION_WINDOW_MS and so peers responding to the same broadcast
-    // (which generally answer within a few hundred ms of each other) all
-    // make it into the result.
-    private const val POST_FIRST_GATHER_MS = 1000L
-
-    // How often the discovery packet is re-broadcast inside the collection
-    // window so a single dropped multicast packet doesn't hide a host.
-    private const val REBROADCAST_INTERVAL_MS = 1000L
   }
 }

@@ -14,12 +14,7 @@ import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
-/**
- * Covers the two guards [RemoteServiceDiscoveryImpl.discover] applies before it opens a socket.
- *
- * The scan itself is not covered: it builds its own [java.net.MulticastSocket], so there is no
- * seam to substitute, and a unit test would depend on real multicast traffic.
- */
+/** Covers the two guards [RemoteServiceDiscoveryImpl.discover] applies before it opens a socket. */
 class RemoteServiceDiscoveryImplTest {
   private val wifiManager: WifiManager = mockk(relaxed = true)
   private val connectivityManager: ConnectivityManager = mockk()
@@ -29,7 +24,9 @@ class RemoteServiceDiscoveryImplTest {
     wifiManager,
     connectivityManager,
     LocalNetworkAccess { permitted },
-    moshi
+    moshi,
+    mockk(relaxed = true),
+    DiscoveryTiming.SHIPPED
   )
 
   private fun onWifi(connected: Boolean) {

@@ -26,7 +26,9 @@ class RemoteServiceDiscoveryImplTest {
     LocalNetworkAccess { permitted },
     moshi,
     mockk(relaxed = true),
-    DiscoveryTiming.SHIPPED
+    mockk(relaxed = true),
+    DiscoveryTiming.SHIPPED,
+    { 0L }
   )
 
   private fun onWifi(connected: Boolean) {

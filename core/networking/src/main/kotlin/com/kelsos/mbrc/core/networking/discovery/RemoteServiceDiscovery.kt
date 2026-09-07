@@ -4,6 +4,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import com.kelsos.mbrc.core.networking.LocalNetworkAccess
+import com.kelsos.mbrc.core.networking.protocol.Clock
 import com.kelsos.mbrc.core.networking.protocol.base.Protocol
 import com.squareup.moshi.Moshi
 import java.io.IOException
@@ -11,7 +12,6 @@ import java.net.DatagramPacket
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.MulticastSocket
-import java.net.NetworkInterface
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import kotlinx.coroutines.yield
@@ -24,42 +24,28 @@ fun interface RemoteServiceDiscovery {
 }
 
 /**
- * The networking primitives a scan needs, behind an interface so a test can drive a fake LAN
- * instead of real multicast traffic.
+ * Binds a multicast socket to [port] and nothing else: the read timeout and the group to join are
+ * the scan's decisions, so they stay in [RemoteServiceDiscoveryImpl] where a test can observe them.
+ * This exists only because `MulticastSocket(port)` cannot be substituted otherwise.
  */
-interface DiscoveryNetwork {
-  /** Opens a socket joined to [group] on [port], giving up on a read after [timeoutMs]. */
-  fun open(group: InetAddress, port: Int, timeoutMs: Int): MulticastSocket
-
-  /** The local IPv4 address announced to the plugin, or null when the host has none. */
-  fun localAddress(): String?
+fun interface MulticastSockets {
+  fun bind(port: Int): MulticastSocket
 }
 
-class SystemDiscoveryNetwork : DiscoveryNetwork {
-  override fun open(group: InetAddress, port: Int, timeoutMs: Int): MulticastSocket =
-    MulticastSocket(port).apply {
-      soTimeout = timeoutMs
-      joinGroup(group)
-    }
+/** One local network interface, reduced to what picking an announce address needs. */
+data class LocalInterface(
+  val isUp: Boolean,
+  val isLoopback: Boolean,
+  val addresses: List<InetAddress>
+)
 
-  override fun localAddress(): String? = try {
-    findIpV4Address()
-  } catch (e: SocketException) {
-    Timber.e(e, "Failed to get wifi address")
-    null
-  }
-
-  private fun findIpV4Address(): String? {
-    val interfaces = NetworkInterface.getNetworkInterfaces()
-    for (networkInterface in interfaces) {
-      if (!networkInterface.isUp || networkInterface.isLoopback) continue
-      for (address in networkInterface.inetAddresses) {
-        if (address !is Inet4Address || address.isLoopbackAddress) continue
-        return address.hostAddress
-      }
-    }
-    return null
-  }
+/**
+ * The host's network interfaces. A seam over `NetworkInterface.getNetworkInterfaces()` only; which
+ * of them can carry the announcement is decided by [RemoteServiceDiscoveryImpl].
+ */
+fun interface NetworkInterfaces {
+  @Throws(SocketException::class)
+  fun all(): List<LocalInterface>
 }
 
 /**
@@ -106,8 +92,10 @@ class RemoteServiceDiscoveryImpl(
   private val connectivityManager: ConnectivityManager,
   private val localNetworkAccess: LocalNetworkAccess,
   moshi: Moshi,
-  private val network: DiscoveryNetwork,
-  private val timing: DiscoveryTiming
+  private val sockets: MulticastSockets,
+  private val networkInterfaces: NetworkInterfaces,
+  private val timing: DiscoveryTiming,
+  private val clock: Clock
 ) : RemoteServiceDiscovery {
   private val adapter = moshi.adapter(DiscoveryMessage::class.java)
 
@@ -126,21 +114,18 @@ class RemoteServiceDiscoveryImpl(
     }
   }
 
-  private suspend fun <T> useMulticastSocket(block: suspend (socket: MulticastSocket) -> T): T {
+  private suspend fun <T> useMulticastSocket(
+    address: String,
+    block: suspend (socket: MulticastSocket) -> T
+  ): T {
     val group = InetAddress.getByName(DISCOVERY_ADDRESS)
     var socket: MulticastSocket? = null
     try {
-      socket = network.open(group, MULTICAST_PORT, timing.responseTimeoutMs)
-
-      val data =
-        adapter
-          .toJson(
-            DiscoveryMessage(
-              context = Protocol.DISCOVERY,
-              address = requireNotNull(getWifiAddress())
-            )
-          ).toByteArray()
-      socket.send(DatagramPacket(data, data.size, group, MULTICAST_PORT))
+      socket = sockets.bind(MULTICAST_PORT).apply {
+        soTimeout = timing.responseTimeoutMs
+        joinGroup(group)
+      }
+      broadcastDiscovery(socket, group, address)
 
       return block(socket)
     } catch (e: IOException) {
@@ -172,15 +157,18 @@ class RemoteServiceDiscoveryImpl(
    * so a cancelled caller (screen left, scope torn down) doesn't pin
    * the network thread for the rest of the window.
    */
-  private suspend fun collectNotifyMessages(socket: MulticastSocket): List<DiscoveryMessage> {
+  private suspend fun collectNotifyMessages(
+    socket: MulticastSocket,
+    address: String
+  ): List<DiscoveryMessage> {
     val found = LinkedHashMap<Pair<String, Int>, DiscoveryMessage>()
-    val startTime = System.currentTimeMillis()
+    val startTime = clock.now()
     var firstResponseAt: Long? = null
     var lastBroadcast = startTime
 
     while (true) {
       yield()
-      val now = System.currentTimeMillis()
+      val now = clock.now()
       if (now - startTime >= timing.collectionWindowMs) break
       if (firstResponseAt != null && now - firstResponseAt >= timing.postFirstGatherMs) break
 
@@ -188,12 +176,12 @@ class RemoteServiceDiscoveryImpl(
       if (message != null && message.context == NOTIFY) {
         val isNew = found.putIfAbsent(message.address to message.port, message) == null
         if (isNew && firstResponseAt == null) {
-          firstResponseAt = System.currentTimeMillis()
+          firstResponseAt = clock.now()
         }
       }
-      if (System.currentTimeMillis() - lastBroadcast >= timing.rebroadcastIntervalMs) {
-        rebroadcastDiscovery(socket)
-        lastBroadcast = System.currentTimeMillis()
+      if (clock.now() - lastBroadcast >= timing.rebroadcastIntervalMs) {
+        rebroadcastDiscovery(socket, address)
+        lastBroadcast = clock.now()
       }
     }
 
@@ -201,17 +189,19 @@ class RemoteServiceDiscoveryImpl(
     return found.values.toList()
   }
 
-  private fun rebroadcastDiscovery(socket: MulticastSocket) {
-    val address = getWifiAddress() ?: return
-    val data = adapter.toJson(
-      DiscoveryMessage(context = Protocol.DISCOVERY, address = address)
-    ).toByteArray()
+  private fun rebroadcastDiscovery(socket: MulticastSocket, address: String) {
     try {
-      val group = InetAddress.getByName(DISCOVERY_ADDRESS)
-      socket.send(DatagramPacket(data, data.size, group, MULTICAST_PORT))
+      broadcastDiscovery(socket, InetAddress.getByName(DISCOVERY_ADDRESS), address)
     } catch (e: IOException) {
       Timber.v(e, "Re-broadcast failed; will rely on already-collected responses")
     }
+  }
+
+  private fun broadcastDiscovery(socket: MulticastSocket, group: InetAddress, address: String) {
+    val data = adapter.toJson(
+      DiscoveryMessage(context = Protocol.DISCOVERY, address = address)
+    ).toByteArray()
+    socket.send(DatagramPacket(data, data.size, group, MULTICAST_PORT))
   }
 
   override suspend fun discover(): DiscoveryStop {
@@ -224,18 +214,26 @@ class RemoteServiceDiscoveryImpl(
       return DiscoveryStop.NoWifi
     }
 
+    // The plugin answers to the address in the packet, so a wifi connection whose interfaces carry
+    // no IPv4 address has nothing to announce and no answer to expect.
+    val address = announceAddress()
+    if (address == null) {
+      Timber.w("Connected to wifi but no IPv4 address was found, nothing to announce")
+      return DiscoveryStop.NotFound
+    }
+
     return try {
-      waitForServiceNotification()
+      waitForServiceNotification(address)
     } catch (e: IOException) {
       Timber.e(e, "discovery failed")
       DiscoveryStop.NotFound
     }
   }
 
-  private suspend fun waitForServiceNotification(): DiscoveryStop {
+  private suspend fun waitForServiceNotification(address: String): DiscoveryStop {
     return useMulticastLock(manager.createMulticastLock("locked")) {
-      useMulticastSocket { socket ->
-        val messages = collectNotifyMessages(socket)
+      useMulticastSocket(address) { socket ->
+        val messages = collectNotifyMessages(socket, address)
 
         return@useMulticastSocket if (messages.isNotEmpty()) {
           DiscoveryStop.Complete(messages.map { it.toConnection() })
@@ -255,7 +253,23 @@ class RemoteServiceDiscoveryImpl(
     null
   }
 
-  private fun getWifiAddress(): String? = if (isWifiConnected()) network.localAddress() else null
+  /**
+   * The first IPv4 address on an interface that is up and is not the loopback. A down interface has
+   * no path to the plugin, and announcing a loopback or IPv6 address gives it nowhere to answer.
+   */
+  private fun announceAddress(): String? = try {
+    networkInterfaces
+      .all()
+      .asSequence()
+      .filter { it.isUp && !it.isLoopback }
+      .flatMap { it.addresses }
+      .filterIsInstance<Inet4Address>()
+      .firstOrNull { !it.isLoopbackAddress }
+      ?.hostAddress
+  } catch (e: SocketException) {
+    Timber.e(e, "Failed to get wifi address")
+    null
+  }
 
   private fun isWifiConnected(): Boolean {
     val network = connectivityManager.activeNetwork

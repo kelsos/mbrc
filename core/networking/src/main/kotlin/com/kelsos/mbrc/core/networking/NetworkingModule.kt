@@ -21,11 +21,12 @@ import com.kelsos.mbrc.core.networking.data.DeserializationAdapter
 import com.kelsos.mbrc.core.networking.data.DeserializationAdapterImpl
 import com.kelsos.mbrc.core.networking.data.SerializationAdapter
 import com.kelsos.mbrc.core.networking.data.SerializationAdapterImpl
-import com.kelsos.mbrc.core.networking.discovery.DiscoveryNetwork
 import com.kelsos.mbrc.core.networking.discovery.DiscoveryTiming
+import com.kelsos.mbrc.core.networking.discovery.LocalInterface
+import com.kelsos.mbrc.core.networking.discovery.MulticastSockets
+import com.kelsos.mbrc.core.networking.discovery.NetworkInterfaces
 import com.kelsos.mbrc.core.networking.discovery.RemoteServiceDiscovery
 import com.kelsos.mbrc.core.networking.discovery.RemoteServiceDiscoveryImpl
-import com.kelsos.mbrc.core.networking.discovery.SystemDiscoveryNetwork
 import com.kelsos.mbrc.core.networking.protocol.Clock
 import com.kelsos.mbrc.core.networking.protocol.SelfMutationConfig
 import com.kelsos.mbrc.core.networking.protocol.SelfMutationTracker
@@ -56,6 +57,8 @@ import com.kelsos.mbrc.core.networking.protocol.usecases.UserActionUseCase
 import com.kelsos.mbrc.core.networking.protocol.usecases.UserActionUseCaseImpl
 import com.kelsos.mbrc.core.networking.protocol.usecases.VolumeModifyUseCase
 import com.kelsos.mbrc.core.networking.protocol.usecases.VolumeModifyUseCaseImpl
+import java.net.MulticastSocket
+import java.net.NetworkInterface
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
@@ -106,7 +109,18 @@ val networkingModule = module {
   singleOf(::MessageHandlerImpl) { bind<MessageHandler>() }
 
   // Discovery
-  singleOf(::SystemDiscoveryNetwork) { bind<DiscoveryNetwork>() }
+  single<MulticastSockets> { MulticastSockets { port -> MulticastSocket(port) } }
+  single<NetworkInterfaces> {
+    NetworkInterfaces {
+      NetworkInterface.getNetworkInterfaces().toList().map { networkInterface ->
+        LocalInterface(
+          isUp = networkInterface.isUp,
+          isLoopback = networkInterface.isLoopback,
+          addresses = networkInterface.inetAddresses.toList()
+        )
+      }
+    }
+  }
   single { DiscoveryTiming.SHIPPED }
   singleOf(::RemoteServiceDiscoveryImpl) { bind<RemoteServiceDiscovery>() }
 

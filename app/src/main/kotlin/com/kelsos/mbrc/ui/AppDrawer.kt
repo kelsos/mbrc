@@ -36,19 +36,19 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemColors
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,10 +62,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.kelsos.mbrc.BuildConfig
 import com.kelsos.mbrc.R
 import com.kelsos.mbrc.core.common.state.ConnectionStatus
 import com.kelsos.mbrc.core.ui.theme.connection_status_connected
@@ -73,70 +69,12 @@ import com.kelsos.mbrc.core.ui.theme.connection_status_connecting
 import com.kelsos.mbrc.core.ui.theme.connection_status_offline
 import com.kelsos.mbrc.core.ui.theme.drawer_header_gradient_top_dark
 import com.kelsos.mbrc.core.ui.theme.drawer_header_gradient_top_light
-import kotlinx.coroutines.launch
-
-/**
- * Navigation drawer for the MusicBee Remote app.
- * Displays navigation items, connection status, and app info.
- */
-@Composable
-fun AppDrawer(
-  drawerState: DrawerState,
-  navController: NavController,
-  drawerViewModel: DrawerViewModel,
-  modifier: Modifier = Modifier,
-  onRequestLocalNetworkAccess: () -> Unit = {}
-) {
-  val currentBackStackEntry by navController.currentBackStackEntryAsState()
-  val currentRoute = currentBackStackEntry?.destination?.route
-  val scope = rememberCoroutineScope()
-  val connectionStatus by drawerViewModel.connectionStatus.collectAsStateWithLifecycle()
-  val connectionName by drawerViewModel.connectionName.collectAsStateWithLifecycle()
-
-  // Tapping connect while local network access is denied asks for access instead of starting a
-  // connection attempt that cannot succeed.
-  val onConnectionToggle = remember(drawerViewModel, onRequestLocalNetworkAccess) {
-    {
-      if (!drawerViewModel.toggleConnection()) {
-        onRequestLocalNetworkAccess()
-      }
-    }
-  }
-
-  val onNavigate: (Screen) -> Unit = remember(scope, drawerState, navController) {
-    { screen: Screen ->
-      // Navigate on the tap instead of awaiting the close animation first. A navigation that
-      // lands a few hundred milliseconds later can arrive in the middle of a predictive back
-      // gesture, and the pop that gesture then performs targets an entry that is no longer the
-      // top of the back stack, which crashes (#348). The guard covers the residual case where
-      // a gesture is already under way when the item is tapped.
-      val current = navController.currentBackStackEntry
-      if (current == null || current.lifecycleIsResumed()) {
-        navController.navigate(screen.route) {
-          popUpTo(navController.graph.startDestinationId) {
-            saveState = true
-          }
-          launchSingleTop = true
-          restoreState = true
-        }
-      }
-      scope.launch { drawerState.close() }
-    }
-  }
-
-  DrawerContent(
-    currentRoute = currentRoute,
-    connectionStatus = connectionStatus,
-    connectionName = connectionName,
-    versionName = BuildConfig.VERSION_NAME,
-    onConnectionToggle = onConnectionToggle,
-    onNavigate = onNavigate,
-    modifier = modifier
-  )
-}
 
 /**
  * Stateless drawer content that can be used in previews and tests.
+ *
+ * The stateful side (connection status, the navigation callback, which affordance to show at all)
+ * lives in [AdaptiveNavigationScaffold], since it is shared with the rail and the permanent drawer.
  */
 @Composable
 fun DrawerContent(
@@ -152,34 +90,129 @@ fun DrawerContent(
     modifier = modifier,
     drawerContainerColor = MaterialTheme.colorScheme.surface
   ) {
-    Column(
+    DrawerSheetBody(
+      currentRoute = currentRoute,
+      connectionStatus = connectionStatus,
+      connectionName = connectionName,
+      versionName = versionName,
+      onConnectionToggle = onConnectionToggle,
+      onNavigate = onNavigate
+    )
+  }
+}
+
+/**
+ * The same drawer contents in a sheet that stays on screen, for expanded widths where there is
+ * room to keep the destinations visible instead of behind a menu button.
+ */
+@Composable
+fun PermanentDrawerContent(
+  currentRoute: String?,
+  connectionStatus: ConnectionStatus,
+  connectionName: String?,
+  versionName: String,
+  onConnectionToggle: () -> Unit,
+  onNavigate: (Screen) -> Unit,
+  modifier: Modifier = Modifier
+) {
+  PermanentDrawerSheet(
+    modifier = modifier,
+    drawerContainerColor = MaterialTheme.colorScheme.surface
+  ) {
+    DrawerSheetBody(
+      currentRoute = currentRoute,
+      connectionStatus = connectionStatus,
+      connectionName = connectionName,
+      versionName = versionName,
+      onConnectionToggle = onConnectionToggle,
+      onNavigate = onNavigate
+    )
+  }
+}
+
+@Composable
+private fun DrawerSheetBody(
+  currentRoute: String?,
+  connectionStatus: ConnectionStatus,
+  connectionName: String?,
+  versionName: String,
+  onConnectionToggle: () -> Unit,
+  onNavigate: (Screen) -> Unit
+) {
+  Column(
+    modifier = Modifier
+      .fillMaxSize()
+      .verticalScroll(rememberScrollState())
+  ) {
+    // Header with app name and connection status
+    DrawerHeader(
+      connectionStatus = connectionStatus,
+      connectionName = connectionName,
+      onConnectionToggle = onConnectionToggle
+    )
+
+    // Main navigation items
+    DrawerNavigationItems(
+      currentRoute = currentRoute,
+      onNavigate = onNavigate
+    )
+
+    Spacer(modifier = Modifier.weight(1f))
+
+    // Version info
+    Text(
+      text = stringResource(R.string.drawer_version, versionName),
+      style = MaterialTheme.typography.labelSmall,
+      color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
       modifier = Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
-    ) {
-      // Header with app name and connection status
-      DrawerHeader(
-        connectionStatus = connectionStatus,
-        connectionName = connectionName,
-        onConnectionToggle = onConnectionToggle
+        .fillMaxWidth()
+        .padding(horizontal = 28.dp, vertical = 16.dp)
+    )
+  }
+}
+
+/**
+ * Icon-and-label rail for medium widths, where a permanent drawer would take too much of the
+ * screen but a menu button hiding five destinations is still the wrong trade.
+ */
+@Composable
+fun AppNavigationRail(
+  currentRoute: String?,
+  connectionStatus: ConnectionStatus,
+  onConnectionToggle: () -> Unit,
+  onNavigate: (Screen) -> Unit,
+  modifier: Modifier = Modifier
+) {
+  NavigationRail(
+    modifier = modifier,
+    containerColor = MaterialTheme.colorScheme.surface,
+    header = {
+      ConnectionStatusIconButton(
+        connectionState = connectionStatus,
+        onConnectionClick = onConnectionToggle,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
       )
+    }
+  ) {
+    Spacer(modifier = Modifier.height(8.dp))
 
-      // Main navigation items
-      DrawerNavigationItems(
-        currentRoute = currentRoute,
-        onNavigate = onNavigate
-      )
-
-      Spacer(modifier = Modifier.weight(1f))
-
-      // Version info
-      Text(
-        text = stringResource(R.string.drawer_version, versionName),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 28.dp, vertical = 16.dp)
+    (primaryNavigationItems + secondaryNavigationItems).forEach { item ->
+      NavigationRailItem(
+        selected = currentRoute == item.screen.route,
+        onClick = { onNavigate(item.screen) },
+        icon = {
+          Icon(
+            imageVector = item.icon,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp)
+          )
+        },
+        label = {
+          Text(
+            text = stringResource(item.titleRes),
+            style = MaterialTheme.typography.labelSmall
+          )
+        }
       )
     }
   }
@@ -333,7 +366,10 @@ private fun ConnectionStatus.contentDescriptionRes(): Int = when (this) {
 @Composable
 private fun ConnectionStatusIconButton(
   connectionState: ConnectionStatus,
-  onConnectionClick: () -> Unit
+  onConnectionClick: () -> Unit,
+  // The drawer header draws it over a coloured gradient, the rail over the plain surface, so the
+  // backing circle cannot be a fixed translucent white in both.
+  containerColor: Color = Color.White.copy(alpha = 0.2f)
 ) {
   val (statusColor, statusIcon) = connectionState.appearance()
 
@@ -351,7 +387,7 @@ private fun ConnectionStatusIconButton(
     Surface(
       modifier = Modifier.fillMaxSize(),
       shape = CircleShape,
-      color = Color.White.copy(alpha = 0.2f)
+      color = containerColor
     ) {}
 
     // Indeterminate spinner when connecting (outer ring)

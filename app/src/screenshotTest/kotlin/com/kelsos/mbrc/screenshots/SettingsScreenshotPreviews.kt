@@ -28,7 +28,7 @@ private val previewState = SettingsContentState(
 )
 
 @PreviewTest
-@Preview(name = "Settings Screen Light", showBackground = true)
+@LayoutSizes
 @Composable
 fun SettingsScreenPreviewLight() {
   RemoteTheme(darkTheme = false) {

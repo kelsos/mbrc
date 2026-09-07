@@ -1,6 +1,6 @@
 package com.kelsos.mbrc.core.common.settings
 
-private const val TABLET_WIDTH_DP = 600
+import com.kelsos.mbrc.core.common.layout.WindowWidthClass
 
 enum class AlbumViewMode(val value: String) {
   LIST("list"),
@@ -8,7 +8,7 @@ enum class AlbumViewMode(val value: String) {
   AUTO("auto");
 
   fun isGrid(screenWidthDp: Int): Boolean = when (this) {
-    AUTO -> screenWidthDp >= TABLET_WIDTH_DP
+    AUTO -> WindowWidthClass.fromWidthDp(screenWidthDp) != WindowWidthClass.Compact
     GRID -> true
     LIST -> false
   }

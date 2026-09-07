@@ -47,6 +47,7 @@ import com.kelsos.mbrc.core.common.settings.TrackAction
 import com.kelsos.mbrc.core.common.utilities.AppInfo
 import com.kelsos.mbrc.core.platform.service.ServiceRestarter
 import com.kelsos.mbrc.core.ui.compose.ScreenScaffold
+import com.kelsos.mbrc.core.ui.layout.ReadableContent
 import com.kelsos.mbrc.feature.settings.R
 import com.kelsos.mbrc.feature.settings.SettingsDialogType
 import com.kelsos.mbrc.feature.settings.SettingsViewModel
@@ -418,56 +419,58 @@ fun SettingsScreenContent(
   modifier: Modifier = Modifier,
   appInfo: AppInfo = koinInject()
 ) {
-  Column(
-    modifier = modifier
-      .fillMaxSize()
-      .verticalScroll(rememberScrollState())
-      .padding(vertical = 8.dp)
-  ) {
-    // Appearance Settings Section
-    AppearanceContentSection(
-      currentTheme = state.currentTheme,
-      onThemeClick = actions.onThemeClick
-    )
+  ReadableContent(modifier = modifier) {
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .verticalScroll(rememberScrollState())
+        .padding(vertical = 8.dp)
+    ) {
+      // Appearance Settings Section
+      AppearanceContentSection(
+        currentTheme = state.currentTheme,
+        onThemeClick = actions.onThemeClick
+      )
 
-    SettingsDivider()
+      SettingsDivider()
 
-    // Miscellaneous Settings Section
-    MiscellaneousContentSection(
-      incomingCallAction = state.incomingCallAction,
-      pluginUpdatesEnabled = state.pluginUpdatesEnabled,
-      debugLoggingEnabled = state.debugLoggingEnabled,
-      onIncomingCallActionClick = actions.onIncomingCallActionClick,
-      onPluginUpdatesChanged = actions.onPluginUpdatesChanged,
-      onDebugLoggingChanged = actions.onDebugLoggingChanged
-    )
+      // Miscellaneous Settings Section
+      MiscellaneousContentSection(
+        incomingCallAction = state.incomingCallAction,
+        pluginUpdatesEnabled = state.pluginUpdatesEnabled,
+        debugLoggingEnabled = state.debugLoggingEnabled,
+        onIncomingCallActionClick = actions.onIncomingCallActionClick,
+        onPluginUpdatesChanged = actions.onPluginUpdatesChanged,
+        onDebugLoggingChanged = actions.onDebugLoggingChanged
+      )
 
-    SettingsDivider()
+      SettingsDivider()
 
-    // Rating Settings Section
-    RatingContentSection(
-      halfStarRatingEnabled = state.halfStarRatingEnabled,
-      showRatingOnPlayerEnabled = state.showRatingOnPlayerEnabled,
-      onHalfStarRatingChanged = actions.onHalfStarRatingChanged,
-      onShowRatingOnPlayerChanged = actions.onShowRatingOnPlayerChanged
-    )
+      // Rating Settings Section
+      RatingContentSection(
+        halfStarRatingEnabled = state.halfStarRatingEnabled,
+        showRatingOnPlayerEnabled = state.showRatingOnPlayerEnabled,
+        onHalfStarRatingChanged = actions.onHalfStarRatingChanged,
+        onShowRatingOnPlayerChanged = actions.onShowRatingOnPlayerChanged
+      )
 
-    SettingsDivider()
+      SettingsDivider()
 
-    // Library Settings Section
-    LibraryContentSection(
-      trackDefaultAction = state.trackDefaultAction,
-      onTrackDefaultActionClick = actions.onTrackDefaultActionClick
-    )
+      // Library Settings Section
+      LibraryContentSection(
+        trackDefaultAction = state.trackDefaultAction,
+        onTrackDefaultActionClick = actions.onTrackDefaultActionClick
+      )
 
-    SettingsDivider()
+      SettingsDivider()
 
-    // About Section
-    AboutContentSection(
-      appInfo = appInfo,
-      onNavigateToLicenses = actions.onNavigateToLicenses,
-      onNavigateToAppLicense = actions.onNavigateToAppLicense
-    )
+      // About Section
+      AboutContentSection(
+        appInfo = appInfo,
+        onNavigateToLicenses = actions.onNavigateToLicenses,
+        onNavigateToAppLicense = actions.onNavigateToAppLicense
+      )
+    }
   }
 
   // Dialogs

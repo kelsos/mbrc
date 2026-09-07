@@ -13,10 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,9 +35,12 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
+import com.kelsos.mbrc.core.common.layout.WindowWidthClass
 import com.kelsos.mbrc.core.common.state.ConnectionStatus
 import com.kelsos.mbrc.core.networking.client.DroppedCommandNotice
 import com.kelsos.mbrc.core.networking.client.UiMessageQueue
+import com.kelsos.mbrc.core.ui.layout.LocalWindowWidthClass
+import com.kelsos.mbrc.core.ui.layout.currentWindowWidthClass
 import com.kelsos.mbrc.core.ui.theme.RemoteTheme
 import com.kelsos.mbrc.feature.misc.whatsnew.WhatsNewScreen
 import com.kelsos.mbrc.feature.misc.whatsnew.WhatsNewViewModel
@@ -142,42 +145,43 @@ fun RemoteApp(
       }
     )
 
-    Box(
-      modifier = Modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)
-    ) {
-      ModalNavigationDrawer(
-        drawerState = drawerState,
-        // Only enable Material's full-area drag while the drawer is open (so
-        // swipe-to-close still works). When closed, the drawer's horizontal
-        // AnchoredDraggable competes with per-row SwipeToDismissBox on the
-        // now playing queue. Opening from the closed state is handled by a
-        // narrow left-edge detector below, plus the toolbar menu button.
-        gesturesEnabled = drawerState.isOpen,
-        drawerContent = {
-          AppDrawer(
-            drawerState = drawerState,
-            navController = navController,
-            drawerViewModel = drawerViewModel,
-            onRequestLocalNetworkAccess = onRequestLocalNetworkAccess
-          )
-        }
+    val widthClass = currentWindowWidthClass()
+
+    CompositionLocalProvider(LocalWindowWidthClass provides widthClass) {
+      Box(
+        modifier = Modifier
+          .fillMaxSize()
+          .background(MaterialTheme.colorScheme.background)
       ) {
-        Box(
-          modifier = Modifier
-            .fillMaxSize()
-            .leftEdgeDrawerSwipe(drawerState) { scope.launch { drawerState.open() } }
+        AdaptiveNavigationScaffold(
+          widthClass = widthClass,
+          drawerState = drawerState,
+          navController = navController,
+          drawerViewModel = drawerViewModel,
+          onRequestLocalNetworkAccess = onRequestLocalNetworkAccess
         ) {
-          // Each screen handles its own Scaffold - no shared Scaffold here
-          AppNavGraph(
-            navController = navController,
-            snackbarHostState = snackbarHostState,
-            startDestination = Screen.Home.route,
-            onOpenDrawer = {
-              scope.launch { drawerState.open() }
-            }
-          )
+          Box(
+            modifier = Modifier
+              .fillMaxSize()
+              // The edge swipe only has a drawer to open while the drawer is the modal one.
+              .then(
+                if (widthClass == WindowWidthClass.Compact) {
+                  Modifier.leftEdgeDrawerSwipe(drawerState) { scope.launch { drawerState.open() } }
+                } else {
+                  Modifier
+                }
+              )
+          ) {
+            // Each screen handles its own Scaffold - no shared Scaffold here
+            AppNavGraph(
+              navController = navController,
+              snackbarHostState = snackbarHostState,
+              startDestination = Screen.Home.route,
+              onOpenDrawer = {
+                scope.launch { drawerState.open() }
+              }
+            )
+          }
         }
       }
 

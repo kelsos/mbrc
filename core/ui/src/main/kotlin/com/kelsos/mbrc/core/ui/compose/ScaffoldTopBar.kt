@@ -38,7 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.kelsos.mbrc.core.ui.R
-import com.kelsos.mbrc.core.ui.layout.LocalWindowWidthClass
+import com.kelsos.mbrc.core.ui.layout.windowWidthClass
 
 /**
  * Main scaffold top bar that renders different UI based on [TopBarState].
@@ -284,7 +284,7 @@ private fun NavigationIconContent(navigationIcon: NavigationIconType, onOpenDraw
   // At medium and expanded widths the destinations are already on screen in a rail or a permanent
   // drawer, so the menu button would open something that is not hidden. Suppressed here rather
   // than at each call site so no screen can forget.
-  val navigationIsPersistent = LocalWindowWidthClass.current.prefersPersistentNavigation
+  val navigationIsPersistent = windowWidthClass().prefersPersistentNavigation
 
   when (navigationIcon) {
     NavigationIconType.Drawer ->

@@ -314,6 +314,62 @@ fun PlayerTabletDarkPreview() {
   }
 }
 
+// A tablet held in portrait: past the compact breakpoint, but taller than it is wide, so it takes
+// the portrait layout with a capped control column rather than the side-by-side one.
+@PreviewTest
+@Preview(
+  name = "Player Tablet Portrait Light",
+  showBackground = true,
+  widthDp = 800,
+  heightDp = 1280
+)
+@Composable
+fun PlayerTabletPortraitLightPreview() {
+  RemoteTheme(darkTheme = false) {
+    PlayerScreenPreview(
+      playingTrack = samplePlayingTrack(),
+      playingPosition = samplePlayingPosition(),
+      trackRating = sampleNormalRating(),
+      volumeState = VolumeState(volume = 75, mute = false),
+      playbackState = PlaybackState(playerState = PlayerState.Playing),
+      actions = PreviewPlayerActions,
+      hasLyrics = false,
+      showRatingOnPlayer = true,
+      onTrackInfoClick = {},
+      onLyricsClick = {},
+      onOutputClick = {},
+      onRatingClick = {}
+    )
+  }
+}
+
+@PreviewTest
+@Preview(
+  name = "Player Tablet Portrait Dark",
+  showBackground = true,
+  widthDp = 800,
+  heightDp = 1280
+)
+@Composable
+fun PlayerTabletPortraitDarkPreview() {
+  RemoteTheme(darkTheme = true) {
+    PlayerScreenPreview(
+      playingTrack = samplePlayingTrack(),
+      playingPosition = samplePlayingPosition(),
+      trackRating = sampleNormalRating(),
+      volumeState = VolumeState(volume = 75, mute = false),
+      playbackState = PlaybackState(playerState = PlayerState.Playing),
+      actions = PreviewPlayerActions,
+      hasLyrics = false,
+      showRatingOnPlayer = true,
+      onTrackInfoClick = {},
+      onLyricsClick = {},
+      onOutputClick = {},
+      onRatingClick = {}
+    )
+  }
+}
+
 // =============================================================================
 // Landscape Previews
 // =============================================================================

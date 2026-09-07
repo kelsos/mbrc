@@ -1,6 +1,5 @@
 package com.kelsos.mbrc.feature.playback.player.compose
 
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -28,9 +27,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -69,7 +66,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -77,6 +73,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.palette.graphics.Palette
@@ -86,6 +83,7 @@ import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.toBitmap
+import com.kelsos.mbrc.core.common.layout.WindowWidthClass
 import com.kelsos.mbrc.core.common.state.LfmRating
 import com.kelsos.mbrc.core.common.state.PlayerState
 import com.kelsos.mbrc.core.common.state.PlayingPosition
@@ -265,8 +263,6 @@ fun PlayerScreenContent(
   modifier: Modifier = Modifier,
   contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
-  val configuration = LocalConfiguration.current
-  val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
   val darkTheme = isSystemInDarkTheme()
   val defaultBackground = MaterialTheme.colorScheme.background
 
@@ -299,30 +295,20 @@ fun PlayerScreenContent(
   val isBanned = trackRating.lfmRating == LfmRating.Banned
 
   BoxWithConstraints(modifier = modifier) {
-    val isTablet = maxWidth >= PlayerConstants.TABLET_WIDTH_THRESHOLD
+    // Measured from the space the player actually has rather than from the device orientation: a
+    // tablet in portrait has more room than a phone in landscape, and branching on orientation
+    // handed the phone-shaped layout to landscape tablets.
+    val widthClass = WindowWidthClass.fromWidthDp(maxWidth.value.toInt())
+    val isWide = maxWidth > maxHeight
+    val contentMaxWidth = if (widthClass == WindowWidthClass.Compact) {
+      Dp.Infinity
+    } else {
+      PlayerConstants.CONTROLS_MAX_WIDTH
+    }
 
     when {
-      isLandscape -> LandscapePlayerLayout(
-        painter = albumArtState.painter,
-        playingTrack = playingTrack,
-        playingPosition = playingPosition,
-        isFavorite = isFavorite,
-        isBanned = isBanned,
-        hasLyrics = hasLyrics,
-        rating = trackRating.rating,
-        showRating = showRatingOnPlayer,
-        volumeState = volumeState,
-        playbackState = playbackState,
-        gradientBrush = gradientBrush,
-        contentPadding = contentPadding,
-        actions = actions,
-        onTrackInfoClick = onTrackInfoClick,
-        onLyricsClick = onLyricsClick,
-        onOutputClick = onOutputClick,
-        onRatingClick = onRatingClick
-      )
-
-      isTablet -> TabletPlayerLayout(
+      isWide -> LandscapePlayerLayout(
+        contentMaxWidth = contentMaxWidth,
         painter = albumArtState.painter,
         playingTrack = playingTrack,
         playingPosition = playingPosition,
@@ -343,6 +329,7 @@ fun PlayerScreenContent(
       )
 
       else -> PortraitPlayerLayout(
+        contentMaxWidth = contentMaxWidth,
         painter = albumArtState.painter,
         playingTrack = playingTrack,
         playingPosition = playingPosition,
@@ -373,7 +360,6 @@ private object PlayerConstants {
   val PORTRAIT_BOTTOM_PADDING = 16.dp
   const val VOLUME_MAX = 100f
   const val SLIDER_DEBOUNCE_MS = 1000L
-  val TABLET_WIDTH_THRESHOLD = 600.dp
   val CONTENT_PADDING = 24.dp
 
   /**
@@ -381,6 +367,12 @@ private object PlayerConstants {
    * thing on the screen. Material tops out around this for a raised surface anyway.
    */
   val COVER_ELEVATION = 8.dp
+
+  /**
+   * How wide the metadata and transport are allowed to get once the window is past compact. The
+   * cover is deliberately not bound by this: it is the element that should grow with the screen.
+   */
+  val CONTROLS_MAX_WIDTH = 560.dp
 }
 
 /**
@@ -515,6 +507,7 @@ private fun extractColorsFromBitmap(
 
 @Composable
 private fun PortraitPlayerLayout(
+  contentMaxWidth: Dp,
   painter: AsyncImagePainter,
   playingTrack: TrackInfo,
   playingPosition: PlayingPosition,
@@ -566,114 +559,16 @@ private fun PortraitPlayerLayout(
 
     Spacer(modifier = Modifier.height(32.dp))
 
-    // Track info with favorite/ban buttons
-    TrackInfoWithFavorite(
-      track = playingTrack,
-      isFavorite = isFavorite,
-      isBanned = isBanned,
-      isStream = playingPosition.isStream,
-      hasLyrics = hasLyrics,
-      onTrackClick = onTrackInfoClick,
-      onFavoriteClick = { actions.toggleFavorite(isFavorite, isBanned) },
-      onBanClick = { actions.toggleBan(isBanned, isFavorite) },
-      onLyricsClick = onLyricsClick,
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = PlayerConstants.CONTENT_PADDING)
-    )
-
-    // Rating display (optional)
-    if (showRating) {
-      Spacer(modifier = Modifier.height(12.dp))
-      RatingDisplay(
-        rating = rating,
-        onClick = onRatingClick,
-        modifier = Modifier.padding(horizontal = PlayerConstants.CONTENT_PADDING)
-      )
-    }
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    // Progress bar
-    ProgressSection(
-      position = playingPosition,
-      onSeek = actions.seek,
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = PlayerConstants.CONTENT_PADDING)
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Playback controls
-    PlaybackControls(
-      playbackState = playbackState,
-      actions = actions
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    // Volume control - compact
-    VolumeSection(
-      volumeState = volumeState,
-      actions = actions,
-      onOutputClick = onOutputClick,
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = PlayerConstants.CONTENT_PADDING)
-    )
-  }
-}
-
-@Composable
-private fun TabletPlayerLayout(
-  painter: AsyncImagePainter,
-  playingTrack: TrackInfo,
-  playingPosition: PlayingPosition,
-  isFavorite: Boolean,
-  isBanned: Boolean,
-  hasLyrics: Boolean,
-  rating: Float?,
-  showRating: Boolean,
-  volumeState: VolumeState,
-  playbackState: PlaybackState,
-  gradientBrush: Brush,
-  contentPadding: PaddingValues,
-  actions: IPlayerActions,
-  onTrackInfoClick: () -> Unit,
-  onLyricsClick: () -> Unit,
-  onOutputClick: () -> Unit,
-  onRatingClick: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  // For tablets in portrait, use a centered layout with max width constraint
-  Box(
-    modifier = modifier
-      .fillMaxSize()
-      .background(MaterialTheme.colorScheme.background)
-      .background(gradientBrush)
-      // System insets (status-bar + top-bar top, navigation-bar / taskbar bottom, #324).
-      .padding(contentPadding)
-      .padding(top = PlayerConstants.CONTENT_PADDING),
-    contentAlignment = Alignment.Center
-  ) {
+    // The cover above is free to take the full width, but the metadata and transport below are
+    // not: on a portrait tablet an 800dp seek bar and a title centred across the same span read
+    // as a stretched phone rather than a layout.
     Column(
       modifier = Modifier
-        .widthIn(max = 500.dp)
-        .verticalScroll(rememberScrollState())
-        .padding(32.dp),
+        .widthIn(max = contentMaxWidth)
+        .fillMaxWidth(),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      // Album cover
-      AlbumCover(
-        painter = painter,
-        modifier = Modifier
-          .size(320.dp)
-      )
-
-      Spacer(modifier = Modifier.height(40.dp))
-
-      // Track info with favorite/ban
+      // Track info with favorite/ban buttons
       TrackInfoWithFavorite(
         track = playingTrack,
         isFavorite = isFavorite,
@@ -684,7 +579,9 @@ private fun TabletPlayerLayout(
         onFavoriteClick = { actions.toggleFavorite(isFavorite, isBanned) },
         onBanClick = { actions.toggleBan(isBanned, isFavorite) },
         onLyricsClick = onLyricsClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = PlayerConstants.CONTENT_PADDING)
       )
 
       // Rating display (optional)
@@ -692,20 +589,23 @@ private fun TabletPlayerLayout(
         Spacer(modifier = Modifier.height(12.dp))
         RatingDisplay(
           rating = rating,
-          onClick = onRatingClick
+          onClick = onRatingClick,
+          modifier = Modifier.padding(horizontal = PlayerConstants.CONTENT_PADDING)
         )
       }
 
-      Spacer(modifier = Modifier.height(32.dp))
+      Spacer(modifier = Modifier.height(24.dp))
 
       // Progress bar
       ProgressSection(
         position = playingPosition,
         onSeek = actions.seek,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = PlayerConstants.CONTENT_PADDING)
       )
 
-      Spacer(modifier = Modifier.height(24.dp))
+      Spacer(modifier = Modifier.height(16.dp))
 
       // Playback controls
       PlaybackControls(
@@ -713,14 +613,16 @@ private fun TabletPlayerLayout(
         actions = actions
       )
 
-      Spacer(modifier = Modifier.height(32.dp))
+      Spacer(modifier = Modifier.height(24.dp))
 
-      // Volume control
+      // Volume control - compact
       VolumeSection(
         volumeState = volumeState,
         actions = actions,
         onOutputClick = onOutputClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = PlayerConstants.CONTENT_PADDING)
       )
     }
   }
@@ -728,6 +630,7 @@ private fun TabletPlayerLayout(
 
 @Composable
 private fun LandscapePlayerLayout(
+  contentMaxWidth: Dp,
   painter: AsyncImagePainter,
   playingTrack: TrackInfo,
   playingPosition: PlayingPosition,
@@ -777,63 +680,71 @@ private fun LandscapePlayerLayout(
       )
     }
 
-    // Right side - Controls
-    Column(
+    // Right side - Controls. The cap lives on an inner column rather than on the weighted one:
+    // weight hands the child an exact width, which widthIn cannot then shrink.
+    Box(
       modifier = Modifier
         .weight(1f)
         .fillMaxHeight(),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.Center
+      contentAlignment = Alignment.Center
     ) {
-      // Track info with favorite/ban
-      TrackInfoWithFavorite(
-        track = playingTrack,
-        isFavorite = isFavorite,
-        isBanned = isBanned,
-        isStream = playingPosition.isStream,
-        hasLyrics = hasLyrics,
-        onTrackClick = onTrackInfoClick,
-        onFavoriteClick = { actions.toggleFavorite(isFavorite, isBanned) },
-        onBanClick = { actions.toggleBan(isBanned, isFavorite) },
-        onLyricsClick = onLyricsClick,
-        modifier = Modifier.fillMaxWidth()
-      )
+      Column(
+        modifier = Modifier
+          .widthIn(max = contentMaxWidth)
+          .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+      ) {
+        // Track info with favorite/ban
+        TrackInfoWithFavorite(
+          track = playingTrack,
+          isFavorite = isFavorite,
+          isBanned = isBanned,
+          isStream = playingPosition.isStream,
+          hasLyrics = hasLyrics,
+          onTrackClick = onTrackInfoClick,
+          onFavoriteClick = { actions.toggleFavorite(isFavorite, isBanned) },
+          onBanClick = { actions.toggleBan(isBanned, isFavorite) },
+          onLyricsClick = onLyricsClick,
+          modifier = Modifier.fillMaxWidth()
+        )
 
-      // Rating display (optional)
-      if (showRating) {
-        Spacer(modifier = Modifier.height(12.dp))
-        RatingDisplay(
-          rating = rating,
-          onClick = onRatingClick
+        // Rating display (optional)
+        if (showRating) {
+          Spacer(modifier = Modifier.height(12.dp))
+          RatingDisplay(
+            rating = rating,
+            onClick = onRatingClick
+          )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Progress bar
+        ProgressSection(
+          position = playingPosition,
+          onSeek = actions.seek,
+          modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Playback controls
+        PlaybackControls(
+          playbackState = playbackState,
+          actions = actions
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Volume control
+        VolumeSection(
+          volumeState = volumeState,
+          actions = actions,
+          onOutputClick = onOutputClick,
+          modifier = Modifier.fillMaxWidth()
         )
       }
-
-      Spacer(modifier = Modifier.height(24.dp))
-
-      // Progress bar
-      ProgressSection(
-        position = playingPosition,
-        onSeek = actions.seek,
-        modifier = Modifier.fillMaxWidth()
-      )
-
-      Spacer(modifier = Modifier.height(16.dp))
-
-      // Playback controls
-      PlaybackControls(
-        playbackState = playbackState,
-        actions = actions
-      )
-
-      Spacer(modifier = Modifier.height(24.dp))
-
-      // Volume control
-      VolumeSection(
-        volumeState = volumeState,
-        actions = actions,
-        onOutputClick = onOutputClick,
-        modifier = Modifier.fillMaxWidth()
-      )
     }
   }
 }

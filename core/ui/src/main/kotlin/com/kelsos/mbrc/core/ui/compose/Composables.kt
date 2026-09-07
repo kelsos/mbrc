@@ -37,6 +37,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,10 +47,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
+import com.kelsos.mbrc.core.common.layout.WindowWidthClass
 import com.kelsos.mbrc.core.ui.R
+import com.kelsos.mbrc.core.ui.layout.windowWidthClass
+
+/**
+ * Smallest album grid cell for the current window.
+ *
+ * A fixed 120dp minimum is a phone number: on a 1280dp tablet it fills the screen with ten columns
+ * of thumbnails rather than making the covers bigger, which is the wrong trade for a grid whose
+ * whole point is the artwork.
+ */
+@Composable
+@ReadOnlyComposable
+fun albumGridMinCellSize(): Dp = when (windowWidthClass()) {
+  WindowWidthClass.Compact -> 120.dp
+  WindowWidthClass.Medium -> 160.dp
+  WindowWidthClass.Expanded -> 200.dp
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -444,7 +463,7 @@ fun <T : Any> SwipeRefreshGridScreen(
 
       else -> {
         LazyVerticalGrid(
-          columns = GridCells.Adaptive(minSize = 120.dp),
+          columns = GridCells.Adaptive(minSize = albumGridMinCellSize()),
           modifier = Modifier.fillMaxSize(),
           contentPadding = PaddingValues(8.dp),
           horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -503,7 +522,7 @@ fun <T : Any> PagingGridScreen(
 
     else -> {
       LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 120.dp),
+        columns = GridCells.Adaptive(minSize = albumGridMinCellSize()),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),

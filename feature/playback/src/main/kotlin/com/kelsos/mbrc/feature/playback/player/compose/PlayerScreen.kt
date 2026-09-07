@@ -27,7 +27,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -309,6 +311,10 @@ fun PlayerScreenContent(
     when {
       isWide -> LandscapePlayerLayout(
         contentMaxWidth = contentMaxWidth,
+        // A phone in landscape leaves roughly 300dp for the whole control stack, which the
+        // default spacing overruns. A tablet in landscape has no such problem, so the tighter
+        // spacing is keyed off height rather than applied to every wide layout.
+        tightSpacing = maxHeight < PlayerConstants.SHORT_HEIGHT_THRESHOLD,
         painter = albumArtState.painter,
         playingTrack = playingTrack,
         playingPosition = playingPosition,
@@ -373,6 +379,9 @@ private object PlayerConstants {
    * cover is deliberately not bound by this: it is the element that should grow with the screen.
    */
   val CONTROLS_MAX_WIDTH = 560.dp
+
+  /** Below this the landscape control stack does not fit at its normal spacing. */
+  val SHORT_HEIGHT_THRESHOLD = 420.dp
 }
 
 /**
@@ -631,6 +640,7 @@ private fun PortraitPlayerLayout(
 @Composable
 private fun LandscapePlayerLayout(
   contentMaxWidth: Dp,
+  tightSpacing: Boolean,
   painter: AsyncImagePainter,
   playingTrack: TrackInfo,
   playingPosition: PlayingPosition,
@@ -659,10 +669,10 @@ private fun LandscapePlayerLayout(
       // navigation bar, which the previous fixed padding did not (#324/#325).
       .padding(contentPadding)
       .padding(
-        top = PlayerConstants.CONTENT_PADDING,
+        top = if (tightSpacing) 12.dp else PlayerConstants.CONTENT_PADDING,
         start = PlayerConstants.CONTENT_PADDING,
         end = PlayerConstants.CONTENT_PADDING,
-        bottom = PlayerConstants.CONTENT_PADDING
+        bottom = if (tightSpacing) 12.dp else PlayerConstants.CONTENT_PADDING
       ),
     horizontalArrangement = Arrangement.spacedBy(32.dp),
     verticalAlignment = Alignment.CenterVertically
@@ -688,10 +698,14 @@ private fun LandscapePlayerLayout(
         .fillMaxHeight(),
       contentAlignment = Alignment.Center
     ) {
+      // Scrollable because a phone in landscape leaves roughly 300dp of height for metadata,
+      // rating, seek bar, transport and volume. Centred content that does not fit is clipped at
+      // both ends, which is how the volume row disappeared in #324/#325.
       Column(
         modifier = Modifier
           .widthIn(max = contentMaxWidth)
-          .fillMaxWidth(),
+          .fillMaxWidth()
+          .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
       ) {
@@ -711,14 +725,14 @@ private fun LandscapePlayerLayout(
 
         // Rating display (optional)
         if (showRating) {
-          Spacer(modifier = Modifier.height(12.dp))
+          Spacer(modifier = Modifier.height(if (tightSpacing) 4.dp else 12.dp))
           RatingDisplay(
             rating = rating,
             onClick = onRatingClick
           )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(if (tightSpacing) 12.dp else 24.dp))
 
         // Progress bar
         ProgressSection(
@@ -727,7 +741,7 @@ private fun LandscapePlayerLayout(
           modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(if (tightSpacing) 4.dp else 16.dp))
 
         // Playback controls
         PlaybackControls(
@@ -735,7 +749,7 @@ private fun LandscapePlayerLayout(
           actions = actions
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(if (tightSpacing) 8.dp else 24.dp))
 
         // Volume control
         VolumeSection(

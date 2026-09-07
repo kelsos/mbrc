@@ -6,11 +6,20 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import com.kelsos.mbrc.core.common.settings.AlbumSortField
+import com.kelsos.mbrc.core.common.settings.AlbumViewMode
+import com.kelsos.mbrc.core.common.settings.ArtistSortField
+import com.kelsos.mbrc.core.common.settings.GenreSortField
+import com.kelsos.mbrc.core.common.settings.SortOrder
+import com.kelsos.mbrc.core.common.settings.SortPreference
+import com.kelsos.mbrc.core.common.settings.TrackSortField
 import com.kelsos.mbrc.core.common.test.testDispatchers
 import com.kelsos.mbrc.core.common.utilities.AppInfo
 import com.kelsos.mbrc.feature.settings.data.SettingsDataStore.dataStore
 import com.kelsos.mbrc.feature.settings.domain.SettingsManager
+import com.kelsos.mbrc.feature.settings.theme.Theme
 import java.time.Instant
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -93,6 +102,77 @@ class SettingsManagerDataStoreTest {
     manager.setLastUpdated(Instant.ofEpochMilli(5_000), required = false)
 
     assertThat(manager.getLastUpdated(required = true)).isEqualTo(required)
+  }
+
+  @Test
+  fun `every sort preference round trips through its own key`() = runTest {
+    val manager = manager()
+
+    manager.setGenreSortPreference(SortPreference(GenreSortField.NAME, SortOrder.DESC))
+    manager.setArtistSortPreference(SortPreference(ArtistSortField.NAME, SortOrder.DESC))
+    manager.setAlbumSortPreference(SortPreference(AlbumSortField.ARTIST, SortOrder.DESC))
+    manager.setTrackSortPreference(SortPreference(TrackSortField.ALBUM_ARTIST, SortOrder.DESC))
+
+    assertThat(manager.genreSortPreferenceFlow.first())
+      .isEqualTo(SortPreference(GenreSortField.NAME, SortOrder.DESC))
+    assertThat(manager.artistSortPreferenceFlow.first())
+      .isEqualTo(SortPreference(ArtistSortField.NAME, SortOrder.DESC))
+    assertThat(manager.albumSortPreferenceFlow.first())
+      .isEqualTo(SortPreference(AlbumSortField.ARTIST, SortOrder.DESC))
+    assertThat(manager.trackSortPreferenceFlow.first())
+      .isEqualTo(SortPreference(TrackSortField.ALBUM_ARTIST, SortOrder.DESC))
+  }
+
+  @Test
+  fun `the artists of a genre sort apart from the artist list`() = runTest {
+    val manager = manager()
+
+    manager.setGenreArtistsSortPreference(SortPreference(ArtistSortField.NAME, SortOrder.DESC))
+
+    assertThat(manager.genreArtistsSortPreferenceFlow.first().order).isEqualTo(SortOrder.DESC)
+    assertWithMessage("the two artist sorts share a field type and are easy to cross-wire")
+      .that(manager.artistSortPreferenceFlow.first().order)
+      .isEqualTo(SortOrder.ASC)
+  }
+
+  @Test
+  fun `the albums of an artist sort apart from the album list`() = runTest {
+    val manager = manager()
+
+    manager.setArtistAlbumsSortPreference(SortPreference(AlbumSortField.ARTIST, SortOrder.DESC))
+
+    assertThat(manager.artistAlbumsSortPreferenceFlow.first())
+      .isEqualTo(SortPreference(AlbumSortField.ARTIST, SortOrder.DESC))
+    assertWithMessage("the two album sorts share a field type and are easy to cross-wire")
+      .that(manager.albumSortPreferenceFlow.first())
+      .isEqualTo(SortPreference(AlbumSortField.NAME, SortOrder.ASC))
+  }
+
+  @Test
+  fun `an unset sort preference reads as its default rather than failing`() = runTest {
+    val manager = manager()
+
+    assertThat(manager.trackSortPreferenceFlow.first().field).isEqualTo(TrackSortField.TITLE)
+    assertThat(manager.albumSortPreferenceFlow.first().field).isEqualTo(AlbumSortField.NAME)
+    assertThat(manager.genreArtistsSortPreferenceFlow.first().order).isEqualTo(SortOrder.ASC)
+  }
+
+  @Test
+  fun `the album view mode round trips`() = runTest {
+    val manager = manager()
+
+    manager.setAlbumViewMode(AlbumViewMode.GRID)
+
+    assertThat(manager.albumViewModeFlow.first()).isEqualTo(AlbumViewMode.GRID)
+  }
+
+  @Test
+  fun `the theme round trips`() = runTest {
+    val manager = manager()
+
+    manager.setTheme(Theme.Dark)
+
+    assertThat(manager.themeFlow.first()).isEqualTo(Theme.Dark)
   }
 
   private fun manager(versionCode: Int = 130): SettingsManager = SettingsManagerDataStore(

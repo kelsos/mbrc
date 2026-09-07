@@ -395,7 +395,22 @@ dependencies {
 
 kover {
   reports {
-    filters.excludes.androidGeneratedClasses()
+    filters {
+      excludes {
+        androidGeneratedClasses()
+        // Each project filters its own artifact before the root aggregates it, so the root's
+        // exclusions do not reach this module. Without repeating them here the protobuf store
+        // classes and this module's Moshi adapters are counted as hand-written code.
+        classes(
+          "*JsonAdapter",
+          "*JsonAdapter$*",
+          "*_Impl",
+          "*_Impl$*",
+          "*ComposableSingletons*",
+          "com.kelsos.mbrc.store.*"
+        )
+      }
+    }
   }
 }
 

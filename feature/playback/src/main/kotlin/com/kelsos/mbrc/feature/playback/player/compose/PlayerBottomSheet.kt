@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,6 +41,9 @@ fun PlayerBottomSheet(
   onGoToAlbum: (() -> Unit)?,
   onGoToArtist: (() -> Unit)?,
   onDismiss: () -> Unit,
+  isBanned: Boolean,
+  isStream: Boolean,
+  onBanClick: () -> Unit,
   viewModel: RatingDialogViewModel = koinViewModel()
 ) {
   val sheetState = rememberModalBottomSheetState()
@@ -130,6 +134,43 @@ fun PlayerBottomSheet(
             style = MaterialTheme.typography.bodyLarge
           )
         }
+      }
+
+      // Ban - grouped with scrobbling because both are Last.fm, and rare enough that it does not
+      // need to compete with the track title for room on the player itself.
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .clickable(
+            enabled = !isStream,
+            onClick = {
+              onDismiss()
+              onBanClick()
+            }
+          )
+          .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Icon(
+          imageVector = Icons.Default.ThumbDown,
+          contentDescription = null,
+          tint = when {
+            isStream -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+            isBanned -> MaterialTheme.colorScheme.error
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
+          },
+          modifier = Modifier.size(24.dp)
+        )
+        Text(
+          text = stringResource(R.string.player_lfm_ban),
+          style = MaterialTheme.typography.bodyLarge,
+          color = if (isStream) {
+            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+          } else {
+            MaterialTheme.colorScheme.onSurface
+          }
+        )
       }
 
       // Scrobbling toggle

@@ -91,6 +91,62 @@ private fun PlayerScreenPreview(
 // Phone Previews - Portrait
 // =============================================================================
 
+// Lyrics moved off the track info row and onto the cover. The badge is the only thing telling you
+// lyrics exist, so it needs covering in both themes - every other preview has hasLyrics = false.
+@PreviewTest
+@Preview(
+  name = "Player Lyrics Available Light",
+  showBackground = true,
+  widthDp = 360,
+  heightDp = 720
+)
+@Composable
+fun PlayerLyricsAvailableLightPreview() {
+  RemoteTheme(darkTheme = false) {
+    PlayerScreenPreview(
+      playingTrack = samplePlayingTrack(),
+      playingPosition = samplePlayingPosition(),
+      trackRating = sampleNormalRating(),
+      volumeState = VolumeState(volume = 75, mute = false),
+      playbackState = PlaybackState(playerState = PlayerState.Playing),
+      actions = PreviewPlayerActions,
+      hasLyrics = true,
+      showRatingOnPlayer = true,
+      onTrackInfoClick = {},
+      onLyricsClick = {},
+      onOutputClick = {},
+      onRatingClick = {}
+    )
+  }
+}
+
+@PreviewTest
+@Preview(
+  name = "Player Lyrics Available Dark",
+  showBackground = true,
+  widthDp = 360,
+  heightDp = 720
+)
+@Composable
+fun PlayerLyricsAvailableDarkPreview() {
+  RemoteTheme(darkTheme = true) {
+    PlayerScreenPreview(
+      playingTrack = samplePlayingTrack(),
+      playingPosition = samplePlayingPosition(),
+      trackRating = sampleNormalRating(),
+      volumeState = VolumeState(volume = 75, mute = false),
+      playbackState = PlaybackState(playerState = PlayerState.Playing),
+      actions = PreviewPlayerActions,
+      hasLyrics = true,
+      showRatingOnPlayer = true,
+      onTrackInfoClick = {},
+      onLyricsClick = {},
+      onOutputClick = {},
+      onRatingClick = {}
+    )
+  }
+}
+
 @PreviewTest
 @Preview(name = "Player Playing Light", showBackground = true, widthDp = 360, heightDp = 720)
 @Composable

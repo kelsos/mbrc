@@ -44,7 +44,6 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.SpeakerGroup
-import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.outlined.Lyrics
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -173,7 +172,15 @@ fun PlayerScreen(
       onGoToArtist = playingTrack.artist.takeIf { it.isNotEmpty() }?.let {
         { onNavigateToArtist(playingTrack.artist) }
       },
-      onDismiss = { showBottomSheet = false }
+      onDismiss = { showBottomSheet = false },
+      isBanned = trackRating.lfmRating == LfmRating.Banned,
+      isStream = playingPosition.isStream,
+      onBanClick = {
+        viewModel.actions.toggleBan(
+          trackRating.lfmRating == LfmRating.Banned,
+          trackRating.lfmRating == LfmRating.Loved
+        )
+      }
     )
   }
 
@@ -562,7 +569,9 @@ private fun PortraitPlayerLayout(
     ) {
       AlbumCover(
         painter = painter,
-        modifier = Modifier.size(minOf(maxWidth, maxHeight))
+        modifier = Modifier.size(minOf(maxWidth, maxHeight)),
+        hasLyrics = hasLyrics,
+        onLyricsClick = onLyricsClick
       )
     }
 
@@ -577,17 +586,13 @@ private fun PortraitPlayerLayout(
         .fillMaxWidth(),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      // Track info with favorite/ban buttons
+      // Track info with the favourite button
       TrackInfoWithFavorite(
         track = playingTrack,
         isFavorite = isFavorite,
-        isBanned = isBanned,
         isStream = playingPosition.isStream,
-        hasLyrics = hasLyrics,
         onTrackClick = onTrackInfoClick,
         onFavoriteClick = { actions.toggleFavorite(isFavorite, isBanned) },
-        onBanClick = { actions.toggleBan(isBanned, isFavorite) },
-        onLyricsClick = onLyricsClick,
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = PlayerConstants.CONTENT_PADDING)
@@ -686,7 +691,9 @@ private fun LandscapePlayerLayout(
         painter = painter,
         modifier = Modifier
           .fillMaxHeight(PlayerConstants.LANDSCAPE_ALBUM_HEIGHT_FRACTION)
-          .aspectRatio(1f)
+          .aspectRatio(1f),
+        hasLyrics = hasLyrics,
+        onLyricsClick = onLyricsClick
       )
     }
 
@@ -709,17 +716,13 @@ private fun LandscapePlayerLayout(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
       ) {
-        // Track info with favorite/ban
+        // Track info with the favourite button
         TrackInfoWithFavorite(
           track = playingTrack,
           isFavorite = isFavorite,
-          isBanned = isBanned,
           isStream = playingPosition.isStream,
-          hasLyrics = hasLyrics,
           onTrackClick = onTrackInfoClick,
           onFavoriteClick = { actions.toggleFavorite(isFavorite, isBanned) },
-          onBanClick = { actions.toggleBan(isBanned, isFavorite) },
-          onLyricsClick = onLyricsClick,
           modifier = Modifier.fillMaxWidth()
         )
 
@@ -763,10 +766,24 @@ private fun LandscapePlayerLayout(
   }
 }
 
+/**
+ * The album cover, which doubles as the way into the lyrics overlay.
+ *
+ * Lyrics used to be an icon button on the track info row, where it took a 48dp touch target away
+ * from a title that had 168dp to work with on a phone. The cover is the largest inert surface on
+ * the screen and lyrics are something people want more prominent rather than less, so the gesture
+ * lives here and the badge carries the availability signal the button's tint used to.
+ */
 @Composable
-private fun AlbumCover(painter: AsyncImagePainter, modifier: Modifier = Modifier) {
+private fun AlbumCover(
+  painter: AsyncImagePainter,
+  modifier: Modifier = Modifier,
+  hasLyrics: Boolean = false,
+  onLyricsClick: (() -> Unit)? = null
+) {
   val placeholderPainter = painterResource(CoreUiR.drawable.ic_image_no_cover)
   val painterState by painter.state.collectAsStateWithLifecycle()
+  val lyricsLabel = stringResource(R.string.nav_lyrics)
 
   Surface(
     modifier = modifier
@@ -776,7 +793,14 @@ private fun AlbumCover(painter: AsyncImagePainter, modifier: Modifier = Modifier
         ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
         spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
       )
-      .clip(MaterialTheme.shapes.medium),
+      .clip(MaterialTheme.shapes.medium)
+      .then(
+        if (onLyricsClick != null) {
+          Modifier.clickable(onClickLabel = lyricsLabel, onClick = onLyricsClick)
+        } else {
+          Modifier
+        }
+      ),
     tonalElevation = 0.dp
   ) {
     val activePainter = when (painterState) {
@@ -785,12 +809,35 @@ private fun AlbumCover(painter: AsyncImagePainter, modifier: Modifier = Modifier
       else -> placeholderPainter
     }
 
-    Image(
-      painter = activePainter,
-      contentDescription = stringResource(R.string.description_album_cover),
-      contentScale = ContentScale.Crop,
-      modifier = Modifier.fillMaxSize()
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+      Image(
+        painter = activePainter,
+        contentDescription = stringResource(R.string.description_album_cover),
+        contentScale = ContentScale.Crop,
+        modifier = Modifier.fillMaxSize()
+      )
+
+      // Only drawn when there is something to read, so its presence is the signal.
+      if (hasLyrics && onLyricsClick != null) {
+        Surface(
+          modifier = Modifier
+            .align(Alignment.BottomEnd)
+            .padding(12.dp),
+          shape = CircleShape,
+          color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+          tonalElevation = 3.dp
+        ) {
+          Icon(
+            imageVector = Icons.Outlined.Lyrics,
+            contentDescription = lyricsLabel,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+              .padding(8.dp)
+              .size(20.dp)
+          )
+        }
+      }
+    }
   }
 }
 
@@ -798,13 +845,9 @@ private fun AlbumCover(painter: AsyncImagePainter, modifier: Modifier = Modifier
 private fun TrackInfoWithFavorite(
   track: TrackInfo,
   isFavorite: Boolean,
-  isBanned: Boolean,
   isStream: Boolean,
-  hasLyrics: Boolean,
   onTrackClick: () -> Unit,
   onFavoriteClick: () -> Unit,
-  onBanClick: () -> Unit,
-  onLyricsClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   Row(
@@ -869,37 +912,9 @@ private fun TrackInfoWithFavorite(
       )
     }
 
-    // Lyrics button - primary color when lyrics available
-    IconButton(onClick = onLyricsClick) {
-      Icon(
-        imageVector = Icons.Outlined.Lyrics,
-        contentDescription = stringResource(R.string.nav_lyrics),
-        tint = if (hasLyrics) {
-          MaterialTheme.colorScheme.primary
-        } else {
-          MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        modifier = Modifier.size(24.dp)
-      )
-    }
-
-    // Ban button - disabled for streams (LFM rating not applicable)
-    IconButton(
-      onClick = onBanClick,
-      enabled = !isStream
-    ) {
-      Icon(
-        imageVector = Icons.Default.ThumbDown,
-        contentDescription = stringResource(R.string.player_lfm_ban),
-        tint = when {
-          isStream -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-          isBanned -> MaterialTheme.colorScheme.error
-          else -> MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        modifier = Modifier.size(24.dp)
-      )
-    }
-
+    // Favorite is the only action left on this row: it is the one people use often, and three
+    // 48dp buttons took 144dp of a 312dp row away from the title. Ban moved to the overflow
+    // sheet, lyrics to the album cover.
     // Favorite button - disabled for streams (LFM rating not applicable)
     IconButton(
       onClick = onFavoriteClick,

@@ -32,6 +32,8 @@ plugins {
   alias(libs.plugins.android.test) apply false
   alias(libs.plugins.baselineprofile) apply false
   alias(libs.plugins.kotlinter) apply false
+  // Not applied here; on the classpath so the root can configure it for every module that does.
+  alias(libs.plugins.kotlinCompose) apply false
   alias(libs.plugins.kotlinParcelize) apply false
   alias(libs.plugins.detekt)
 }
@@ -64,6 +66,14 @@ allprojects {
 }
 
 subprojects {
+  pluginManager.withPlugin("org.jetbrains.kotlin.plugin.compose") {
+    configure<org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension> {
+      stabilityConfigurationFiles.add(
+        rootProject.layout.projectDirectory.file("config/compose-stability.conf")
+      )
+    }
+  }
+
   // With AGP 9 built-in Kotlin there is no kotlin.android plugin to hook; every Android
   // module is a Kotlin module, so key kotlinter/kover off the Android plugins instead.
   listOf("com.android.application", "com.android.library", "com.android.test").forEach { pluginId ->

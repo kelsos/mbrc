@@ -6,12 +6,14 @@ import android.provider.Settings
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.delay
 
 /**
  * The marquee used by every track info line: the player title, artist and album, and the same two
@@ -19,8 +21,13 @@ import androidx.compose.ui.platform.LocalContext
  *
  * Exists so the five call sites share one tuning point. `basicMarquee` defaults to
  * `MarqueeDefaults.Iterations = 3`, which is why a long title stopped scrolling roughly a minute
- * into a track and only restarted when the screen recomposed (see #328). Here it loops for as long
- * as the text is on screen.
+ * into a track and only restarted when the screen recomposed (see #328). Here it keeps coming back
+ * for as long as the text is on screen.
+ *
+ * It cycles rather than looping. `iterations = Int.MAX_VALUE` holds the frame clock for the life of
+ * the screen, and so does `repeatDelayMillis`, whose pause is a delay inside the animation spec
+ * rather than an absence of one: the motion stops, the frames do not. Taking the modifier out of
+ * the tree between passes is what actually lets the UI thread go idle.
  *
  * Motion is opt-out: `basicMarquee` runs its animation under a fixed motion duration scale, so it
  * ignores the system animation setting and would otherwise keep scrolling forever for someone who
@@ -28,11 +35,40 @@ import androidx.compose.ui.platform.LocalContext
  * `TextOverflow.Ellipsis` so the text still degrades readably when the marquee is inert.
  */
 @Composable
-fun Modifier.trackTextMarquee(): Modifier = if (motionEnabled()) {
-  basicMarquee(iterations = Int.MAX_VALUE)
-} else {
-  this
+fun Modifier.trackTextMarquee(): Modifier {
+  if (!motionEnabled()) {
+    return this
+  }
+
+  var scrolling by remember { mutableStateOf(true) }
+
+  LaunchedEffect(Unit) {
+    while (true) {
+      delay(MARQUEE_PASS_MILLIS)
+      scrolling = false
+      delay(MARQUEE_REST_MILLIS)
+      scrolling = true
+    }
+  }
+
+  return if (scrolling) {
+    basicMarquee(iterations = 1, initialDelayMillis = 0)
+  } else {
+    this
+  }
 }
+
+/**
+ * How long a single pass is given before the marquee is taken down.
+ *
+ * Generous on purpose: a pass that finishes early costs nothing, because a finite marquee stops
+ * asking for frames once its iteration completes, while a window shorter than the pass would snap
+ * a half-scrolled title back to the start.
+ */
+private const val MARQUEE_PASS_MILLIS = 20_000L
+
+/** The quiet part of the cycle, with no marquee node in the tree at all. */
+private const val MARQUEE_REST_MILLIS = 5_000L
 
 /**
  * Whether the system is currently animating. False when animations are off, either through

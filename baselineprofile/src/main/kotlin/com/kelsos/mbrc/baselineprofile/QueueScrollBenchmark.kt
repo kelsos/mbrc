@@ -7,9 +7,6 @@ import androidx.benchmark.macro.StartupTimingMetric
 import androidx.benchmark.macro.junit4.MacrobenchmarkRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import androidx.test.uiautomator.By
-import androidx.test.uiautomator.Direction
-import androidx.test.uiautomator.Until
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -54,27 +51,17 @@ class QueueScrollBenchmark {
     iterations = ITERATIONS,
     setupBlock = {
       pressHome()
+      grantLocalNetworkAccess()
     }
   ) {
     startActivityAndWait()
-    device.wait(Until.hasObject(By.scrollable(true)), SCROLL_TIMEOUT_MILLIS)
-
-    val queue = device.findObject(By.scrollable(true)) ?: return@measureRepeated
-    queue.setGestureMargin(device.displayWidth / GESTURE_MARGIN_FRACTION)
-    repeat(SCROLL_COUNT) {
-      queue.scroll(Direction.DOWN, SCROLL_PERCENT)
-      device.waitForIdle()
-    }
+    dismissWhatsNew()
+    openDestination(QUEUE)
+    waitForContent()
+    scrollCurrentList()
   }
 
   private companion object {
-    const val PACKAGE_NAME = "com.kelsos.mbrc"
     const val ITERATIONS = 10
-    const val SCROLL_COUNT = 3
-    const val SCROLL_PERCENT = 0.8f
-    const val SCROLL_TIMEOUT_MILLIS = 5_000L
-
-    /** Keeps the swipe clear of the system gesture inset at the screen edge. */
-    const val GESTURE_MARGIN_FRACTION = 5
   }
 }

@@ -19,6 +19,8 @@ Changelog
 - Fixes the app never telling you that your MusicBee plugin is out of date. Both the warning for a plugin older than the minimum supported version and the optional "an update is available" notice were compared against a version number the app failed to read, so neither ever appeared, no matter how old the plugin was. Both work again.
 - Fixes the volume shown in the app ignoring updates from MusicBee when they arrived as text rather than as a number. Such an update was discarded, so the app kept showing the old volume until the next one it could read; volumes are now understood in either form.
 - Fixes long track titles, artists and albums scrolling only three times and then stopping partway through a track, which left the end of the text unreadable until you left the screen and came back. They now keep scrolling for as long as they are on screen, on both the player and the mini-control. Text that fits still stays still, and if you have turned off animations on your device the text no longer scrolls at all and is shortened with an ellipsis instead.
+- Scrolling is smoother and stutters less, most noticeably in the now playing queue on older phones and tablets. Long titles that scroll across the screen now pause between passes rather than moving constantly, which is easier on the battery too.
+- The app opens faster, and the now playing queue, the library and the player appear faster the first time you visit them.
 
 ## [1.6.1] - 2026-06-27
 ### Added

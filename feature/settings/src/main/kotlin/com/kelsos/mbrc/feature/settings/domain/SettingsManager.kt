@@ -25,6 +25,7 @@ interface SettingsManager :
   override val shouldDisplayOnlyArtists: Flow<Boolean>
   val halfStarRatingFlow: Flow<Boolean>
   val showRatingOnPlayerFlow: Flow<Boolean>
+  val keepScreenOnFlow: Flow<Boolean>
 
   // Async update methods for changing settings (type-safe with sealed classes)
   suspend fun setTheme(theme: Theme)
@@ -35,6 +36,7 @@ interface SettingsManager :
   override suspend fun setShouldDisplayOnlyAlbumArtist(onlyAlbumArtist: Boolean)
   suspend fun setHalfStarRating(enabled: Boolean)
   suspend fun setShowRatingOnPlayer(enabled: Boolean)
+  suspend fun setKeepScreenOn(enabled: Boolean)
 
   // Async utility methods
   override suspend fun checkShouldShowChangeLog(): Boolean

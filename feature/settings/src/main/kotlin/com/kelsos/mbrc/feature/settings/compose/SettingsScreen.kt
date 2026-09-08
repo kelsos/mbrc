@@ -75,6 +75,7 @@ class PreviewAppInfo(
 @Immutable
 data class SettingsContentState(
   val currentTheme: Theme = Theme.System,
+  val keepScreenOnEnabled: Boolean = false,
   val pluginUpdatesEnabled: Boolean = false,
   val debugLoggingEnabled: Boolean = false,
   val incomingCallAction: CallAction = CallAction.None,
@@ -91,6 +92,7 @@ data class SettingsContentState(
 interface ISettingsActions {
   val onThemeClick: () -> Unit
   val onThemeSelected: (Theme) -> Unit
+  val onKeepScreenOnChanged: (Boolean) -> Unit
   val onIncomingCallActionClick: () -> Unit
   val onIncomingCallActionSelected: (CallAction) -> Unit
   val onPluginUpdatesChanged: (Boolean) -> Unit
@@ -110,6 +112,7 @@ interface ISettingsActions {
 object EmptySettingsActions : ISettingsActions {
   override val onThemeClick: () -> Unit = {}
   override val onThemeSelected: (Theme) -> Unit = {}
+  override val onKeepScreenOnChanged: (Boolean) -> Unit = {}
   override val onIncomingCallActionClick: () -> Unit = {}
   override val onIncomingCallActionSelected: (CallAction) -> Unit = {}
   override val onPluginUpdatesChanged: (Boolean) -> Unit = {}
@@ -130,12 +133,20 @@ object EmptySettingsActions : ISettingsActions {
 private fun AppearanceSettingsSection(viewModel: SettingsViewModel) {
   val currentTheme by viewModel.currentTheme.collectAsStateWithLifecycle()
   val visibleDialog by viewModel.visibleDialog.collectAsStateWithLifecycle()
+  val keepScreenOnEnabled by viewModel.keepScreenOnEnabled.collectAsStateWithLifecycle()
 
   SettingsSection(title = stringResource(R.string.settings_appearance)) {
     SettingsItem(
       title = stringResource(R.string.setting_appearance_theme),
       subtitle = getThemeDisplayName(currentTheme),
       onClick = { viewModel.showDialog(SettingsDialogType.Theme) }
+    )
+
+    SettingsToggleItem(
+      title = stringResource(R.string.setting_keep_screen_on),
+      subtitle = stringResource(R.string.setting_keep_screen_on_summary),
+      checked = keepScreenOnEnabled,
+      onCheckedChange = { enabled -> viewModel.updateKeepScreenOn(enabled) }
     )
   }
 
@@ -429,7 +440,9 @@ fun SettingsScreenContent(
       // Appearance Settings Section
       AppearanceContentSection(
         currentTheme = state.currentTheme,
-        onThemeClick = actions.onThemeClick
+        keepScreenOnEnabled = state.keepScreenOnEnabled,
+        onThemeClick = actions.onThemeClick,
+        onKeepScreenOnChanged = actions.onKeepScreenOnChanged
       )
 
       SettingsDivider()
@@ -510,12 +523,24 @@ fun SettingsScreenContent(
  * Appearance section for content composable.
  */
 @Composable
-private fun AppearanceContentSection(currentTheme: Theme, onThemeClick: () -> Unit) {
+private fun AppearanceContentSection(
+  currentTheme: Theme,
+  keepScreenOnEnabled: Boolean,
+  onThemeClick: () -> Unit,
+  onKeepScreenOnChanged: (Boolean) -> Unit
+) {
   SettingsSection(title = stringResource(R.string.settings_appearance)) {
     SettingsItem(
       title = stringResource(R.string.setting_appearance_theme),
       subtitle = getThemeDisplayName(currentTheme),
       onClick = onThemeClick
+    )
+
+    SettingsToggleItem(
+      title = stringResource(R.string.setting_keep_screen_on),
+      subtitle = stringResource(R.string.setting_keep_screen_on_summary),
+      checked = keepScreenOnEnabled,
+      onCheckedChange = onKeepScreenOnChanged
     )
   }
 }

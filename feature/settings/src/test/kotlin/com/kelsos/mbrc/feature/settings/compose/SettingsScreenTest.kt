@@ -570,7 +570,7 @@ class SettingsScreenTest : KoinTest {
         )
       }
 
-      composeTestRule.onNodeWithText("Play Now").assertIsDisplayed()
+      composeTestRule.onNodeWithText("Play Now").performScrollTo().assertIsDisplayed()
     } finally {
       teardownKoin()
     }
@@ -588,7 +588,7 @@ class SettingsScreenTest : KoinTest {
         )
       }
 
-      composeTestRule.onNodeWithText("Queue Next").assertIsDisplayed()
+      composeTestRule.onNodeWithText("Queue Next").performScrollTo().assertIsDisplayed()
     } finally {
       teardownKoin()
     }
@@ -606,7 +606,7 @@ class SettingsScreenTest : KoinTest {
         )
       }
 
-      composeTestRule.onNodeWithText("Queue Last").assertIsDisplayed()
+      composeTestRule.onNodeWithText("Queue Last").performScrollTo().assertIsDisplayed()
     } finally {
       teardownKoin()
     }
@@ -624,7 +624,7 @@ class SettingsScreenTest : KoinTest {
         )
       }
 
-      composeTestRule.onNodeWithText("Play Now (Queue All)").assertIsDisplayed()
+      composeTestRule.onNodeWithText("Play Now (Queue All)").performScrollTo().assertIsDisplayed()
     } finally {
       teardownKoin()
     }
@@ -645,7 +645,7 @@ class SettingsScreenTest : KoinTest {
         )
       }
 
-      composeTestRule.onNodeWithText("Library Track Action").performClick()
+      composeTestRule.onNodeWithText("Library Track Action").performScrollTo().performClick()
       assertThat(trackActionClicked).isTrue()
     } finally {
       teardownKoin()
@@ -815,6 +815,7 @@ class SettingsScreenTest : KoinTest {
 class TestSettingsActions(
   override val onThemeClick: () -> Unit = {},
   override val onThemeSelected: (Theme) -> Unit = {},
+  override val onKeepScreenOnChanged: (Boolean) -> Unit = {},
   override val onIncomingCallActionClick: () -> Unit = {},
   override val onIncomingCallActionSelected: (CallAction) -> Unit = {},
   override val onPluginUpdatesChanged: (Boolean) -> Unit = {},

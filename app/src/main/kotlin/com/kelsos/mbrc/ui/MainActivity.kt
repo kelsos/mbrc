@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -17,11 +18,16 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.kelsos.mbrc.core.common.state.ConnectionStatePublisher
 import com.kelsos.mbrc.core.common.state.ConnectionStatus
 import com.kelsos.mbrc.core.networking.LocalNetworkAccess
+import com.kelsos.mbrc.feature.settings.domain.SettingsManager
 import com.kelsos.mbrc.service.LocalNetworkAccessImpl
 import com.kelsos.mbrc.service.ServiceChecker
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 /**
@@ -34,6 +40,7 @@ class MainActivity : ComponentActivity() {
   private val localNetworkAccess: LocalNetworkAccess by inject()
   private val connectionState: ConnectionStatePublisher by inject()
   private val preferences: SharedPreferences by inject()
+  private val settingsManager: SettingsManager by inject()
 
   private var showLocalNetworkRationale by mutableStateOf(false)
 
@@ -96,6 +103,8 @@ class MainActivity : ComponentActivity() {
     // Start the remote service if not already running (same as BaseActivity)
     ensureLocalNetworkAccessThenStart(restored = savedInstanceState != null)
 
+    keepScreenOnWhileVisible()
+
     setContent {
       RemoteApp(
         onRequestLocalNetworkAccess = ::requestLocalNetworkAccess,
@@ -117,6 +126,31 @@ class MainActivity : ComponentActivity() {
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     outState.putBoolean(STATE_RATIONALE_DECLINED, rationaleDeclined)
+  }
+
+  /**
+   * Holds the screen awake while the setting is on, for as long as the activity is visible.
+   *
+   * Collected inside [repeatOnLifecycle] at STARTED so the flag is cleared on the way to the
+   * background: a remote is useful propped up on a desk, but not at the cost of a device that
+   * never sleeps once the user has moved on.
+   */
+  private fun keepScreenOnWhileVisible() {
+    lifecycleScope.launch {
+      repeatOnLifecycle(Lifecycle.State.STARTED) {
+        try {
+          settingsManager.keepScreenOnFlow.collect { enabled ->
+            if (enabled) {
+              window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+              window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+          }
+        } finally {
+          window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+      }
+    }
   }
 
   /**

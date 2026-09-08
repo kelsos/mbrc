@@ -62,6 +62,9 @@ class SettingsViewModel(
   val showRatingOnPlayerEnabled: StateFlow<Boolean> = settingsManager.showRatingOnPlayerFlow
     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+  val keepScreenOnEnabled: StateFlow<Boolean> = settingsManager.keepScreenOnFlow
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
   // Dialog state
   private val _visibleDialog = MutableStateFlow<SettingsDialogType?>(null)
   val visibleDialog: StateFlow<SettingsDialogType?> = _visibleDialog.asStateFlow()
@@ -128,6 +131,15 @@ class SettingsViewModel(
   fun updateShowRatingOnPlayer(enabled: Boolean) {
     viewModelScope.launch {
       settingsManager.setShowRatingOnPlayer(enabled)
+    }
+  }
+
+  /**
+   * Updates whether the screen stays awake while the app is visible.
+   */
+  fun updateKeepScreenOn(enabled: Boolean) {
+    viewModelScope.launch {
+      settingsManager.setKeepScreenOn(enabled)
     }
   }
 

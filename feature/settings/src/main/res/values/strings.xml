@@ -67,6 +67,8 @@
   <string name="setting_half_star_rating_summary">Enable half-star increments (0.5, 1.5, etc.)</string>
   <string name="setting_show_rating_on_player">Show rating on player</string>
   <string name="setting_show_rating_on_player_summary">Display star rating below track info on player screen</string>
+  <string name="setting_keep_screen_on">Keep screen on</string>
+  <string name="setting_keep_screen_on_summary">Stop the screen turning off while MusicBee Remote is open</string>
 
   <!-- About -->
   <string name="preferences_about_version">MusicBee Remote Version</string>

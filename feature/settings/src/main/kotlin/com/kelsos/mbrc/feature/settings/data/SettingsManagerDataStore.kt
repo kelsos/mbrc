@@ -99,6 +99,10 @@ class SettingsManagerDataStore(
     preferences[PreferenceKeys.SHOW_RATING_ON_PLAYER] ?: DefaultValues.SHOW_RATING_ON_PLAYER
   }
 
+  override val keepScreenOnFlow: Flow<Boolean> = dataStore.data.map { preferences ->
+    preferences[PreferenceKeys.KEEP_SCREEN_ON] ?: DefaultValues.KEEP_SCREEN_ON
+  }
+
   override val genreSortPreferenceFlow: Flow<GenreSortPreference> = dataStore.data.map { prefs ->
     val encoded = prefs[PreferenceKeys.GENRE_SORT] ?: DefaultValues.GENRE_SORT
     SortPreference.decode(encoded, GenreSortField::fromString, GenreSortField.NAME)
@@ -181,6 +185,12 @@ class SettingsManagerDataStore(
   override suspend fun setShowRatingOnPlayer(enabled: Boolean) {
     dataStore.edit { preferences ->
       preferences[PreferenceKeys.SHOW_RATING_ON_PLAYER] = enabled
+    }
+  }
+
+  override suspend fun setKeepScreenOn(enabled: Boolean) {
+    dataStore.edit { preferences ->
+      preferences[PreferenceKeys.KEEP_SCREEN_ON] = enabled
     }
   }
 

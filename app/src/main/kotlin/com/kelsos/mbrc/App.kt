@@ -1,6 +1,7 @@
 package com.kelsos.mbrc
 
 import android.app.Application
+import android.os.StrictMode
 import androidx.annotation.CallSuper
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
@@ -26,6 +27,7 @@ open class App : Application() {
 
   @CallSuper
   override fun onCreate() {
+    enableStrictMode()
     super.onCreate()
     SingletonImageLoader.setSafe { context ->
       ImageLoader
@@ -57,5 +59,40 @@ open class App : Application() {
     if (BuildConfig.DEBUG) {
       Timber.plant(CustomLoggingTree.create())
     }
+  }
+
+  /**
+   * Reports main-thread disk and network work, and the leaks the VM policy can see, on debug
+   * builds.
+   *
+   * Logging rather than crashing: the policies catch third-party and framework work this project
+   * cannot fix, so a death penalty would make debug builds unusable rather than make anyone fix
+   * anything. The signal is a Timber-tagged StrictMode entry in logcat.
+   *
+   * Worth having because the blocking Palette call behind the player's jank was exactly this
+   * shape, and nothing in the build told us about it.
+   */
+  private fun enableStrictMode() {
+    if (!BuildConfig.DEBUG) {
+      return
+    }
+    StrictMode.setThreadPolicy(
+      StrictMode.ThreadPolicy.Builder()
+        .detectDiskReads()
+        .detectDiskWrites()
+        .detectNetwork()
+        .detectCustomSlowCalls()
+        .penaltyLog()
+        .build()
+    )
+    StrictMode.setVmPolicy(
+      StrictMode.VmPolicy.Builder()
+        .detectLeakedSqlLiteObjects()
+        .detectLeakedClosableObjects()
+        .detectLeakedRegistrationObjects()
+        .detectActivityLeaks()
+        .penaltyLog()
+        .build()
+    )
   }
 }

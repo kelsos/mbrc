@@ -6,25 +6,22 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 private const val MIN_HEIGHT_FRACTION = 0.1f
 private const val MAX_HEIGHT_FRACTION = 1f
+private val BAR_CORNER_RADIUS = 1.dp
 
 /**
  * Animated audio bars indicator similar to Spotify's now playing indicator.
@@ -47,7 +44,7 @@ fun AudioBarsIndicator(
   val infiniteTransition = rememberInfiniteTransition(label = "audio_bars")
 
   // Each bar animates at a different speed and phase for natural look
-  val bar1Height by infiniteTransition.animateFloat(
+  val bar1Height = infiniteTransition.animateFloat(
     initialValue = 0.3f,
     targetValue = 1f,
     animationSpec = infiniteRepeatable(
@@ -57,7 +54,7 @@ fun AudioBarsIndicator(
     label = "bar1"
   )
 
-  val bar2Height by infiniteTransition.animateFloat(
+  val bar2Height = infiniteTransition.animateFloat(
     initialValue = 0.5f,
     targetValue = 0.2f,
     animationSpec = infiniteRepeatable(
@@ -67,7 +64,7 @@ fun AudioBarsIndicator(
     label = "bar2"
   )
 
-  val bar3Height by infiniteTransition.animateFloat(
+  val bar3Height = infiniteTransition.animateFloat(
     initialValue = 0.2f,
     targetValue = 0.8f,
     animationSpec = infiniteRepeatable(
@@ -77,39 +74,33 @@ fun AudioBarsIndicator(
     label = "bar3"
   )
 
-  Row(
-    modifier = modifier.height(barMaxHeight),
-    horizontalArrangement = Arrangement.spacedBy(barSpacing),
-    verticalAlignment = Alignment.Bottom
-  ) {
-    AudioBar(
-      heightFraction = bar1Height,
-      maxHeight = barMaxHeight,
-      width = barWidth,
-      color = color
-    )
-    AudioBar(
-      heightFraction = bar2Height,
-      maxHeight = barMaxHeight,
-      width = barWidth,
-      color = color
-    )
-    AudioBar(
-      heightFraction = bar3Height,
-      maxHeight = barMaxHeight,
-      width = barWidth,
-      color = color
-    )
+  val bars = remember(bar1Height, bar2Height, bar3Height) {
+    arrayOf(bar1Height, bar2Height, bar3Height)
   }
-}
 
-@Composable
-private fun AudioBar(heightFraction: Float, maxHeight: Dp, width: Dp, color: Color) {
-  Box(
-    modifier = Modifier
-      .width(width)
-      .height(maxHeight * heightFraction.coerceIn(MIN_HEIGHT_FRACTION, MAX_HEIGHT_FRACTION))
-      .clip(RoundedCornerShape(topStart = 1.dp, topEnd = 1.dp))
-      .background(color)
-  )
+  // The heights are read here, inside the draw lambda, rather than through `by` at composition.
+  // Read at composition they fed a height modifier, so each of the sixty frames a second this
+  // animates recomposed and re-laid-out the bars, and with them the queue row and the list
+  // holding it. Drawn instead, an animation frame reaches the draw phase and stops there.
+  Canvas(
+    modifier = modifier.size(
+      width = barWidth * bars.size + barSpacing * (bars.size - 1),
+      height = barMaxHeight
+    )
+  ) {
+    val widthPx = barWidth.toPx()
+    val stridePx = widthPx + barSpacing.toPx()
+    val radius = CornerRadius(BAR_CORNER_RADIUS.toPx(), BAR_CORNER_RADIUS.toPx())
+
+    for (index in bars.indices) {
+      val fraction = bars[index].value.coerceIn(MIN_HEIGHT_FRACTION, MAX_HEIGHT_FRACTION)
+      val barHeight = size.height * fraction
+      drawRoundRect(
+        color = color,
+        topLeft = Offset(index * stridePx, size.height - barHeight),
+        size = Size(widthPx, barHeight),
+        cornerRadius = radius
+      )
+    }
+  }
 }

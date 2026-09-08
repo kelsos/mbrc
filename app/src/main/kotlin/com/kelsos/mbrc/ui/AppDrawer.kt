@@ -1,5 +1,11 @@
 package com.kelsos.mbrc.ui
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,6 +54,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -347,11 +356,7 @@ private fun ConnectionStatusIconButton(
 
     // Indeterminate spinner when connecting (outer ring)
     if (isConnecting) {
-      CircularProgressIndicator(
-        modifier = Modifier.size(46.dp),
-        color = statusColor,
-        strokeWidth = 2.dp
-      )
+      ConnectingSpinner(color = statusColor)
     }
 
     // Cycle progress arc (determinate) - inner ring, only show when we have cycle info
@@ -376,6 +381,38 @@ private fun ConnectionStatusIconButton(
       tint = statusColor,
       modifier = Modifier.size(20.dp)
     )
+  }
+}
+
+/**
+ * The ring that turns while a connection is being established.
+ *
+ * Hand-drawn rather than a Material indeterminate indicator because this is the app's longest
+ * running animation: a retry cycle keeps it on screen for as long as MusicBee is unreachable. The
+ * rotation is read inside the draw lambda, so a frame of it never reaches composition or layout.
+ */
+@Composable
+private fun ConnectingSpinner(color: Color, modifier: Modifier = Modifier) {
+  val transition = rememberInfiniteTransition(label = "connecting")
+  val angle = transition.animateFloat(
+    initialValue = 0f,
+    targetValue = 360f,
+    animationSpec = infiniteRepeatable(
+      animation = tween(durationMillis = 1_000, easing = LinearEasing)
+    ),
+    label = "connecting_angle"
+  )
+
+  Canvas(modifier = modifier.size(46.dp)) {
+    rotate(angle.value) {
+      drawArc(
+        color = color,
+        startAngle = 0f,
+        sweepAngle = 90f,
+        useCenter = false,
+        style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+      )
+    }
   }
 }
 

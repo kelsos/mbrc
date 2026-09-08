@@ -1,5 +1,6 @@
 package com.kelsos.mbrc.feature.playback.player
 
+import androidx.compose.runtime.Stable
 import com.kelsos.mbrc.core.common.state.LfmRating
 import com.kelsos.mbrc.core.networking.protocol.actions.UserAction
 import com.kelsos.mbrc.core.networking.protocol.base.Protocol
@@ -9,6 +10,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+/**
+ * Stable because every member is a function reference assigned once and the instance outlives the
+ * composition. Without the annotation Compose falls back to a runtime stability check that the
+ * implementation fails, which stops the whole player subtree from ever skipping recomposition.
+ */
+@Stable
 interface IPlayerActions {
   val playPause: () -> Unit
   val previous: () -> Unit

@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -36,6 +37,7 @@ import kotlinx.coroutines.launch
  * @param onMove Callback invoked when items are swapped during drag
  * @param onDragEnd Callback invoked when drag operation completes (for syncing to server)
  */
+@Stable
 class DragDropState(
   private val state: LazyListState,
   private val scope: CoroutineScope,

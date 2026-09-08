@@ -72,6 +72,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -92,6 +93,7 @@ import com.kelsos.mbrc.core.common.state.Repeat
 import com.kelsos.mbrc.core.common.state.ShuffleMode
 import com.kelsos.mbrc.core.common.state.TrackInfo
 import com.kelsos.mbrc.core.common.state.TrackRating
+import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.ui.R as CoreUiR
 import com.kelsos.mbrc.core.ui.compose.DynamicScreenScaffold
 import com.kelsos.mbrc.core.ui.compose.ThinSlider
@@ -108,7 +110,9 @@ import com.kelsos.mbrc.feature.playback.player.PlayerViewModel
 import com.kelsos.mbrc.feature.playback.player.VolumeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun PlayerScreen(
@@ -285,13 +289,11 @@ fun PlayerScreenContent(
     label = "background_color"
   )
 
-  // Create gradient brush
-  val gradientBrush = Brush.verticalGradient(
-    colors = listOf(
-      animatedDominant,
-      animatedBackground
-    )
-  )
+  // Remembered because the marquees keep the player drawing every frame, and an unremembered
+  // brush reallocates on each of them for colours that only move while a track change animates.
+  val gradientBrush = remember(animatedDominant, animatedBackground) {
+    Brush.verticalGradient(colors = listOf(animatedDominant, animatedBackground))
+  }
 
   val isFavorite = trackRating.lfmRating == LfmRating.Loved
   val isBanned = trackRating.lfmRating == LfmRating.Banned
@@ -373,6 +375,12 @@ private object PlayerConstants {
   const val SLIDER_DEBOUNCE_MS = 1000L
   val TABLET_WIDTH_THRESHOLD = 600.dp
   val CONTENT_PADDING = 24.dp
+
+  /**
+   * A blur this size is redrawn on every frame the marquees ask for, and the cover is the largest
+   * thing on the screen. Material tops out around this for a raised surface anyway.
+   */
+  val COVER_ELEVATION = 8.dp
 }
 
 /**
@@ -424,12 +432,27 @@ private fun rememberAlbumArtState(
     )
   }
 
+  // Skipped while inspecting: a preview has no Koin graph to inject the dispatchers from, and no
+  // cover to extract anything out of either, so it keeps the default palette it starts with.
+  if (LocalInspectionMode.current) {
+    return AlbumArtState(painter = painter, colors = colors)
+  }
+
+  val dispatchers: AppCoroutineDispatchers = koinInject()
+
   // Update colors when theme changes or image loads
   LaunchedEffect(painterState, darkTheme, defaultBackground) {
     when (val currentState = painterState) {
       is AsyncImagePainter.State.Success -> {
-        val bitmap = currentState.result.image.toBitmap()
-        colors = extractColorsFromBitmap(bitmap, defaultBackground, darkTheme)
+        // Palette.generate() and the bitmap copy it needs both block, and LaunchedEffect runs on
+        // the main dispatcher, so this stalled the UI thread on every track change.
+        colors = withContext(dispatchers.io) {
+          extractColorsFromBitmap(
+            currentState.result.image.toBitmap(),
+            defaultBackground,
+            darkTheme
+          )
+        }
       }
 
       else -> {
@@ -823,7 +846,7 @@ private fun AlbumCover(painter: AsyncImagePainter, modifier: Modifier = Modifier
   Surface(
     modifier = modifier
       .shadow(
-        elevation = 24.dp,
+        elevation = PlayerConstants.COVER_ELEVATION,
         shape = MaterialTheme.shapes.medium,
         ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
         spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)

@@ -35,7 +35,6 @@ class SettingsViewModelTest : KoinTest {
   private lateinit var viewModel: SettingsViewModel
   private lateinit var settingsManager: SettingsManager
   private lateinit var serviceRestarter: ServiceRestarter
-  private lateinit var debugLoggingManager: DebugLoggingManager
 
   private val themeFlow = MutableStateFlow<Theme>(Theme.System)
   private val pluginUpdateCheckFlow = MutableStateFlow(false)
@@ -48,7 +47,6 @@ class SettingsViewModelTest : KoinTest {
   private val testModule = module {
     single { settingsManager }
     single { serviceRestarter }
-    single { debugLoggingManager }
   }
 
   @Before
@@ -64,11 +62,10 @@ class SettingsViewModelTest : KoinTest {
       every { showRatingOnPlayerFlow } returns this@SettingsViewModelTest.showRatingOnPlayerFlow
     }
     serviceRestarter = mockk(relaxed = true)
-    debugLoggingManager = mockk(relaxed = true)
 
     startKoin { modules(listOf(testModule, testDispatcherModule)) }
 
-    viewModel = SettingsViewModel(settingsManager, serviceRestarter, debugLoggingManager)
+    viewModel = SettingsViewModel(settingsManager, serviceRestarter)
   }
 
   @After
@@ -125,16 +122,14 @@ class SettingsViewModelTest : KoinTest {
     }
 
   @Test
-  fun `updateDebugLogging should call settingsManager and debugLoggingManager`() =
-    runTest(testDispatcher) {
-      coEvery { settingsManager.setDebugLogging(any()) } returns Unit
+  fun `updateDebugLogging only stores the preference`() = runTest(testDispatcher) {
+    coEvery { settingsManager.setDebugLogging(any()) } returns Unit
 
-      viewModel.updateDebugLogging(true)
-      advanceUntilIdle()
+    viewModel.updateDebugLogging(true)
+    advanceUntilIdle()
 
-      coVerify { settingsManager.setDebugLogging(true) }
-      verify { debugLoggingManager.setDebugLogging(true) }
-    }
+    coVerify { settingsManager.setDebugLogging(true) }
+  }
 
   @Test
   fun `updateIncomingCallAction should call settingsManager and restart service`() =

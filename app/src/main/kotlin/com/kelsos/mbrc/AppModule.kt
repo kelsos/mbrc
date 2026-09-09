@@ -5,7 +5,6 @@ import com.kelsos.mbrc.adapters.ChangelogResourceProviderImpl
 import com.kelsos.mbrc.adapters.ClientIdProviderAdapter
 import com.kelsos.mbrc.adapters.ConnectionProviderAdapter
 import com.kelsos.mbrc.adapters.CoverHandlerImpl
-import com.kelsos.mbrc.adapters.DebugLoggingManagerImpl
 import com.kelsos.mbrc.adapters.DefaultConnectionProviderAdapter
 import com.kelsos.mbrc.adapters.GithubReleaseParserImpl
 import com.kelsos.mbrc.adapters.LibrarySyncTriggerAdapter
@@ -46,7 +45,6 @@ import com.kelsos.mbrc.feature.minicontrol.miniControlModule
 import com.kelsos.mbrc.feature.misc.miscModule
 import com.kelsos.mbrc.feature.misc.whatsnew.ChangelogResourceProvider
 import com.kelsos.mbrc.feature.playback.playbackModule
-import com.kelsos.mbrc.feature.settings.DebugLoggingManager
 import com.kelsos.mbrc.feature.settings.domain.GithubReleaseParser
 import com.kelsos.mbrc.feature.settings.settingsModule
 import com.kelsos.mbrc.feature.widgets.widgetsModule
@@ -146,7 +144,6 @@ val appModule = module {
 
   // Service Adapters
   singleOf(::ServiceRestarterImpl) { bind<ServiceRestarter>() }
-  singleOf(::DebugLoggingManagerImpl) { bind<DebugLoggingManager>() }
 
   // App State Management
   singleOf(::AppStateManager)

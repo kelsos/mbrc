@@ -23,10 +23,12 @@ import com.kelsos.mbrc.feature.settings.data.SettingsDataStore.PreferenceKeys
 import com.kelsos.mbrc.feature.settings.data.SettingsDataStore.dataStore
 import com.kelsos.mbrc.feature.settings.domain.SettingsManager
 import com.kelsos.mbrc.feature.settings.theme.Theme
+import java.io.IOException
 import java.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -45,20 +47,51 @@ class SettingsManagerDataStore(
     setupManager()
   }
 
+  /**
+   * The only owner of the file logging tree.
+   *
+   * It used to share that job with a manager the settings screen called directly, so a single
+   * toggle ran both: two plants could each pass the "is one already planted" check and open a
+   * java.util.logging FileHandler on the same file, and the loser died on the lock file; two
+   * uproots could each find the same tree, and the second threw because it had already gone. Both
+   * were fatal and both showed up in Crashlytics on 1.6.1.
+   *
+   * Reacting to the stored value rather than to the tap also means the setting is applied on
+   * startup, which is the reason this collector existed in the first place.
+   */
   private fun setupManager() {
     scope.launch {
       dataStore.data.map { preferences ->
         preferences[PreferenceKeys.DEBUG_LOGGING] ?: DefaultValues.DEBUG_LOGGING
-      }.collect { enabled ->
-        if (enabled) {
-          Timber.forest().find { it is FileLoggingTree }
-            ?: Timber.plant(FileLoggingTree(context.applicationContext))
-        } else {
-          Timber.forest().find { it is FileLoggingTree }?.let {
-            Timber.uproot(it)
+      }
+        // Every write to any preference re-emits the whole set, so without this an unrelated
+        // setting would replant the tree.
+        .distinctUntilChanged()
+        .collect { enabled ->
+          if (enabled) {
+            plantFileLogging()
+          } else {
+            Timber.forest().find { it is FileLoggingTree }?.let {
+              Timber.uproot(it)
+            }
           }
         }
-      }
+    }
+  }
+
+  /**
+   * Diagnostics are not worth a crash. The FileHandler takes a lock file next to the log and
+   * throws if it cannot have it, which the app has died on in the field.
+   */
+  private fun plantFileLogging() {
+    if (Timber.forest().any { it is FileLoggingTree }) {
+      return
+    }
+
+    try {
+      Timber.plant(FileLoggingTree(context.applicationContext))
+    } catch (e: IOException) {
+      Timber.w(e, "Could not open the log file, continuing without file logging")
     }
   }
 

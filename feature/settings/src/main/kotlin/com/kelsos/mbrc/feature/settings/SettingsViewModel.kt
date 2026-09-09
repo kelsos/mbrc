@@ -26,20 +26,12 @@ sealed class SettingsDialogType {
 }
 
 /**
- * Interface for managing debug logging tree setup.
- */
-interface DebugLoggingManager {
-  fun setDebugLogging(enabled: Boolean)
-}
-
-/**
  * ViewModel for the Settings screen.
  * Manages all settings-related state and business logic using proper ViewModel patterns.
  */
 class SettingsViewModel(
   private val settingsManager: SettingsManager,
-  private val serviceRestarter: ServiceRestarter,
-  private val debugLoggingManager: DebugLoggingManager
+  private val serviceRestarter: ServiceRestarter
 ) : ViewModel() {
 
   // State flows from settings manager
@@ -90,12 +82,14 @@ class SettingsViewModel(
   }
 
   /**
-   * Updates debug logging preference and handles logging tree setup.
+   * Updates the debug logging preference.
+   *
+   * Storing it is the whole job: the settings data store watches the value and owns the logging
+   * tree. Applying it here as well meant two writers racing over one log file.
    */
   fun updateDebugLogging(enabled: Boolean) {
     viewModelScope.launch {
       settingsManager.setDebugLogging(enabled)
-      debugLoggingManager.setDebugLogging(enabled)
     }
   }
 

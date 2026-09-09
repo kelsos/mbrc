@@ -68,7 +68,9 @@
   <string name="setting_show_rating_on_player">Show rating on player</string>
   <string name="setting_show_rating_on_player_summary">Display star rating below track info on player screen</string>
   <string name="setting_keep_screen_on">Keep screen on</string>
-  <string name="setting_keep_screen_on_summary">Stop the screen turning off while MusicBee Remote is open</string>
+  <string name="setting_keep_screen_on_never">Never</string>
+  <string name="setting_keep_screen_on_while_charging">While charging</string>
+  <string name="setting_keep_screen_on_always">Always</string>
 
   <!-- About -->
   <string name="preferences_about_version">MusicBee Remote Version</string>

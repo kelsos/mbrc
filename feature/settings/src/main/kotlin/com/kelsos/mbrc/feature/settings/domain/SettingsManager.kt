@@ -4,6 +4,7 @@ import com.kelsos.mbrc.core.common.settings.ChangeLogChecker
 import com.kelsos.mbrc.core.common.settings.LibrarySettings
 import com.kelsos.mbrc.core.common.settings.TrackAction
 import com.kelsos.mbrc.feature.settings.data.CallAction
+import com.kelsos.mbrc.feature.settings.data.KeepScreenOn
 import com.kelsos.mbrc.feature.settings.theme.Theme
 import java.time.Instant
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +26,7 @@ interface SettingsManager :
   override val shouldDisplayOnlyArtists: Flow<Boolean>
   val halfStarRatingFlow: Flow<Boolean>
   val showRatingOnPlayerFlow: Flow<Boolean>
-  val keepScreenOnFlow: Flow<Boolean>
+  val keepScreenOnFlow: Flow<KeepScreenOn>
 
   // Async update methods for changing settings (type-safe with sealed classes)
   suspend fun setTheme(theme: Theme)
@@ -36,7 +37,7 @@ interface SettingsManager :
   override suspend fun setShouldDisplayOnlyAlbumArtist(onlyAlbumArtist: Boolean)
   suspend fun setHalfStarRating(enabled: Boolean)
   suspend fun setShowRatingOnPlayer(enabled: Boolean)
-  suspend fun setKeepScreenOn(enabled: Boolean)
+  suspend fun setKeepScreenOn(mode: KeepScreenOn)
 
   // Async utility methods
   override suspend fun checkShouldShowChangeLog(): Boolean

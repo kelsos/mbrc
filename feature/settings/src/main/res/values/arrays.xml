@@ -14,6 +14,18 @@
     <item>add-all</item>
   </string-array>
 
+  <string-array name="keep_screen_on_options">
+    <item>@string/setting_keep_screen_on_never</item>
+    <item>@string/setting_keep_screen_on_while_charging</item>
+    <item>@string/setting_keep_screen_on_always</item>
+  </string-array>
+
+  <string-array name="keep_screen_on_options_values">
+    <item>never</item>
+    <item>while_charging</item>
+    <item>always</item>
+  </string-array>
+
   <string-array name="incoming_action_options">
     <item>None</item>
     <item>Pause</item>

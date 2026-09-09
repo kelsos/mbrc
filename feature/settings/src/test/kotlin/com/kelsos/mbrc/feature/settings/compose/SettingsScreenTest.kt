@@ -12,6 +12,7 @@ import com.kelsos.mbrc.core.common.settings.TrackAction
 import com.kelsos.mbrc.core.common.utilities.AppInfo
 import com.kelsos.mbrc.feature.settings.SettingsDialogType
 import com.kelsos.mbrc.feature.settings.data.CallAction
+import com.kelsos.mbrc.feature.settings.data.KeepScreenOn
 import com.kelsos.mbrc.feature.settings.theme.Theme
 import org.junit.Rule
 import org.junit.Test
@@ -815,7 +816,8 @@ class SettingsScreenTest : KoinTest {
 class TestSettingsActions(
   override val onThemeClick: () -> Unit = {},
   override val onThemeSelected: (Theme) -> Unit = {},
-  override val onKeepScreenOnChanged: (Boolean) -> Unit = {},
+  override val onKeepScreenOnClick: () -> Unit = {},
+  override val onKeepScreenOnSelected: (KeepScreenOn) -> Unit = {},
   override val onIncomingCallActionClick: () -> Unit = {},
   override val onIncomingCallActionSelected: (CallAction) -> Unit = {},
   override val onPluginUpdatesChanged: (Boolean) -> Unit = {},

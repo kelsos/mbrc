@@ -24,9 +24,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.kelsos.mbrc.core.common.state.ConnectionStatePublisher
 import com.kelsos.mbrc.core.common.state.ConnectionStatus
 import com.kelsos.mbrc.core.networking.LocalNetworkAccess
+import com.kelsos.mbrc.feature.settings.data.KeepScreenOn
 import com.kelsos.mbrc.feature.settings.domain.SettingsManager
 import com.kelsos.mbrc.service.LocalNetworkAccessImpl
 import com.kelsos.mbrc.service.ServiceChecker
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
@@ -129,18 +132,31 @@ class MainActivity : ComponentActivity() {
   }
 
   /**
-   * Holds the screen awake while the setting is on, for as long as the activity is visible.
+   * Holds the screen awake according to the setting, for as long as the activity is visible.
    *
    * Collected inside [repeatOnLifecycle] at STARTED so the flag is cleared on the way to the
    * background: a remote is useful propped up on a desk, but not at the cost of a device that
-   * never sleeps once the user has moved on.
+   * never sleeps once the user has moved on. The window flag is inert for a window that is not
+   * in front anyway, so this is belt and braces rather than the only guard.
+   *
+   * [KeepScreenOn.WhileCharging] is the tier that answers the battery objection: propped on a
+   * counter almost always means plugged in, and that is when a display timeout is pure nuisance.
    */
   private fun keepScreenOnWhileVisible() {
     lifecycleScope.launch {
       repeatOnLifecycle(Lifecycle.State.STARTED) {
         try {
-          settingsManager.keepScreenOnFlow.collect { enabled ->
-            if (enabled) {
+          combine(
+            settingsManager.keepScreenOnFlow,
+            chargingState()
+          ) { mode, charging ->
+            when (mode) {
+              KeepScreenOn.Never -> false
+              KeepScreenOn.WhileCharging -> charging
+              KeepScreenOn.Always -> true
+            }
+          }.distinctUntilChanged().collect { keepAwake ->
+            if (keepAwake) {
               window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             } else {
               window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

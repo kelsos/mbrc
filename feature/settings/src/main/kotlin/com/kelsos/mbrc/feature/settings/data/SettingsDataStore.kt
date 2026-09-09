@@ -67,7 +67,7 @@ object SettingsDataStore {
     val CLIENT_UUID = stringPreferencesKey("uuid")
     val HALF_STAR_RATING = booleanPreferencesKey("mbrc.settings.half_star_rating")
     val SHOW_RATING_ON_PLAYER = booleanPreferencesKey("mbrc.settings.show_rating_on_player")
-    val KEEP_SCREEN_ON = booleanPreferencesKey("mbrc.settings.keep_screen_on")
+    val KEEP_SCREEN_ON = stringPreferencesKey("mbrc.settings.keep_screen_on_mode")
 
     // Library sorting preferences
     val GENRE_SORT = stringPreferencesKey("mbrc.library.sort.genre")
@@ -91,7 +91,7 @@ object SettingsDataStore {
     const val REQUIRED_UPDATE_CHECK = 0L
     const val HALF_STAR_RATING = true
     const val SHOW_RATING_ON_PLAYER = false
-    const val KEEP_SCREEN_ON = false
+    const val KEEP_SCREEN_ON = KeepScreenOn.NEVER
 
     // Library sorting defaults (format: "field:order")
     const val GENRE_SORT = "name:asc"

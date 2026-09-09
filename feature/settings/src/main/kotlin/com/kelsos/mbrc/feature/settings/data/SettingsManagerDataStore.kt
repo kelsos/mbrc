@@ -99,8 +99,9 @@ class SettingsManagerDataStore(
     preferences[PreferenceKeys.SHOW_RATING_ON_PLAYER] ?: DefaultValues.SHOW_RATING_ON_PLAYER
   }
 
-  override val keepScreenOnFlow: Flow<Boolean> = dataStore.data.map { preferences ->
-    preferences[PreferenceKeys.KEEP_SCREEN_ON] ?: DefaultValues.KEEP_SCREEN_ON
+  override val keepScreenOnFlow: Flow<KeepScreenOn> = dataStore.data.map { preferences ->
+    val mode = preferences[PreferenceKeys.KEEP_SCREEN_ON] ?: DefaultValues.KEEP_SCREEN_ON
+    KeepScreenOn.fromString(mode)
   }
 
   override val genreSortPreferenceFlow: Flow<GenreSortPreference> = dataStore.data.map { prefs ->
@@ -188,9 +189,9 @@ class SettingsManagerDataStore(
     }
   }
 
-  override suspend fun setKeepScreenOn(enabled: Boolean) {
+  override suspend fun setKeepScreenOn(mode: KeepScreenOn) {
     dataStore.edit { preferences ->
-      preferences[PreferenceKeys.KEEP_SCREEN_ON] = enabled
+      preferences[PreferenceKeys.KEEP_SCREEN_ON] = mode.string
     }
   }
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kelsos.mbrc.core.common.settings.TrackAction
 import com.kelsos.mbrc.core.platform.service.ServiceRestarter
 import com.kelsos.mbrc.feature.settings.data.CallAction
+import com.kelsos.mbrc.feature.settings.data.KeepScreenOn
 import com.kelsos.mbrc.feature.settings.domain.SettingsManager
 import com.kelsos.mbrc.feature.settings.theme.Theme
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,7 @@ sealed class SettingsDialogType {
   data object Theme : SettingsDialogType()
   data object IncomingCallAction : SettingsDialogType()
   data object TrackDefaultAction : SettingsDialogType()
+  data object KeepScreenOn : SettingsDialogType()
 }
 
 /**
@@ -62,8 +64,8 @@ class SettingsViewModel(
   val showRatingOnPlayerEnabled: StateFlow<Boolean> = settingsManager.showRatingOnPlayerFlow
     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
-  val keepScreenOnEnabled: StateFlow<Boolean> = settingsManager.keepScreenOnFlow
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+  val keepScreenOn: StateFlow<KeepScreenOn> = settingsManager.keepScreenOnFlow
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), KeepScreenOn.Never)
 
   // Dialog state
   private val _visibleDialog = MutableStateFlow<SettingsDialogType?>(null)
@@ -137,9 +139,9 @@ class SettingsViewModel(
   /**
    * Updates whether the screen stays awake while the app is visible.
    */
-  fun updateKeepScreenOn(enabled: Boolean) {
+  fun updateKeepScreenOn(mode: KeepScreenOn) {
     viewModelScope.launch {
-      settingsManager.setKeepScreenOn(enabled)
+      settingsManager.setKeepScreenOn(mode)
     }
   }
 

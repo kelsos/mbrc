@@ -52,6 +52,7 @@ import com.kelsos.mbrc.feature.settings.R
 import com.kelsos.mbrc.feature.settings.SettingsDialogType
 import com.kelsos.mbrc.feature.settings.SettingsViewModel
 import com.kelsos.mbrc.feature.settings.data.CallAction
+import com.kelsos.mbrc.feature.settings.data.KeepScreenOn
 import com.kelsos.mbrc.feature.settings.theme.Theme
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -75,7 +76,7 @@ class PreviewAppInfo(
 @Immutable
 data class SettingsContentState(
   val currentTheme: Theme = Theme.System,
-  val keepScreenOnEnabled: Boolean = false,
+  val keepScreenOn: KeepScreenOn = KeepScreenOn.Never,
   val pluginUpdatesEnabled: Boolean = false,
   val debugLoggingEnabled: Boolean = false,
   val incomingCallAction: CallAction = CallAction.None,
@@ -92,7 +93,8 @@ data class SettingsContentState(
 interface ISettingsActions {
   val onThemeClick: () -> Unit
   val onThemeSelected: (Theme) -> Unit
-  val onKeepScreenOnChanged: (Boolean) -> Unit
+  val onKeepScreenOnClick: () -> Unit
+  val onKeepScreenOnSelected: (KeepScreenOn) -> Unit
   val onIncomingCallActionClick: () -> Unit
   val onIncomingCallActionSelected: (CallAction) -> Unit
   val onPluginUpdatesChanged: (Boolean) -> Unit
@@ -112,7 +114,8 @@ interface ISettingsActions {
 object EmptySettingsActions : ISettingsActions {
   override val onThemeClick: () -> Unit = {}
   override val onThemeSelected: (Theme) -> Unit = {}
-  override val onKeepScreenOnChanged: (Boolean) -> Unit = {}
+  override val onKeepScreenOnClick: () -> Unit = {}
+  override val onKeepScreenOnSelected: (KeepScreenOn) -> Unit = {}
   override val onIncomingCallActionClick: () -> Unit = {}
   override val onIncomingCallActionSelected: (CallAction) -> Unit = {}
   override val onPluginUpdatesChanged: (Boolean) -> Unit = {}
@@ -133,7 +136,7 @@ object EmptySettingsActions : ISettingsActions {
 private fun AppearanceSettingsSection(viewModel: SettingsViewModel) {
   val currentTheme by viewModel.currentTheme.collectAsStateWithLifecycle()
   val visibleDialog by viewModel.visibleDialog.collectAsStateWithLifecycle()
-  val keepScreenOnEnabled by viewModel.keepScreenOnEnabled.collectAsStateWithLifecycle()
+  val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
 
   SettingsSection(title = stringResource(R.string.settings_appearance)) {
     SettingsItem(
@@ -142,11 +145,21 @@ private fun AppearanceSettingsSection(viewModel: SettingsViewModel) {
       onClick = { viewModel.showDialog(SettingsDialogType.Theme) }
     )
 
-    SettingsToggleItem(
+    SettingsItem(
       title = stringResource(R.string.setting_keep_screen_on),
-      subtitle = stringResource(R.string.setting_keep_screen_on_summary),
-      checked = keepScreenOnEnabled,
-      onCheckedChange = { enabled -> viewModel.updateKeepScreenOn(enabled) }
+      subtitle = getKeepScreenOnDisplayName(keepScreenOn),
+      onClick = { viewModel.showDialog(SettingsDialogType.KeepScreenOn) }
+    )
+  }
+
+  if (visibleDialog == SettingsDialogType.KeepScreenOn) {
+    KeepScreenOnDialog(
+      currentMode = keepScreenOn,
+      onModeSelected = { mode ->
+        viewModel.updateKeepScreenOn(mode)
+        viewModel.hideDialog()
+      },
+      onDismiss = { viewModel.hideDialog() }
     )
   }
 
@@ -440,9 +453,9 @@ fun SettingsScreenContent(
       // Appearance Settings Section
       AppearanceContentSection(
         currentTheme = state.currentTheme,
-        keepScreenOnEnabled = state.keepScreenOnEnabled,
+        keepScreenOn = state.keepScreenOn,
         onThemeClick = actions.onThemeClick,
-        onKeepScreenOnChanged = actions.onKeepScreenOnChanged
+        onKeepScreenOnClick = actions.onKeepScreenOnClick
       )
 
       SettingsDivider()
@@ -506,6 +519,15 @@ fun SettingsScreenContent(
       onDismiss = actions.onDismissDialog
     )
 
+    SettingsDialogType.KeepScreenOn -> KeepScreenOnDialog(
+      currentMode = state.keepScreenOn,
+      onModeSelected = { mode ->
+        actions.onKeepScreenOnSelected(mode)
+        actions.onDismissDialog()
+      },
+      onDismiss = actions.onDismissDialog
+    )
+
     SettingsDialogType.TrackDefaultAction -> TrackDefaultActionDialog(
       currentAction = state.trackDefaultAction,
       onActionSelected = { action ->
@@ -525,9 +547,9 @@ fun SettingsScreenContent(
 @Composable
 private fun AppearanceContentSection(
   currentTheme: Theme,
-  keepScreenOnEnabled: Boolean,
+  keepScreenOn: KeepScreenOn,
   onThemeClick: () -> Unit,
-  onKeepScreenOnChanged: (Boolean) -> Unit
+  onKeepScreenOnClick: () -> Unit
 ) {
   SettingsSection(title = stringResource(R.string.settings_appearance)) {
     SettingsItem(
@@ -536,11 +558,10 @@ private fun AppearanceContentSection(
       onClick = onThemeClick
     )
 
-    SettingsToggleItem(
+    SettingsItem(
       title = stringResource(R.string.setting_keep_screen_on),
-      subtitle = stringResource(R.string.setting_keep_screen_on_summary),
-      checked = keepScreenOnEnabled,
-      onCheckedChange = onKeepScreenOnChanged
+      subtitle = getKeepScreenOnDisplayName(keepScreenOn),
+      onClick = onKeepScreenOnClick
     )
   }
 }
@@ -737,6 +758,32 @@ private fun ThemeSelectionDialog(
     onValueSelected = { themeString -> onThemeSelected(Theme.fromString(themeString)) },
     onDismiss = onDismiss
   )
+}
+
+/**
+ * Incoming call action selection dialog.
+ */
+@Composable
+private fun KeepScreenOnDialog(
+  currentMode: KeepScreenOn,
+  onModeSelected: (KeepScreenOn) -> Unit,
+  onDismiss: () -> Unit
+) {
+  RadioSelectionDialog(
+    title = stringResource(R.string.setting_keep_screen_on),
+    values = stringArrayResource(R.array.keep_screen_on_options_values),
+    labels = stringArrayResource(R.array.keep_screen_on_options),
+    currentValue = currentMode.string,
+    onValueSelected = { value -> onModeSelected(KeepScreenOn.fromString(value)) },
+    onDismiss = onDismiss
+  )
+}
+
+@Composable
+private fun getKeepScreenOnDisplayName(mode: KeepScreenOn): String = when (mode) {
+  KeepScreenOn.Never -> stringResource(R.string.setting_keep_screen_on_never)
+  KeepScreenOn.WhileCharging -> stringResource(R.string.setting_keep_screen_on_while_charging)
+  KeepScreenOn.Always -> stringResource(R.string.setting_keep_screen_on_always)
 }
 
 /**

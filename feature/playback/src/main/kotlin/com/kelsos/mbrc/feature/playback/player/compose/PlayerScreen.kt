@@ -52,6 +52,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -100,6 +101,7 @@ import com.kelsos.mbrc.core.ui.compose.ThinSlider
 import com.kelsos.mbrc.core.ui.compose.TopBarState
 import com.kelsos.mbrc.core.ui.compose.WaveProgressIndicator
 import com.kelsos.mbrc.core.ui.compose.trackTextMarquee
+import com.kelsos.mbrc.core.ui.theme.md_theme_dark_primary
 import com.kelsos.mbrc.feature.misc.output.compose.OutputSelectionBottomSheet
 import com.kelsos.mbrc.feature.playback.R
 import com.kelsos.mbrc.feature.playback.lyrics.LyricsViewModel
@@ -153,9 +155,10 @@ fun PlayerScreen(
     showLyrics = false
   }
 
-  // Compute scaffold configuration based on current state
-  val topBarState = if (showLyrics) TopBarState.Hidden else TopBarState.WithTitle(title)
-  // 3-dot menu opens bottom sheet directly (only when not showing lyrics)
+  // The top bar stays put while lyrics are up. Hiding it used to give the panel the full height,
+  // but it also shortened the scaffold's content slot by the bar's height, and the player centres
+  // itself in that slot: it rose by half the bar for the length of the panel's animation. The
+  // panel is drawn over the scaffold instead, so it covers the bar without resizing anything.
   val onOverflowClick: (() -> Unit)? = if (showLyrics) {
     null
   } else {
@@ -198,20 +201,19 @@ fun PlayerScreen(
     )
   }
 
-  DynamicScreenScaffold(
-    topBarState = topBarState,
-    snackbarHostState = snackbarHostState,
-    defaultTitle = title,
-    onOpenDrawer = onOpenDrawer,
-    onOverflowClick = onOverflowClick,
-    isTransparent = true,
-    modifier = modifier
-  ) { paddingValues ->
-    // The transparent top bar draws over the gradient, but the scaffold still
-    // reports the status-bar + top-bar height as the top inset and the
-    // navigation-bar / taskbar as the bottom inset. Thread that through so every
-    // layout keeps its content clear of the system bars (#324/#325).
-    Box(modifier = Modifier.fillMaxSize()) {
+  Box(modifier = modifier.fillMaxSize()) {
+    DynamicScreenScaffold(
+      topBarState = TopBarState.WithTitle(title),
+      snackbarHostState = snackbarHostState,
+      defaultTitle = title,
+      onOpenDrawer = onOpenDrawer,
+      onOverflowClick = onOverflowClick,
+      isTransparent = true
+    ) { paddingValues ->
+      // The transparent top bar draws over the gradient, but the scaffold still
+      // reports the status-bar + top-bar height as the top inset and the
+      // navigation-bar / taskbar as the bottom inset. Thread that through so every
+      // layout keeps its content clear of the system bars (#324/#325).
       PlayerScreenContent(
         playingTrack = playingTrack,
         playingPosition = playingPosition,
@@ -227,31 +229,32 @@ fun PlayerScreen(
         onOutputClick = { showOutputSelection = true },
         onRatingClick = { showBottomSheet = true }
       )
+    }
 
-      // Lyrics overlay with slide animation from bottom
-      AnimatedVisibility(
-        visible = showLyrics,
-        enter = slideInVertically(
-          initialOffsetY = { fullHeight -> fullHeight },
-          animationSpec = tween(durationMillis = 300)
-        ),
-        exit = slideOutVertically(
-          targetOffsetY = { fullHeight -> fullHeight },
-          animationSpec = tween(durationMillis = 300)
-        )
-      ) {
-        LyricsScreenContent(
-          lyrics = lyrics,
-          playingTrack = lyricsPlayingTrack,
-          playingPosition = lyricsPlayingPosition,
-          composer = trackDetails.composer,
-          isPlaying = isPlaying,
-          onCollapse = { showLyrics = false },
-          onPlayPauseClick = lyricsViewModel::playPause,
-          onSeek = { lyricsViewModel.seek(it.toInt()) },
-          modifier = Modifier.fillMaxSize()
-        )
-      }
+    // Sits above the scaffold rather than inside its content slot, so it covers the top bar
+    // instead of needing the bar taken away.
+    AnimatedVisibility(
+      visible = showLyrics,
+      enter = slideInVertically(
+        initialOffsetY = { fullHeight -> fullHeight },
+        animationSpec = tween(durationMillis = 300)
+      ),
+      exit = slideOutVertically(
+        targetOffsetY = { fullHeight -> fullHeight },
+        animationSpec = tween(durationMillis = 300)
+      )
+    ) {
+      LyricsScreenContent(
+        lyrics = lyrics,
+        playingTrack = lyricsPlayingTrack,
+        playingPosition = lyricsPlayingPosition,
+        composer = trackDetails.composer,
+        isPlaying = isPlaying,
+        onCollapse = { showLyrics = false },
+        onPlayPauseClick = lyricsViewModel::playPause,
+        onSeek = { lyricsViewModel.seek(it.toInt()) },
+        modifier = Modifier.fillMaxSize()
+      )
     }
   }
 }
@@ -371,10 +374,22 @@ fun PlayerScreenContent(
  */
 private object PlayerConstants {
   const val LANDSCAPE_ALBUM_HEIGHT_FRACTION = 0.85f
-  val PORTRAIT_BOTTOM_PADDING = 16.dp
+
+  /**
+   * Larger than the top, which already carries the status bar and a 64dp transparent top bar.
+   */
+  val PORTRAIT_BOTTOM_PADDING = 24.dp
+  val PORTRAIT_TOP_PADDING = 8.dp
   const val VOLUME_MAX = 100f
   const val SLIDER_DEBOUNCE_MS = 1000L
   val CONTENT_PADDING = 24.dp
+
+  /**
+   * Material reserves half the thumb at each end of a slider, so a track laid out at
+   * [CONTENT_PADDING] draws 6dp inside the text that sits above it. Taking that back off the
+   * slider's own padding puts the track edge on the same line as everything else.
+   */
+  val SLIDER_TRACK_INSET = 6.dp
 
   /**
    * A blur this size is redrawn on every frame the marquees ask for, and the cover is the largest
@@ -383,13 +398,25 @@ private object PlayerConstants {
   val COVER_ELEVATION = 8.dp
 
   /**
-   * How wide the metadata and transport are allowed to get once the window is past compact. The
-   * cover is deliberately not bound by this: it is the element that should grow with the screen.
+   * How wide the content column is allowed to get once the window is past compact. The cover
+   * shares it in portrait so the stack keeps one set of edges.
    */
   val CONTROLS_MAX_WIDTH = 560.dp
 
   /** Below this the landscape control stack does not fit at its normal spacing. */
   val SHORT_HEIGHT_THRESHOLD = 420.dp
+
+  /** Keeps the badge off the artwork's corner instead of sitting flush against it. */
+  val BADGE_INSET = 16.dp
+
+  /**
+   * Lyrics badge, measured against the worst case of a near-white cover. The disabled pair still
+   * clears the 3:1 WCAG asks of a non-text control, and darker artwork only widens the margin.
+   */
+  const val BADGE_SCRIM_ENABLED = 0.55f
+  const val BADGE_SCRIM_DISABLED = 0.45f
+  const val BADGE_ICON_ENABLED = 1.0f
+  const val BADGE_ICON_DISABLED = 0.75f
 }
 
 /**
@@ -553,17 +580,18 @@ private fun PortraitPlayerLayout(
       // navigation-bar / taskbar on the bottom keeps the volume row on screen (#324).
       .padding(contentPadding)
       .padding(
-        top = PlayerConstants.CONTENT_PADDING,
+        top = PlayerConstants.PORTRAIT_TOP_PADDING,
         bottom = PlayerConstants.PORTRAIT_BOTTOM_PADDING
       ),
-    horizontalAlignment = Alignment.CenterHorizontally
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.Center
   ) {
-    // Album cover - takes the leftover vertical space and sizes itself to the
-    // largest square that fits, so the metadata, transport and volume rows below
-    // always stay on screen instead of being pushed off the bottom (#324/#325).
+    // Weighted so the square can never push the rows below off screen (#324/#325); fill = false
+    // hands the height it did not use back to the column's arrangement.
     BoxWithConstraints(
       modifier = Modifier
-        .weight(1f)
+        .weight(1f, fill = false)
+        .widthIn(max = contentMaxWidth)
         .fillMaxWidth()
         .padding(horizontal = PlayerConstants.CONTENT_PADDING),
       contentAlignment = Alignment.Center
@@ -576,7 +604,7 @@ private fun PortraitPlayerLayout(
       )
     }
 
-    Spacer(modifier = Modifier.height(32.dp))
+    Spacer(modifier = Modifier.height(24.dp))
 
     // The cover above is free to take the full width, but the metadata and transport below are
     // not: on a portrait tablet an 800dp seek bar and a title centred across the same span read
@@ -599,25 +627,31 @@ private fun PortraitPlayerLayout(
           .padding(horizontal = PlayerConstants.CONTENT_PADDING)
       )
 
-      // Rating display (optional)
+      // Rating display (optional). Left-aligned with the title above it rather than centred in
+      // the column, so the metadata block reads as one left edge.
       if (showRating) {
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         RatingDisplay(
           rating = rating,
           onClick = onRatingClick,
-          modifier = Modifier.padding(horizontal = PlayerConstants.CONTENT_PADDING)
+          modifier = Modifier
+            .align(Alignment.Start)
+            .padding(horizontal = PlayerConstants.CONTENT_PADDING)
         )
       }
 
       Spacer(modifier = Modifier.height(24.dp))
 
-      // Progress bar
+      // Padded short by the thumb reservation so the track itself, not the widget bounds, lands
+      // on the same edge as the title and the volume row.
       ProgressSection(
         position = playingPosition,
         onSeek = actions.seek,
         modifier = Modifier
           .fillMaxWidth()
-          .padding(horizontal = PlayerConstants.CONTENT_PADDING)
+          .padding(
+            horizontal = PlayerConstants.CONTENT_PADDING - PlayerConstants.SLIDER_TRACK_INSET
+          )
       )
 
       Spacer(modifier = Modifier.height(16.dp))
@@ -768,12 +802,12 @@ private fun LandscapePlayerLayout(
 }
 
 /**
- * The album cover, which doubles as the way into the lyrics overlay.
+ * The album cover, with a corner badge that opens the lyrics overlay.
  *
- * Lyrics used to be an icon button on the track info row, where it took a 48dp touch target away
- * from a title that had 168dp to work with on a phone. The cover is the largest inert surface on
- * the screen and lyrics are something people want more prominent rather than less, so the gesture
- * lives here and the badge carries the availability signal the button's tint used to.
+ * The badge replaces the icon button lyrics used to have on the track info row, where it cost a
+ * 48dp target the title needed (#364). It always occupies the same corner and always opens the
+ * overlay; without lyrics for the track it recedes instead of disabling, because the overlay is
+ * still worth reaching and lyrics can arrive after the badge is first drawn. The cover stays inert.
  */
 @Composable
 private fun AlbumCover(
@@ -794,14 +828,7 @@ private fun AlbumCover(
         ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
         spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
       )
-      .clip(MaterialTheme.shapes.medium)
-      .then(
-        if (onLyricsClick != null) {
-          Modifier.clickable(onClickLabel = lyricsLabel, onClick = onLyricsClick)
-        } else {
-          Modifier
-        }
-      ),
+      .clip(MaterialTheme.shapes.medium),
     tonalElevation = 0.dp
   ) {
     val activePainter = when (painterState) {
@@ -818,20 +845,39 @@ private fun AlbumCover(
         modifier = Modifier.fillMaxSize()
       )
 
-      // Only drawn when there is something to read, so its presence is the signal.
-      if (hasLyrics && onLyricsClick != null) {
+      // Always drawn so the cover keeps a stable corner and lyrics stay a known place to look.
+      // Without any, the badge recedes into the artwork rather than disappearing, which would
+      // otherwise read as the feature coming and going between tracks.
+      if (onLyricsClick != null) {
         Surface(
+          onClick = onLyricsClick,
           modifier = Modifier
             .align(Alignment.BottomEnd)
-            .padding(12.dp),
+            .padding(PlayerConstants.BADGE_INSET)
+            .minimumInteractiveComponentSize(),
           shape = CircleShape,
-          color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+          // The backdrop is artwork, not a theme surface, so the colours cannot come from the
+          // active scheme: a themed tint over an unknown image lands anywhere from invisible to
+          // garish. The scrim holds the contrast whatever the cover looks like, and the badge
+          // takes the dark scheme's amber in both themes because it always sits on that scrim -
+          // the light scheme's deep orange measures 1.5:1 against it, against amber's 3.6:1.
+          color = MaterialTheme.colorScheme.scrim.copy(
+            alpha = if (hasLyrics) {
+              PlayerConstants.BADGE_SCRIM_ENABLED
+            } else {
+              PlayerConstants.BADGE_SCRIM_DISABLED
+            }
+          ),
           tonalElevation = 3.dp
         ) {
           Icon(
             imageVector = Icons.Outlined.Lyrics,
             contentDescription = lyricsLabel,
-            tint = MaterialTheme.colorScheme.primary,
+            tint = if (hasLyrics) {
+              md_theme_dark_primary
+            } else {
+              Color.White.copy(alpha = PlayerConstants.BADGE_ICON_DISABLED)
+            },
             modifier = Modifier
               .padding(8.dp)
               .size(20.dp)
@@ -905,7 +951,9 @@ private fun TrackInfoWithFavorite(
       Text(
         text = albumText,
         style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+        // onSurfaceVariant is already the muted role; the extra alpha on top of it pushed the
+        // album line close to unreadable on a light background. Size carries the hierarchy.
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         maxLines = 1,
         softWrap = false,
         overflow = TextOverflow.Ellipsis,
@@ -996,18 +1044,24 @@ private fun ProgressSection(
 
     Spacer(modifier = Modifier.height(4.dp))
 
+    // Nudged out to meet the track, which Material has already inset by half a thumb.
     Row(
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = PlayerConstants.SLIDER_TRACK_INSET),
       horizontalArrangement = Arrangement.SpaceBetween
     ) {
+      // Tabular figures: the elapsed time reflows every second otherwise, because the default
+      // proportional digits are not the same width.
+      val timeStyle = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum")
       Text(
         text = position.currentMinutes,
-        style = MaterialTheme.typography.labelSmall,
+        style = timeStyle,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
       Text(
         text = position.totalMinutes,
-        style = MaterialTheme.typography.labelSmall,
+        style = timeStyle,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
     }

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -854,7 +855,9 @@ private fun TrackInfoWithFavorite(
     modifier = modifier,
     verticalAlignment = Alignment.CenterVertically
   ) {
-    // Track info - left aligned with fixed heights to prevent UI jumping
+    // Track info - left aligned. The heights are minimums, not fixed: they reserve room so the
+    // rows below do not jump when a field is empty, but a fixed height clips its own text once
+    // the user's font scale grows past it, which overlapped all three lines at large font.
     Column(
       modifier = Modifier
         .weight(1f)
@@ -869,7 +872,7 @@ private fun TrackInfoWithFavorite(
         softWrap = false,
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier
-          .height(28.dp)
+          .heightIn(min = 28.dp)
           .trackTextMarquee()
       )
 
@@ -883,13 +886,13 @@ private fun TrackInfoWithFavorite(
         softWrap = false,
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier
-          .height(22.dp)
+          .heightIn(min = 22.dp)
           .trackTextMarquee()
       )
 
       Spacer(modifier = Modifier.height(2.dp))
 
-      // Album with year - always shown with fixed height
+      // Album with year - always occupies its line so the rows below stay put
       val albumText = if (track.album.isNotEmpty()) {
         if (track.year.isNotEmpty()) {
           "${track.album} • ${track.year}"
@@ -907,7 +910,7 @@ private fun TrackInfoWithFavorite(
         softWrap = false,
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier
-          .height(20.dp)
+          .heightIn(min = 20.dp)
           .trackTextMarquee()
       )
     }

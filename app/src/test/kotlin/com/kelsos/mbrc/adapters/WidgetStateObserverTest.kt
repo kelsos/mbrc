@@ -9,7 +9,7 @@ import com.kelsos.mbrc.core.common.state.PlayerStatusModel
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.platform.state.PlayingTrack
 import com.kelsos.mbrc.feature.widgets.WidgetUpdater
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +37,7 @@ class WidgetStateObserverTest {
 
   private fun observe(scope: TestScope): MutableList<PlayingTrack> {
     val sent = mutableListOf<PlayingTrack>()
-    every { widgetUpdater.updatePlayingTrack(any()) } answers { sent.add(firstArg()) }
+    coEvery { widgetUpdater.updatePlayingTrack(any()) } answers { sent.add(firstArg()) }
     WidgetStateObserver(appState, widgetUpdater, immediateDispatchers).start(scope)
     return sent
   }
@@ -90,7 +90,7 @@ class WidgetStateObserverTest {
   @Test
   fun `only a change of play state reaches the widget`() = runTest {
     val states = mutableListOf<PlayerState>()
-    every { widgetUpdater.updatePlayState(any()) } answers { states.add(firstArg()) }
+    coEvery { widgetUpdater.updatePlayState(any()) } answers { states.add(firstArg()) }
     WidgetStateObserver(appState, widgetUpdater, immediateDispatchers).start(this)
 
     appState.updatePlayerStatus(PlayerStatusModel(state = PlayerState.Playing))
@@ -99,8 +99,51 @@ class WidgetStateObserverTest {
 
     assertWithMessage("a volume change is not a play state change")
       .that(states)
-      .containsExactly(PlayerState.Undefined, PlayerState.Playing, PlayerState.Paused)
+      .containsExactly(PlayerState.Playing, PlayerState.Paused)
       .inOrder()
+
+    coroutineContext.cancelChildren()
+  }
+
+  @Test
+  fun `the uninitialized state is not pushed to the widget`() = runTest {
+    val sent = observe(this)
+
+    assertWithMessage(
+      "an empty track would blank the widget and delete its cached cover, and the widget keeps " +
+        "its own content across process death"
+    ).that(sent)
+      .isEmpty()
+
+    coroutineContext.cancelChildren()
+  }
+
+  @Test
+  fun `the initial undefined play state is not pushed to the widget`() = runTest {
+    val states = mutableListOf<PlayerState>()
+    coEvery { widgetUpdater.updatePlayState(any()) } answers { states.add(firstArg()) }
+
+    WidgetStateObserver(appState, widgetUpdater, immediateDispatchers).start(this)
+
+    assertWithMessage("anything but Playing renders as paused, so Undefined would flip the icon")
+      .that(states)
+      .isEmpty()
+
+    coroutineContext.cancelChildren()
+  }
+
+  @Test
+  fun `an update the widget cannot show does not refresh it`() = runTest {
+    val sent = observe(this)
+    val track = BasicTrackInfo(artist = "an artist", title = "a title", coverUrl = "/covers/a.jpg")
+
+    appState.updatePlayingTrack(track)
+    appState.updatePlayingTrack(track.copy(duration = 1234))
+    appState.updatePlayingTrack(track.copy(duration = 1234, path = "/music/a.mp3"))
+
+    assertWithMessage("duration and path are not drawn, so they must not rewrite every widget")
+      .that(sent)
+      .hasSize(1)
 
     coroutineContext.cancelChildren()
   }

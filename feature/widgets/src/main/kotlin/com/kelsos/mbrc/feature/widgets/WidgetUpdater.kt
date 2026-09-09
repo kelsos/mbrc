@@ -8,69 +8,67 @@ import com.kelsos.mbrc.core.platform.state.PlayingTrack
 import com.kelsos.mbrc.feature.widgets.glance.NormalWidget
 import com.kelsos.mbrc.feature.widgets.glance.SmallWidget
 import com.kelsos.mbrc.feature.widgets.glance.WidgetGlanceStateDefinition
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
+/**
+ * Suspending rather than fire-and-forget on purpose. A track change and its cover arrive as two
+ * messages in quick succession, and every widget instance shares one cache file: two overlapping
+ * updates could finish out of order, leaving the previous track's bitmap on disk and [lastCoverUrl]
+ * pointing at it, so the next identical URL would be skipped as unchanged. Suspending lets the
+ * caller's collection serialize the updates instead.
+ */
 interface WidgetUpdater {
-  fun updatePlayingTrack(track: PlayingTrack)
+  suspend fun updatePlayingTrack(track: PlayingTrack)
 
-  fun updatePlayState(state: PlayerState)
+  suspend fun updatePlayState(state: PlayerState)
 }
 
 class WidgetUpdaterImpl(private val context: Context) : WidgetUpdater {
-  private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
   private var lastCoverUrl: String? = null
 
   @Suppress("TooGenericExceptionCaught") // Widget updates should not crash the app
-  override fun updatePlayingTrack(track: PlayingTrack) {
-    scope.launch {
-      try {
-        Timber.v("Updating widget track: ${track.title} - ${track.artist}")
+  override suspend fun updatePlayingTrack(track: PlayingTrack) {
+    try {
+      Timber.v("Updating widget track: ${track.title} - ${track.artist}")
 
-        // Load cover if URL changed
-        if (track.coverUrl != lastCoverUrl) {
-          WidgetGlanceStateDefinition.loadAndCacheCover(context, track.coverUrl)
-          lastCoverUrl = track.coverUrl
-        }
-
-        // Update state for all widget instances
-        updateAllWidgetStates { prefs ->
-          WidgetGlanceStateDefinition.trackInfoUpdate(
-            title = track.title,
-            artist = track.artist,
-            album = track.album,
-            coverUrl = track.coverUrl
-          )(prefs)
-        }
-
-        // Trigger widget updates
-        updateAllWidgets()
-      } catch (e: Exception) {
-        Timber.e(e, "Failed to update widget track")
+      // Load cover if URL changed
+      if (track.coverUrl != lastCoverUrl) {
+        WidgetGlanceStateDefinition.loadAndCacheCover(context, track.coverUrl)
+        lastCoverUrl = track.coverUrl
       }
+
+      // Update state for all widget instances
+      updateAllWidgetStates { prefs ->
+        WidgetGlanceStateDefinition.trackInfoUpdate(
+          title = track.title,
+          artist = track.artist,
+          album = track.album,
+          coverUrl = track.coverUrl
+        )(prefs)
+      }
+
+      // Trigger widget updates
+      updateAllWidgets()
+    } catch (e: Exception) {
+      Timber.e(e, "Failed to update widget track")
     }
   }
 
   @Suppress("TooGenericExceptionCaught") // Widget updates should not crash the app
-  override fun updatePlayState(state: PlayerState) {
-    scope.launch {
-      try {
-        val isPlaying = state == PlayerState.Playing
-        Timber.v("Updating widget play state: $isPlaying")
+  override suspend fun updatePlayState(state: PlayerState) {
+    try {
+      val isPlaying = state == PlayerState.Playing
+      Timber.v("Updating widget play state: $isPlaying")
 
-        // Update state for all widget instances
-        updateAllWidgetStates { prefs ->
-          WidgetGlanceStateDefinition.playStateUpdate(isPlaying)(prefs)
-        }
-
-        // Trigger widget updates
-        updateAllWidgets()
-      } catch (e: Exception) {
-        Timber.e(e, "Failed to update widget play state")
+      // Update state for all widget instances
+      updateAllWidgetStates { prefs ->
+        WidgetGlanceStateDefinition.playStateUpdate(isPlaying)(prefs)
       }
+
+      // Trigger widget updates
+      updateAllWidgets()
+    } catch (e: Exception) {
+      Timber.e(e, "Failed to update widget play state")
     }
   }
 

@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.core.net.toUri
 import com.kelsos.mbrc.core.common.state.AppStatePublisher
-import com.kelsos.mbrc.core.common.state.PlayerState
 import com.kelsos.mbrc.core.common.state.PlayerStatusModel
 import com.kelsos.mbrc.core.common.state.PlayingPosition
 import com.kelsos.mbrc.core.common.state.TrackDetails
@@ -23,7 +22,6 @@ import com.kelsos.mbrc.core.networking.protocol.actions.TrackChangeNotifier
 import com.kelsos.mbrc.core.platform.state.toPlayingTrack
 import com.kelsos.mbrc.feature.playback.nowplaying.NowPlayingRepository
 import com.kelsos.mbrc.feature.settings.domain.PluginUpdateCheckUseCase
-import com.kelsos.mbrc.feature.widgets.WidgetUpdater
 import com.kelsos.mbrc.state.PlayingTrackCache
 import java.io.File
 import java.io.FileOutputStream
@@ -70,23 +68,14 @@ class PlayerStateHandlerImpl(private val appState: AppStatePublisher) : PlayerSt
 }
 
 /**
- * Adapts [WidgetUpdater] and [PlayingTrackCache] to [TrackChangeNotifier] interface.
+ * Adapts [PlayingTrackCache] to [TrackChangeNotifier] interface.
  */
 class TrackChangeNotifierImpl(
-  private val widgetUpdater: WidgetUpdater,
   private val cache: PlayingTrackCache,
   private val playbackApi: PlaybackApi,
   private val appState: AppStatePublisher,
   private val dispatchers: AppCoroutineDispatchers
 ) : TrackChangeNotifier {
-  override fun notifyTrackChanged(track: TrackInfo) {
-    widgetUpdater.updatePlayingTrack(track.toPlayingTrack())
-  }
-
-  override fun notifyPlayStateChanged(state: PlayerState) {
-    widgetUpdater.updatePlayState(state)
-  }
-
   override suspend fun persistTrackInfo(track: TrackInfo) {
     cache.persistInfo(track.toPlayingTrack())
   }

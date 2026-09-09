@@ -15,6 +15,7 @@ import com.kelsos.mbrc.adapters.PluginVersionHandlerImpl
 import com.kelsos.mbrc.adapters.ProtocolActionFactoryAdapter
 import com.kelsos.mbrc.adapters.ServiceRestarterImpl
 import com.kelsos.mbrc.adapters.TrackChangeNotifierImpl
+import com.kelsos.mbrc.adapters.WidgetStateObserver
 import com.kelsos.mbrc.core.common.state.AppState
 import com.kelsos.mbrc.core.common.state.AppStateFlow
 import com.kelsos.mbrc.core.common.state.AppStatePublisher
@@ -130,6 +131,7 @@ val appModule = module {
   // These adapters handle protocol messages and update app state
   singleOf(::PlayerStateHandlerImpl) { bind<PlayerStateHandler>() }
   singleOf(::TrackChangeNotifierImpl) { bind<TrackChangeNotifier>() }
+  singleOf(::WidgetStateObserver)
   singleOf(::NowPlayingHandlerImpl) { bind<NowPlayingHandler>() }
   singleOf(::PluginVersionHandlerImpl) { bind<PluginVersionHandler>() }
   singleOf(::CoverHandlerImpl) { bind<CoverHandler>() }

@@ -159,9 +159,7 @@ class PlayerStatusActionsTest {
 
   @Test
   fun `play state is taken from the message and everything else is kept`() = runTest {
-    val notifier: TrackChangeNotifier = mockk(relaxed = true)
-
-    UpdatePlayState(stateHandler, notifier).execute(message("paused"))
+    UpdatePlayState(stateHandler).execute(message("paused"))
 
     assertThat(result).isEqualTo(populated.copy(state = PlayerState.Paused))
   }

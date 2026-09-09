@@ -3,13 +3,11 @@ package com.kelsos.mbrc.adapters
 import com.google.common.truth.Truth.assertThat
 import com.kelsos.mbrc.core.common.state.AppStatePublisher
 import com.kelsos.mbrc.core.common.state.BasicTrackInfo
-import com.kelsos.mbrc.core.common.state.PlayerState
 import com.kelsos.mbrc.core.common.state.TrackDetails
 import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
 import com.kelsos.mbrc.core.networking.api.PlaybackApi
 import com.kelsos.mbrc.core.networking.protocol.payloads.NowPlayingDetailsPayload
 import com.kelsos.mbrc.core.platform.state.PlayingTrack
-import com.kelsos.mbrc.feature.widgets.WidgetUpdater
 import com.kelsos.mbrc.state.PlayingTrackCache
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -22,13 +20,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 /**
- * The adapter that fans a track change out to the widget, the cache and the details request. Every
- * hand-off converts [com.kelsos.mbrc.core.common.state.TrackInfo] to the parcelable [PlayingTrack],
- * so the conversion is asserted rather than assumed.
+ * The adapter that fans a track change out to the cache and the details request. The hand-off
+ * converts [com.kelsos.mbrc.core.common.state.TrackInfo] to the parcelable [PlayingTrack], so the
+ * conversion is asserted rather than assumed. The widget is fed by [WidgetStateObserver] instead.
  */
 class TrackChangeNotifierImplTest {
 
-  private val widgetUpdater: WidgetUpdater = mockk(relaxed = true)
   private val cache: PlayingTrackCache = mockk(relaxed = true)
   private val playbackApi: PlaybackApi = mockk()
   private val appState: AppStatePublisher = mockk(relaxed = true)
@@ -41,7 +38,6 @@ class TrackChangeNotifierImplTest {
   }
 
   private val notifier = TrackChangeNotifierImpl(
-    widgetUpdater,
     cache,
     playbackApi,
     appState,
@@ -57,28 +53,6 @@ class TrackChangeNotifierImplTest {
     coverUrl = "/covers/a.jpg",
     duration = 1234
   )
-
-  @Test
-  fun `a track change reaches the widget as a playing track`() {
-    val sent = mutableListOf<PlayingTrack>()
-    every { widgetUpdater.updatePlayingTrack(any()) } answers { sent.add(firstArg()) }
-
-    notifier.notifyTrackChanged(track)
-
-    val result = sent.single()
-    assertThat(result.artist).isEqualTo("an artist")
-    assertThat(result.title).isEqualTo("a title")
-    assertThat(result.album).isEqualTo("an album")
-    assertThat(result.coverUrl).isEqualTo("/covers/a.jpg")
-    assertThat(result.duration).isEqualTo(1234)
-  }
-
-  @Test
-  fun `a play state change reaches the widget untouched`() {
-    notifier.notifyPlayStateChanged(PlayerState.Playing)
-
-    verify { widgetUpdater.updatePlayState(PlayerState.Playing) }
-  }
 
   @Test
   fun `persisting a track hands the cache the same fields`() = runTest {

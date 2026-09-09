@@ -17,13 +17,12 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * A track change and its cover arrive as two separate messages, and only the first of them notifies
- * the widget. These tests pin that sequence end to end so the gap behind
- * [#369](https://github.com/musicbeeremote/mbrc/issues/369) is visible in the suite rather than only
- * on a device.
+ * A track change and its cover arrive as two separate messages. These tests pin that sequence end
+ * to end, because [#369](https://github.com/musicbeeremote/mbrc/issues/369) was the widget seeing
+ * only the first of the two and so showing the previous track's artwork.
  *
- * `notified` records what the widget was told; `published` records what the in-app state received.
- * The two diverging is the bug.
+ * `published` records what reaches the application state. That is the single source both the in-app
+ * player and the widget read from now, so what these assertions describe is what the widget sees.
  */
 class CoverArrivalNotificationTest {
 
@@ -34,14 +33,12 @@ class CoverArrivalNotificationTest {
   private lateinit var coverArrival: UpdateCover
   private lateinit var track: MutableStateFlow<TrackInfo>
   private lateinit var published: MutableList<TrackInfo>
-  private lateinit var notified: MutableList<TrackInfo>
 
   @Before
   fun setUp() {
     val moshi = Moshi.Builder().build()
     track = MutableStateFlow(BasicTrackInfo())
     published = mutableListOf()
-    notified = mutableListOf()
     stateHandler = mockk(relaxed = true) {
       every { playingTrack } returns track
       every { updatePlayingTrack(any()) } answers {
@@ -50,9 +47,7 @@ class CoverArrivalNotificationTest {
         track.value = updated
       }
     }
-    notifier = mockk(relaxed = true) {
-      every { notifyTrackChanged(any()) } answers { notified.add(firstArg()) }
-    }
+    notifier = mockk(relaxed = true)
     coverHandler = mockk(relaxed = true)
     trackChange = UpdateNowPlayingTrack(stateHandler, notifier, moshi)
     coverArrival = UpdateCover(moshi, coverHandler, stateHandler)
@@ -77,7 +72,7 @@ class CoverArrivalNotificationTest {
   }
 
   @Test
-  fun `the in-app state ends up with the cover of the track it belongs to`() = runTest {
+  fun `the state ends up with the cover of the track it belongs to`() = runTest {
     playTrack("first")
     coverArrives("/covers/first.jpg")
     playTrack("second")
@@ -89,13 +84,13 @@ class CoverArrivalNotificationTest {
   }
 
   @Test
-  fun `the widget is told about the new track paired with the previous cover`() = runTest {
+  fun `a track change carries the previous cover until its own arrives`() = runTest {
     playTrack("first")
     coverArrives("/covers/first.jpg")
 
     playTrack("second")
 
-    val latest = notified.last()
+    val latest = published.last()
     assertThat(latest.title).isEqualTo("second")
     assertWithMessage("the cover for the new track has not arrived yet, so the old one is carried")
       .that(latest.coverUrl)
@@ -103,27 +98,27 @@ class CoverArrivalNotificationTest {
   }
 
   @Test
-  fun `a cover arrival never notifies the widget, so its artwork stays a track behind`() = runTest {
+  fun `a cover arrival publishes the correction that the artwork depends on`() = runTest {
     playTrack("first")
     coverArrives("/covers/first.jpg")
     playTrack("second")
 
-    val notificationsBefore = notified.size
+    val publishedBefore = published.size
     coverArrives("/covers/second.jpg")
 
     assertWithMessage(
-      "mbrc#369: UpdateCover only reaches appState, so nothing corrects the widget artwork. " +
-        "When the widget is routed off appState this becomes an outdated expectation and the " +
-        "widget should see /covers/second.jpg"
-    ).that(notified.size)
-      .isEqualTo(notificationsBefore)
-    assertThat(notified.last().coverUrl).isEqualTo("/covers/first.jpg")
+      "mbrc#369: the cover message must reach the same state the widget reads, or the artwork " +
+        "stays a track behind the title"
+    ).that(published.size)
+      .isEqualTo(publishedBefore + 1)
+    assertThat(published.last().coverUrl).isEqualTo("/covers/second.jpg")
+    assertThat(published.last().title).isEqualTo("second")
   }
 
   @Test
-  fun `the first track of a session reaches the widget with no cover at all`() = runTest {
+  fun `the first track of a session is published with no cover at all`() = runTest {
     playTrack("first")
 
-    assertThat(notified.single().coverUrl).isEmpty()
+    assertThat(published.single().coverUrl).isEmpty()
   }
 }

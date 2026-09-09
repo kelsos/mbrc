@@ -1,6 +1,5 @@
 package com.kelsos.mbrc.core.networking.protocol.actions
 
-import com.kelsos.mbrc.core.common.state.PlayerState
 import com.kelsos.mbrc.core.common.state.PlayerStatusModel
 import com.kelsos.mbrc.core.common.state.PlayingPosition
 import com.kelsos.mbrc.core.common.state.TrackDetails
@@ -31,8 +30,6 @@ interface PlayerStateHandler {
  * Used for widget updates and track info persistence.
  */
 interface TrackChangeNotifier {
-  fun notifyTrackChanged(track: TrackInfo)
-  fun notifyPlayStateChanged(state: PlayerState)
   suspend fun persistTrackInfo(track: TrackInfo)
   suspend fun requestTrackDetails()
 }

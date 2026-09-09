@@ -10,7 +10,6 @@ import com.squareup.moshi.Moshi
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -89,7 +88,6 @@ class UpdateNowPlayingTrackTest {
     action.execute(message(trackData()))
 
     val published = written.single()
-    verify { notifier.notifyTrackChanged(published) }
     coVerify { notifier.persistTrackInfo(published) }
     coVerify { notifier.requestTrackDetails() }
   }

@@ -109,7 +109,6 @@ class UpdateNowPlayingTrack(
         path = track.path
       )
     stateHandler.updatePlayingTrack(newState)
-    notifier.notifyTrackChanged(newState)
     notifier.persistTrackInfo(newState)
     notifier.requestTrackDetails()
   }
@@ -135,15 +134,11 @@ class UpdatePlayerStatus(private val stateHandler: PlayerStateHandler, moshi: Mo
   }
 }
 
-class UpdatePlayState(
-  private val stateHandler: PlayerStateHandler,
-  private val notifier: TrackChangeNotifier
-) : ProtocolAction {
+class UpdatePlayState(private val stateHandler: PlayerStateHandler) : ProtocolAction {
   override suspend fun execute(message: ProtocolMessage) {
     val playState = PlayerState.fromString(message.data as? String)
     val previousState = stateHandler.playerStatus.firstOrNull() ?: PlayerStatusModel()
     stateHandler.updatePlayerStatus(previousState.copy(state = playState))
-    notifier.notifyPlayStateChanged(playState)
   }
 }
 

@@ -116,7 +116,11 @@ class RemoteService : Service() {
       Timber.d("Background Service::Task removed, keeping the service for ongoing playback")
       return
     }
-    Timber.d("Background Service::Task removed, nothing left to control; stopping")
+    Timber.d(
+      "Background Service::Task removed, nothing left to control; stopping " +
+        "(connected: ${connectionState.isConnected}, " +
+        "state: ${appState.playerStatus.value.state.state})"
+    )
     stopSelf()
   }
 

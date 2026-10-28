@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- App branding -->
+  <string name="application_starting">正在尝试建立连接…</string>
+
+  <!-- Playback actions (used in notification) -->
+  <string name="action_next">下一曲</string>
+  <string name="action_pause">暂停</string>
+  <string name="action_play">播放</string>
+  <string name="action_previous">上一曲</string>
+  <string name="action_learn_more">了解更多</string>
+
+  <!-- Connection errors -->
+  <string name="connection_error_network_unavailable">网络不可达。请检查你的网络连接。</string>
+  <string name="connection_error_server_not_found">无法找到 MusicBee 服务器。请检查插件是否正在运行。</string>
+  <string name="connection_error_connection_timeout">连接超时。请检查你的网络后重试。</string>
+  <string name="connection_error_connection_refused">连接被拒绝。请检查 MusicBee 是否正在运行。</string>
+  <string name="connection_error_authentication_failed">身份验证失败。不允许此设备连接。</string>
+  <string name="connection_error_unsupported_protocol">插件版本不受支持。请更新插件。</string>
+  <string name="connection_error_all_retries_exhausted">多次尝试后仍无法连接。请检查你的设置。</string>
+  <string name="connection_error_unknown">连接错误：%1$s</string>
+  <string name="connection_error_not_allowed">不允许此设备连接到 MusicBee。</string>
+  <string name="connection_error_party_mode">Party 模式下无法使用此命令。</string>
+  <string name="plugin_update_available">有插件更新可用。更新以获得最佳体验。</string>
+
+  <!-- Local network permission (Android 17+) -->
+  <string name="local_network_rationale_title">连接到 MusicBee</string>
+  <string name="local_network_rationale_message">MusicBee Remote 通过本地网络控制你电脑上的 MusicBee。Android 需要你授予相应权限。如果没有该权限，应用将无法发现或连接你的电脑。</string>
+  <string name="local_network_rationale_continue">继续</string>
+  <string name="local_network_rationale_not_now">以后再说</string>
+  <string name="local_network_denied_banner">本地网络访问已关闭，因此无法连接到 MusicBee。</string>
+  <string name="local_network_denied_grant">允许</string>
+  <string name="drawer_connection_local_network_denied">需要授权</string>
+  <plurals name="connection_commands_dropped">
+    <item quantity="other">%d 条命令无法发送，已被丢弃。</item>
+  </plurals>
+
+  <!-- Common -->
+  <string name="common_library">音乐库</string>
+  <string name="common_settings">设置</string>
+
+  <!-- Drawer/Navigation -->
+  <string name="navigation_track_not_in_library">音乐库中未找到该曲目。请尝试同步你的音乐库。</string>
+  <string name="drawer_connection_status_active">已连接</string>
+  <string name="drawer_connection_status_off">离线</string>
+  <string name="drawer_connection_status_on">正在验证身份</string>
+  <string name="drawer_connection_not_connected">未连接</string>
+  <string name="drawer_connection_connecting">正在连接…</string>
+  <string name="drawer_connection_connecting_cycle">正在连接 (%1$d/%2$d)…</string>
+  <string name="drawer_section_music">音乐</string>
+  <string name="drawer_version">版本 %1$s</string>
+  <string name="nav_queue">播放队列</string>
+  <string name="nav_help">帮助与反馈</string>
+  <string name="nav_now_playing">正在播放</string>
+  <string name="nav_playlists">播放列表</string>
+  <string name="nav_radio">电台</string>
+  <string name="nav_connections">连接</string>
+
+  <!-- Notification -->
+  <string name="notification__session_channel_description">用于显示媒体控制通知。</string>
+  <string name="notification__session_channel_name">MusicBee Remote 会话</string>
+  <string name="notification__live">直播</string>
+
+  <!-- Main button descriptions (used in widget previews and notification) -->
+  <string name="main_button_next_description">按下后播放下一首曲目。</string>
+  <string name="main_button_play_pause_description">按下后开始播放曲目；如果曲目已在播放，则暂停。</string>
+  <string name="main_button_previous_description">按下后播放上一首曲目。</string>
+
+  <!-- Service -->
+  <string name="info_service_description">此服务负责应用与插件之间的通信。</string>
+</resources>

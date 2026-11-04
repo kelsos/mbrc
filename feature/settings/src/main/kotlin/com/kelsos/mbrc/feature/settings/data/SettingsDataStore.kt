@@ -13,6 +13,7 @@ import androidx.datastore.preferences.preferencesDataStore
 object SettingsDataStore {
   private const val SETTINGS_NAME = "settings"
   private const val LAST_VERSION_RUN_KEY_NAME = "last_version_run"
+  internal val LEGACY_CLIENT_UUID = stringPreferencesKey("uuid")
 
   val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
     name = SETTINGS_NAME,
@@ -22,7 +23,8 @@ object SettingsDataStore {
           context = context,
           sharedPreferencesName = context.packageName + "_preferences"
         ),
-        lastVersionRunTypeMigration()
+        lastVersionRunTypeMigration(),
+        legacyClientUuidRemoval()
       )
     }
   )
@@ -54,6 +56,21 @@ object SettingsDataStore {
       override suspend fun cleanUp() = Unit
     }
 
+  /**
+   * Drops the client id older versions kept in this backed-up file, so it stops travelling to
+   * other phones. [ClientInformationStoreImpl] now holds it and generates a fresh one per install.
+   */
+  internal fun legacyClientUuidRemoval(): DataMigration<Preferences> =
+    object : DataMigration<Preferences> {
+      override suspend fun shouldMigrate(currentData: Preferences): Boolean =
+        LEGACY_CLIENT_UUID in currentData
+
+      override suspend fun migrate(currentData: Preferences): Preferences =
+        currentData.toMutablePreferences().apply { remove(LEGACY_CLIENT_UUID) }.toPreferences()
+
+      override suspend fun cleanUp() = Unit
+    }
+
   object PreferenceKeys {
     val THEME = stringPreferencesKey("theme_preference")
     val DEBUG_LOGGING = booleanPreferencesKey("settings_debug_log")
@@ -64,7 +81,6 @@ object SettingsDataStore {
     val LAST_UPDATE_CHECK = longPreferencesKey("last_update_check")
     val LAST_VERSION_RUN = longPreferencesKey(LAST_VERSION_RUN_KEY_NAME)
     val REQUIRED_UPDATE_CHECK = longPreferencesKey("update_required_check")
-    val CLIENT_UUID = stringPreferencesKey("uuid")
     val HALF_STAR_RATING = booleanPreferencesKey("mbrc.settings.half_star_rating")
     val SHOW_RATING_ON_PLAYER = booleanPreferencesKey("mbrc.settings.show_rating_on_player")
     val KEEP_SCREEN_ON = stringPreferencesKey("mbrc.settings.keep_screen_on_mode")

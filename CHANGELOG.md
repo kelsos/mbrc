@@ -15,6 +15,7 @@ Changelog
 - Fixes back leaving the app while the navigation drawer was open. Pressing back, or swiping back from the edge, now closes the drawer and keeps you on the screen you were on.
 - Fixes swiping in from the left edge not opening the navigation drawer when the phone uses gesture navigation. The system took every such swipe as back and sent the app to the background. The lower middle of the left edge now opens the drawer; back still works from the rest of the edge, and from anywhere while the drawer is open. Phones using the navigation buttons are unchanged.
 - Fixes the remote's media controls in the notification shade updating every second while MusicBee played. The constant updates kept pushing the remote's card ahead of your phone's own player and cost battery for nothing. The notification now only changes when the track, the playing state or the cover does, and the progress bar keeps moving on its own in between. Streams are labelled "Live" instead of showing a running clock.
+- Fixes two phones knocking each other off MusicBee every few seconds when one was set up from the other's backup or by a phone transfer such as Smart Switch. Both phones carried the same identity, so the plugin dropped one whenever the other connected, which made commands lag and showed "Network is unreachable". The identity is no longer backed up or transferred, and every phone picks a new one after this update, so phones already set up this way recover without clearing app data. Your settings still come across as before.
 
 ## [1.7.0] - 2026-09-25
 ### Added

@@ -4,15 +4,13 @@
 
   App data storage:
   - Preferences DataStore (datastore/settings.preferences_pb): User settings
-    (theme, call action, UUID, debug logging, etc.)
+    (theme, call action, debug logging, etc.)
+  - Preferences DataStore (no_backup/client_identity.preferences_pb): Client id, never backed up
   - Proto DataStore (datastore/cache_store.db): Current playing track cache (transient)
   - Room Database (cache.db): Library cache and connection settings
 
   Cloud backup: Include user settings and connection configuration.
   Device transfer: Include settings only (database excluded by not including it).
-
-  Note: Client UUID is stored in DataStore. While ideally each device should
-  have a unique UUID, the MusicBee plugin handles duplicate connections gracefully.
 -->
 <data-extraction-rules>
   <cloud-backup>

@@ -479,6 +479,23 @@ class PlaylistRepositoryTest : KoinTest {
   }
 
   @Test
+  fun getBrowserItemsAtPathShouldKeepEveryFolderThoughTheyShareAnIdOfZero() {
+    runTest(testDispatcher) {
+      dao.insertAll(
+        listOf(
+          createPlaylistEntity(name = "Rock\\Playlist1", url = "rock1"),
+          createPlaylistEntity(name = "Jazz\\Playlist2", url = "jazz1"),
+          createPlaylistEntity(name = "Blues\\Playlist3", url = "blues1")
+        )
+      )
+
+      val result = repository.getBrowserItemsAtPath("").asSnapshot()
+
+      assertThat(result.map { it.name }).containsExactly("Blues", "Jazz", "Rock").inOrder()
+    }
+  }
+
+  @Test
   fun getBrowserItemsAtPathShouldReturnEmptyWhenNoItemsAtPath() {
     runTest(testDispatcher) {
       // Given: playlists only at root

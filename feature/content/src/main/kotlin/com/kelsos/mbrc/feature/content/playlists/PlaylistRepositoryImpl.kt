@@ -21,7 +21,8 @@ class PlaylistRepositoryImpl(
 ) : PlaylistRepository {
   override suspend fun count(): Long = withContext(dispatchers.database) { dao.count() }
 
-  override fun getAll(): Flow<PagingData<Playlist>> = paged({ dao.getAll() }) { it.toPlaylist() }
+  override fun getAll(): Flow<PagingData<Playlist>> =
+    paged({ dao.getAll() }, key = { it.id }) { it.toPlaylist() }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -43,7 +44,7 @@ class PlaylistRepositoryImpl(
 
   override fun search(term: String): Flow<PagingData<Playlist>> = paged({
     dao.search(term)
-  }) { it.toPlaylist() }
+  }, key = { it.id }) { it.toPlaylist() }
 
   override suspend fun getById(id: Long): Playlist? {
     return withContext(dispatchers.database) {
@@ -58,5 +59,5 @@ class PlaylistRepositoryImpl(
     } else {
       dao.getBrowserItemsAtPath(path)
     }
-  }) { it }
+  }, key = { it.key }) { it }
 }

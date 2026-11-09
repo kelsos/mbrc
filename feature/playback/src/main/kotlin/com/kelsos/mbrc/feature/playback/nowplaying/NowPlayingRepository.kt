@@ -71,6 +71,7 @@ class NowPlayingRepositoryImpl(
 
   override fun getAll(): Flow<PagingData<NowPlaying>> = paged(
     pagingSourceFactory = { dao.getAll() },
+    key = { it.id },
     enablePlaceholders = true
   ) { it.toNowPlaying() }
 
@@ -122,7 +123,7 @@ class NowPlayingRepositoryImpl(
 
   override fun search(term: String): Flow<PagingData<NowPlaying>> = paged({
     dao.search(term)
-  }) { it.toNowPlaying() }
+  }, key = { it.id }) { it.toNowPlaying() }
 
   override suspend fun move(from: Int, to: Int) {
     if (from == to) {

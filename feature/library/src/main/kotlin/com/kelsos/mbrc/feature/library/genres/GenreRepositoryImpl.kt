@@ -28,7 +28,7 @@ class GenreRepositoryImpl(
       SortOrder.ASC -> dao.getAllAsc()
       SortOrder.DESC -> dao.getAllDesc()
     }
-  }) { it.toGenre() }
+  }, key = { it.id }) { it.toGenre() }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -69,7 +69,7 @@ class GenreRepositoryImpl(
       SortOrder.ASC -> dao.searchAsc(term)
       SortOrder.DESC -> dao.searchDesc(term)
     }
-  }) { it.toGenre() }
+  }, key = { it.id }) { it.toGenre() }
 
   override suspend fun getById(id: Long): Genre? {
     return withContext(dispatchers.database) {

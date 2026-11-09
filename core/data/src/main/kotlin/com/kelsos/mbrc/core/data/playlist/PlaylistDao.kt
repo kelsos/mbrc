@@ -24,6 +24,9 @@ data class PlaylistBrowserItem(
   val isFolder: Boolean get() = itemType == ITEM_TYPE_FOLDER
   val isPlaylist: Boolean get() = itemType == ITEM_TYPE_PLAYLIST
 
+  /** The row's identity. Every folder has an [id] of 0, so a folder is identified by its [path]. */
+  val key: String get() = if (isFolder) "folder:$path" else "playlist:$id"
+
   companion object {
     const val ITEM_TYPE_FOLDER = "folder"
     const val ITEM_TYPE_PLAYLIST = "playlist"

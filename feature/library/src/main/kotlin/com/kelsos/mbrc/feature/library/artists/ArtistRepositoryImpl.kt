@@ -29,7 +29,7 @@ class ArtistRepositoryImpl(
         SortOrder.ASC -> dao.getArtistByGenreAsc(genreId)
         SortOrder.DESC -> dao.getArtistByGenreDesc(genreId)
       }
-    }) {
+    }, key = { it.id }) {
       it.toArtist()
     }
 
@@ -40,7 +40,7 @@ class ArtistRepositoryImpl(
       SortOrder.ASC -> dao.getAllAsc()
       SortOrder.DESC -> dao.getAllDesc()
     }
-  }) { it.toArtist() }
+  }, key = { it.id }) { it.toArtist() }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -68,14 +68,14 @@ class ArtistRepositoryImpl(
       SortOrder.ASC -> dao.searchAsc(term)
       SortOrder.DESC -> dao.searchDesc(term)
     }
-  }) { it.toArtist() }
+  }, key = { it.id }) { it.toArtist() }
 
   override fun getAlbumArtistsOnly(sortOrder: SortOrder): Flow<PagingData<Artist>> = paged({
     when (sortOrder) {
       SortOrder.ASC -> dao.getAlbumArtistsAsc()
       SortOrder.DESC -> dao.getAlbumArtistsDesc()
     }
-  }) { it.toArtist() }
+  }, key = { it.id }) { it.toArtist() }
 
   override suspend fun getById(id: Long): Artist? {
     return withContext(dispatchers.database) {

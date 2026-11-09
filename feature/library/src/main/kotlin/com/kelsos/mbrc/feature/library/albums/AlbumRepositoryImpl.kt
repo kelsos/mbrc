@@ -36,7 +36,7 @@ class AlbumRepositoryImpl(
         SortOrder.DESC -> dao.getAlbumsByArtistByNameDesc(artist)
       }
     }
-  }) {
+  }, key = { it.id }) {
     it.toAlbum()
   }
 
@@ -56,11 +56,12 @@ class AlbumRepositoryImpl(
         SortOrder.DESC -> dao.getAlbumsByGenreByArtistDesc(genreId)
       }
     }
-  }) {
+  }, key = { it.id }) {
     it.toAlbum()
   }
 
-  override fun getAll(): Flow<PagingData<Album>> = paged({ dao.getAll() }) { it.toAlbum() }
+  override fun getAll(): Flow<PagingData<Album>> =
+    paged({ dao.getAll() }, key = { it.id }) { it.toAlbum() }
 
   override fun getAll(field: AlbumSortField, order: SortOrder): Flow<PagingData<Album>> = paged({
     when (field) {
@@ -74,7 +75,7 @@ class AlbumRepositoryImpl(
         SortOrder.DESC -> dao.getAllByArtistDesc()
       }
     }
-  }) { it.toAlbum() }
+  }, key = { it.id }) { it.toAlbum() }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -133,7 +134,7 @@ class AlbumRepositoryImpl(
         SortOrder.DESC -> dao.searchByArtistDesc(term)
       }
     }
-  }) { it.toAlbum() }
+  }, key = { it.id }) { it.toAlbum() }
 
   override suspend fun updateCovers(updated: List<AlbumCover>) {
     dao.updateCovers(updated)

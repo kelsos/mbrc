@@ -149,9 +149,10 @@ class ConnectionRepositoryImpl(
     dao.updateDefault(settings.id)
   }
 
-  override fun getAll(): Flow<PagingData<ConnectionSettings>> = paged({ dao.getAll() }) {
-    it.toConnection()
-  }
+  override fun getAll(): Flow<PagingData<ConnectionSettings>> =
+    paged({ dao.getAll() }, key = { it.id }) {
+      it.toConnection()
+    }
 
   override suspend fun count(): Long = withContext(dispatchers.database) {
     dao.count()

@@ -128,9 +128,7 @@ fun PlaylistScreen(
         modifier = Modifier.weight(1f),
         emptyMessage = stringResource(R.string.playlists_list_empty),
         emptyIcon = Icons.AutoMirrored.Filled.QueueMusic,
-        key = { item ->
-          if (item.isFolder) "folder:${item.path}" else "playlist:${item.id}"
-        }
+        key = { it.key }
       ) { item ->
         BrowserItemRow(
           item = item,

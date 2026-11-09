@@ -24,7 +24,7 @@ class RadioRepositoryImpl(
 
   override fun getAll(): Flow<PagingData<RadioStation>> = paged({
     dao.getAll()
-  }) { it.toRadioStation() }
+  }, key = { it.id }) { it.toRadioStation() }
 
   override suspend fun getRemote(progress: Progress?) {
     withContext(dispatchers.network) {
@@ -46,7 +46,7 @@ class RadioRepositoryImpl(
 
   override fun search(term: String): Flow<PagingData<RadioStation>> = paged({
     dao.search(term)
-  }) {
+  }, key = { it.id }) {
     it.toRadioStation()
   }
 

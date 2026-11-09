@@ -9,6 +9,7 @@ Changelog
 - Streams now show a red dot and "LIVE" where the player and the lyrics screen show a track's length. A stream has no length, so that spot used to repeat the elapsed time.
 
 ### Fixed
+- Fixes a crash while scrolling a library list during a library sync. A row could briefly appear twice when newly synced items pushed the list down between two pages, which closed the app. The repeat is now left out, and the list corrects itself as the sync moves on.
 - Fixes the elapsed time in the player stopping after the connection to MusicBee dropped and came back while it kept playing. The time only moved when MusicBee sent a position update and then froze again; it now keeps counting every second after a reconnect.
 - Fixes there being no way to quit the remote while MusicBee was playing. Since 1.7.0, swiping the app away from recents during playback left it running, with its notification stuck in place and the volume keys still moving the MusicBee volume slider. Swiping the app away now always closes it, which puts the volume keys back on the phone and removes the notification. MusicBee keeps playing; reopening the app reconnects.
 - Fixes tablets, and most phones held sideways, keeping the navigation drawer open for good. Since 1.7.0 wide screens showed the destinations permanently down the side, taking space from the player and the library, and the menu button that closes and opens them was gone. The drawer now stays out of the way until you open it from the menu button, at every screen size, as it did before 1.7.0.

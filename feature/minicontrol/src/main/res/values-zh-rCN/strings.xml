@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Accessibility descriptions -->
+  <string name="description_album_cover">专辑封面</string>
+  <string name="main_button_stop_description">停止播放</string>
+
+  <!-- Messages -->
+  <string name="mini_control_action_failed">操作失败</string>
+  <string name="mini_control_network_unavailable">网络不可用</string>
+
+  <!-- Unknown values -->
+  <string name="unknown_artist">未知艺术家</string>
+  <string name="unknown_title">未知标题</string>
+</resources>

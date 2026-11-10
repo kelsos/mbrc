@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Navigation -->
+  <string name="drawer_open">打开导航菜单</string>
+  <string name="navigate_back">返回</string>
+
+  <!-- Common actions -->
+  <string name="action_retry">重试</string>
+  <string name="action_search_clear">清除搜索</string>
+
+  <!-- Common UI -->
+  <string name="menu_overflow_description">更多选项</string>
+
+  <!-- FAB -->
+  <string name="fab_open_menu">打开操作菜单</string>
+  <string name="fab_close_menu">关闭操作菜单</string>
+  <string name="no_data">无有效数据</string>
+
+  <!-- Queue results -->
+  <string name="queue_result__failure">加入播放队列失败</string>
+  <string name="queue_result__success">已将 %1$s 添加到播放队列</string>
+</resources>

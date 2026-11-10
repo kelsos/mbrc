@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Call actions -->
+  <string name="action_none">不执行任何操作</string>
+  <string name="action_reduce_volume">降低音量</string>
+  <string name="action_stop">停止</string>
+
+  <!-- Common -->
+  <string name="common_add">添加</string>
+  <string name="common_edit">编辑</string>
+  <string name="navigate_back">返回</string>
+
+  <!-- Connection Manager -->
+  <string name="connection_manager_add_connection">添加连接</string>
+  <string name="connection_manager_close_menu">关闭菜单</string>
+  <string name="connection_manager_default_indicator">默认连接</string>
+  <string name="connection_manager_delete">删除</string>
+  <string name="connection_manager_delete_confirm_title">删除连接？</string>
+  <string name="connection_manager_delete_confirm_message">%1$s 将被移除。此操作无法撤销。</string>
+  <string name="connection_manager_discovery_no_wifi">没有可用的 WiFi 连接</string>
+  <string name="connection_manager_discovery_not_found">网络上未找到 MusicBee 插件</string>
+  <string name="connection_manager_discovery_local_network_denied">本地网络访问已关闭，因此无法扫描</string>
+  <plurals name="connection_manager_discovery_success_count">
+    <item quantity="other">在网络上发现了 %d 个 MusicBee 插件</item>
+  </plurals>
+  <string name="connection_manager_edit_connection">编辑连接</string>
+  <string name="connection_manager_error_loading">加载连接时出错</string>
+  <string name="connection_manager_no_connections">未配置任何连接</string>
+  <string name="connection_manager_no_connections_hint">手动添加连接，或扫描网络以发现 MusicBee</string>
+  <string name="connection_manager_open_menu">添加或扫描</string>
+  <string name="connection_manager_port_error">端口必须在 1 到 65535 之间</string>
+  <string name="connection_manager_scan">扫描</string>
+  <string name="connection_manager_scanning">正在扫描网络上的 MusicBee…</string>
+
+  <!-- Connection dialog -->
+  <string name="settings_dialog_hint_host">主机名 / IP</string>
+  <string name="settings_dialog_hint_name">计算机名称</string>
+  <string name="settings_dialog_hint_port">端口号</string>
+  <string name="settings_dialog_save">保存</string>
+
+  <!-- Settings screen -->
+  <string name="setting_appearance_theme">主题</string>
+  <string name="setting_miscellaneous_debug_logging">调试日志</string>
+  <string name="setting_miscellaneous_debug_logging_summary">启用调试日志。由于会记录所有内容，可能导致性能下降。</string>
+  <string name="setting_miscellaneous_plugin_updates">插件更新检查</string>
+  <string name="setting_miscellaneous_plugin_updates_summary">定期检查插件是否有更新版本</string>
+  <string name="settings_appearance">外观</string>
+  <string name="settings_build_time_title">构建时间</string>
+  <string name="settings_miscellaneous">其他</string>
+  <string name="settings_miscellaneous_incoming_call_action">来电操作</string>
+  <string name="settings_oss_license">开源许可证</string>
+  <string name="settings_revision_title">修订版本</string>
+  <string name="settings_title_license">许可证</string>
+
+  <!-- Rating settings -->
+  <string name="settings_rating">评分</string>
+  <string name="setting_half_star_rating">半星评分</string>
+  <string name="setting_half_star_rating_summary">启用半星评分（0.5、1.5 等）</string>
+  <string name="setting_show_rating_on_player">在播放器上显示星级评分</string>
+  <string name="setting_show_rating_on_player_summary">在播放器界面的曲目信息下方显示星级评分</string>
+  <string name="setting_keep_screen_on">保持屏幕常亮</string>
+  <string name="setting_keep_screen_on_never">从不</string>
+  <string name="setting_keep_screen_on_while_charging">充电时</string>
+  <string name="setting_keep_screen_on_always">始终</string>
+
+  <!-- About -->
+  <string name="preferences_about_version">MusicBee Remote 版本</string>
+  <string name="preferences_category_about">关于 MusicBee Remote</string>
+  <string name="preferences_library_track_default_action_title">音乐库曲目操作</string>
+
+  <!-- Theme options -->
+  <string name="theme_dark">深色</string>
+  <string name="theme_light">浅色</string>
+  <string name="theme_system">跟随系统</string>
+
+  <!-- Queue menu -->
+  <string name="menu_play">立即播放</string>
+  <string name="menu_play_queue_all">立即播放（全部加入队列）</string>
+  <string name="menu_queue_last">添加到队列末尾</string>
+  <string name="menu_queue_next">下一首播放</string>
+
+  <!-- License -->
+  <string name="musicbee_remote_license_title">MusicBee Remote 许可证</string>
+  <string name="licenses_search_placeholder">搜索开源库…</string>
+  <string name="licenses_clear_search">清除搜索</string>
+  <string name="licenses_retry">重试</string>
+  <string name="licenses_no_results">未找到与“%1$s”匹配的开源库</string>
+  <string name="licenses_empty">未找到开源库</string>
+  <string name="license_loading_error">加载许可证失败</string>
+  <string name="licenses_loading_error">加载开源库失败</string>
+
+  <!-- Plugin update -->
+  <string name="plugin_update__description">请将 MusicBee 插件更新至 %1$s 版本以享受全部功能。</string>
+  <string name="plugin_update__title">插件已过时</string>
+  <string name="update_required__content_description">更新图标</string>
+</resources>

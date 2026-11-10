@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Common -->
+  <string name="description_close">关闭</string>
+
+  <!-- Feedback -->
+  <string name="common_feedback">反馈</string>
+  <string name="feedback_button_text">发送反馈</string>
+  <string name="feedback_chooser_title">发送反馈方式…</string>
+  <string name="feedback_device_information">包含设备和应用信息</string>
+  <string name="feedback_logs">包含日志</string>
+  <string name="feedback_title">你对这个应用感觉如何？</string>
+  <string name="tab_help">帮助</string>
+
+  <!-- Output selection -->
+  <string name="output_selection__connection_error">连接错误</string>
+  <string name="output_selection__no_devices">未找到输出设备</string>
+  <string name="output_selection__unknown_error">未知错误</string>
+  <string name="output_selection_title">选择输出设备</string>
+
+  <!-- What's New -->
+  <string name="entry_type_bug">Bug修复</string>
+  <string name="entry_type_feature">新功能</string>
+  <string name="entry_type_removed">已移除</string>
+  <string name="whats_new_empty">暂无更新日志</string>
+  <string name="whats_new_got_it">知道了</string>
+  <string name="whats_new_latest_badge">最新</string>
+  <string name="whats_new_subtitle">最近的更新与改进</string>
+  <string name="whats_new_title">更新内容</string>
+  <string name="whats_new_version">版本 %1$s</string>
+</resources>

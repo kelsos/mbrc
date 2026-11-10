@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Playlists -->
+  <string name="playlists_list_empty">未找到播放列表。</string>
+  <string name="playlists_load_failed">加载播放列表时出错。</string>
+  <string name="playlists_load_success">已成功加载播放列表。</string>
+
+  <!-- Radio -->
+  <string name="radio__loading_failed">加载电台时出错</string>
+  <string name="radio__loading_success">电台已成功刷新</string>
+  <string name="radio__no_radio_stations">未找到电台</string>
+  <string name="radio__play">播放电台</string>
+  <string name="radio__play_failed">播放电台时出错。</string>
+  <string name="radio__play_successful">电台已成功加入播放队列。</string>
+</resources>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Accessibility descriptions -->
+  <string name="description_album_cover">显示当前曲目的专辑封面。</string>
+  <string name="main_button_mute_description">切换静音状态</string>
+  <string name="main_button_stop_description">停止播放</string>
+  <string name="main_button_repeat_description">切换循环模式（全部/无）</string>
+  <string name="main_button_shuffle_description">切换随机播放模式（开/关）</string>
+  <string name="menu_overflow_description">更多选项</string>
+
+  <!-- Actions -->
+  <string name="action_search_clear">清除搜索</string>
+
+  <!-- Errors -->
+  <string name="radio__play_failed">播放电台时出错。</string>
+  <string name="refresh_failed">刷新未成功</string>
+
+  <!-- Last.fm -->
+  <string name="lastfm_love">喜欢</string>
+  <string name="lastfm_scrobble">Last.fm 记录播放</string>
+
+  <!-- Lyrics -->
+  <string name="lyrics_collapse">收起歌词</string>
+  <string name="lyrics_composer">作曲：%1$s</string>
+  <string name="lyrics_loading">正在加载歌词…</string>
+  <string name="lyrics_not_found">暂无歌词</string>
+  <string name="nav_lyrics">歌词</string>
+  <string name="no_lyrics">未找到歌词</string>
+
+  <!-- Now playing -->
+  <plurals name="now_playing__track_count">
+    <item quantity="other">%d 首曲目已加入队列</item>
+  </plurals>
+  <string name="menu_remove_track">移除曲目</string>
+  <string name="now_playing__drag_handle">拖动以重新排序</string>
+  <string name="now_playing__empty_list">播放队列为空</string>
+  <string name="now_playing__scroll_to_playing">滚动到正在播放的曲目</string>
+  <string name="now_playing__search_not_found">未找到与搜索匹配的曲目</string>
+  <string name="now_playing__search_success">正在播放：%1$s</string>
+  <string name="now_playing_empty">播放列表为空</string>
+  <string name="now_playing_move_failed">移动曲目失败</string>
+  <string name="now_playing_search_hint">在播放列表中搜索</string>
+  <string name="now_playing_search_no_results">未找到结果</string>
+  <string name="now_playing_track_removed">已从播放列表中移除曲目</string>
+
+  <!-- Output selection -->
+  <string name="output_error">加载输出设备失败</string>
+  <string name="output_loading">正在加载输出设备…</string>
+  <string name="output_selection__no_devices">未找到输出设备</string>
+  <string name="output_selection_title">选择输出设备</string>
+
+  <!-- Player -->
+  <string name="player_go_to_album">转到专辑</string>
+  <string name="player_go_to_artist">转到艺术家</string>
+  <string name="player_lfm_ban">在 Last.fm 上屏蔽</string>
+  <string name="player_lfm_love">在 Last.fm 上喜欢</string>
+  <string name="player_live">直播</string>
+  <string name="player_scrobbling">记录播放</string>
+  <string name="player_screen_title">播放器</string>
+  <string name="player_track_rating">曲目评分</string>
+  <string name="player_volume">音量</string>
+
+  <!-- Rating -->
+  <string name="rate_the_playing_track">为正在播放的曲目评分</string>
+  <string name="rating_bomb">炸弹评分</string>
+  <string name="rating_clear_description">清除评分</string>
+  <string name="rating_star_description">%1$.1f 星评分</string>
+
+  <!-- Track Details -->
+  <string name="track_details_title">曲目详情</string>
+  <string name="track_details_section_metadata">元数据</string>
+  <string name="track_details_section_file">文件属性</string>
+  <string name="track_details_section_statistics">统计信息</string>
+  <string name="track_details_album_artist">专辑艺术家</string>
+  <string name="track_details_genre">流派</string>
+  <string name="track_details_composer">作曲</string>
+  <string name="track_details_track">曲目</string>
+  <string name="track_details_disc">碟片</string>
+  <string name="track_details_grouping">分组</string>
+  <string name="track_details_publisher">发行方</string>
+  <string name="track_details_encoder">编码器</string>
+  <string name="track_details_comment">注释</string>
+  <string name="track_details_format">格式</string>
+  <string name="track_details_kind">类型</string>
+  <string name="track_details_bitrate">比特率</string>
+  <string name="track_details_sample_rate">采样率</string>
+  <string name="track_details_channels">声道</string>
+  <string name="track_details_duration">时长</string>
+  <string name="track_details_size">大小</string>
+  <string name="track_details_play_count">播放次数</string>
+  <string name="track_details_skip_count">跳过次数</string>
+  <string name="track_details_last_played">上次播放</string>
+  <string name="track_details_date_added">添加日期</string>
+  <string name="track_details_date_modified">修改日期</string>
+
+  <!-- Unknown values -->
+  <string name="unknown_artist">未知艺术家</string>
+  <string name="unknown_title">未知标题</string>
+</resources>

@@ -12,6 +12,7 @@
     <bug>Fixes swiping in from the left edge not opening the navigation drawer with gesture navigation, where the system took the swipe as back. The lower middle of the left edge now opens the drawer, and back still works from the rest of the edge.</bug>
     <bug>Fixes the remote's media controls in the notification shade updating every second while MusicBee played, which kept pushing its card ahead of your phone's own player. The notification now only changes when something on it does, and the progress bar keeps moving on its own.</bug>
     <bug>Fixes two phones knocking each other off MusicBee every few seconds when one was set up from the other's backup or by a phone transfer such as Smart Switch. Each phone now keeps its own identity, and phones already set up this way recover after this update without clearing app data.</bug>
+    <bug>Fixes a crash while scrolling a library list during a library sync, when newly synced items briefly made a row appear twice. The repeat is now left out, and the list corrects itself as the sync moves on.</bug>
   </version>
   <version
     version="1.7.0"

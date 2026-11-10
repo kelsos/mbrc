@@ -5,6 +5,7 @@ import androidx.paging.PagingState
 import androidx.paging.testing.asSnapshot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertWithMessage
+import com.kelsos.mbrc.core.data.PAGED_INITIAL_LOAD_SIZE
 import com.kelsos.mbrc.core.data.paged
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -37,8 +38,6 @@ class PagedRepeatedRowsTest {
 
   /** Serves a second page starting one row early, as a read at a shifted offset would. */
   private class ShiftedSecondPageSource : PagingSource<Int, Long>() {
-    override val jumpingSupported = false
-
     override fun getRefreshKey(state: PagingState<Int, Long>): Int? = null
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Long> = when (params) {
@@ -61,8 +60,8 @@ class PagedRepeatedRowsTest {
   }
 
   private companion object {
-    const val FIRST_PAGE_SIZE = 100
-    const val SCROLL_INTO_SECOND_PAGE = 120
-    const val LAST_ROW_EXCLUSIVE = 150L
+    const val FIRST_PAGE_SIZE = PAGED_INITIAL_LOAD_SIZE
+    const val SCROLL_INTO_SECOND_PAGE = FIRST_PAGE_SIZE + 20
+    const val LAST_ROW_EXCLUSIVE = FIRST_PAGE_SIZE + 50L
   }
 }

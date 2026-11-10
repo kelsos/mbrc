@@ -1,7 +1,6 @@
 package com.kelsos.mbrc.feature.library
 
 import android.content.Context
-import androidx.paging.PagingData
 import androidx.paging.testing.SnapshotLoader
 import androidx.paging.testing.asSnapshot
 import androidx.room.Room
@@ -11,11 +10,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertWithMessage
 import com.kelsos.mbrc.core.common.settings.SortOrder
 import com.kelsos.mbrc.core.common.settings.TrackSortField
-import com.kelsos.mbrc.core.common.utilities.coroutines.AppCoroutineDispatchers
+import com.kelsos.mbrc.core.common.test.coroutineTestTimeout
 import com.kelsos.mbrc.core.data.Database
-import com.kelsos.mbrc.core.data.library.artist.ArtistEntity
-import com.kelsos.mbrc.core.data.library.track.TrackEntity
-import com.kelsos.mbrc.feature.library.artists.ArtistRepositoryImpl
+import com.kelsos.mbrc.core.data.PAGED_INITIAL_LOAD_SIZE
+import com.kelsos.mbrc.core.data.library.track.Track
+import com.kelsos.mbrc.core.data.test.TrackGenerator
 import com.kelsos.mbrc.feature.library.tracks.TrackRepositoryImpl
 import io.mockk.mockk
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -25,7 +24,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -36,21 +34,23 @@ import org.junit.runner.RunWith
 
 /**
  * Drives the real repository, Room paging source and Pager against a file-backed WAL database, the
- * way production runs them, so that a page read mid-sync lands at a shifted offset.
+ * way production runs them, so that a page read mid-sync lands at a shifted offset. Every paged list
+ * shares this path through `paged()`, so the tracks list stands in for all of them.
  *
- * [commitBatchWhileNextBatchHoldsTheWriter] arranges the window deterministically. The batch has
- * committed, Room's background refresh has claimed `pendingRefresh` and is waiting for the writer,
- * so the append's own `invalidationTracker.refresh()` finds nothing pending and reports no change.
+ * [commitBatchWhileNextBatchHoldsTheWriter] arranges the window. The batch has committed, Room's
+ * background refresh has claimed `pendingRefresh` and is waiting for the writer, so the append's own
+ * `invalidationTracker.refresh()` finds nothing pending and reports no change.
  */
 @RunWith(AndroidJUnit4::class)
 class PagedListSyncRaceTest {
   @get:Rule
-  val timeout: Timeout = Timeout.seconds(TIMEOUT_SECONDS)
+  val timeout: Timeout = coroutineTestTimeout()
 
   private val context: Context = ApplicationProvider.getApplicationContext()
   private val pool = Executors.newFixedThreadPool(POOL_SIZE)
   private val queryExecutor = GatedExecutor(pool)
   private val releaseWriter = CountDownLatch(1)
+  private val tracks = TrackGenerator(basePath = "/music")
   private lateinit var database: Database
 
   @Before
@@ -62,6 +62,7 @@ class PagedListSyncRaceTest {
       .setQueryExecutor(queryExecutor)
       .allowMainThreadQueries()
       .build()
+    database.trackDao().insertAll((0 until ROW_COUNT).map { track("Track %03d".format(it)) })
   }
 
   @After
@@ -70,51 +71,26 @@ class PagedListSyncRaceTest {
     queryExecutor.open()
     database.close()
     pool.shutdown()
-    pool.awaitTermination(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+    pool.awaitTermination(SHUTDOWN_SECONDS, TimeUnit.SECONDS)
     context.deleteDatabase(DB_NAME)
   }
 
   @Test
-  fun `tracks never repeat an id when a sync batch shifts the rows between two pages`() =
-    runBlocking {
-      val dao = database.trackDao()
-      dao.insertAll((0 until ROW_COUNT).map { track("Track %03d".format(it)) })
-      val repository = TrackRepositoryImpl(dao, mockk(), dispatchers())
+  fun `no id repeats when a sync batch shifts the rows between two pages`() = runBlocking {
+    val tracks = racedSnapshot()
 
-      val ids = repository.getAll(TrackSortField.TITLE, SortOrder.ASC).idsAfterRacingAppend(
-        id = { it.id },
-        commitBatch = { dao.insertAll(listOf(track("A new track"))) }
-      )
-
-      assertNoRepeats(ids)
-    }
-
-  @Test
-  fun `artists never repeat an id when a sync batch shifts the rows between two pages`() =
-    runBlocking {
-      val dao = database.artistDao()
-      dao.insertAll((0 until ROW_COUNT).map { ArtistEntity(artist = "Artist %03d".format(it)) })
-      val repository = ArtistRepositoryImpl(dao, mockk(), dispatchers())
-
-      val ids = repository.getAll(SortOrder.ASC).idsAfterRacingAppend(
-        id = { it.id },
-        commitBatch = { dao.insertAll(listOf(ArtistEntity(artist = "A new artist"))) }
-      )
-
-      assertNoRepeats(ids)
-    }
+    assertWithMessage("loaded past the first page, otherwise nothing could repeat")
+      .that(tracks.size)
+      .isGreaterThan(PAGED_INITIAL_LOAD_SIZE)
+    assertWithMessage("ids a LazyColumn would be handed as keys")
+      .that(tracks.map { it.id })
+      .containsNoDuplicates()
+  }
 
   @Test
   fun `the row a repeat hid comes back once the sync lets the invalidation through`() =
     runBlocking {
-      val dao = database.trackDao()
-      dao.insertAll((0 until ROW_COUNT).map { track("Track %03d".format(it)) })
-      val repository = TrackRepositoryImpl(dao, mockk(), dispatchers())
-
-      val titles = repository.getAll(TrackSortField.TITLE, SortOrder.ASC).asSnapshot {
-        settleInitialLoad()
-        commitBatchWhileNextBatchHoldsTheWriter { dao.insertAll(listOf(track("A new track"))) }
-        scrollTo(index = SCROLL_PAST_FIRST_PAGE)
+      val titles = racedSnapshot {
         releaseWriter.countDown()
         delay(SETTLE_MILLIS)
         prependScrollWhile { true }
@@ -122,27 +98,24 @@ class PagedListSyncRaceTest {
 
       assertWithMessage("the refreshed list starts with the row the sync inserted")
         .that(titles.first())
-        .isEqualTo("A new track")
+        .isEqualTo(INSERTED_TITLE)
       assertWithMessage("the refreshed list holds each row once")
         .that(titles)
         .containsNoDuplicates()
     }
 
-  private suspend fun <T : Any> Flow<PagingData<T>>.idsAfterRacingAppend(
-    id: (T) -> Long,
-    commitBatch: () -> Unit
-  ): List<Long> {
-    val snapshot = asSnapshot {
-      settleInitialLoad()
-      commitBatchWhileNextBatchHoldsTheWriter(commitBatch)
-      scrollTo(index = SCROLL_PAST_FIRST_PAGE)
+  private suspend fun racedSnapshot(
+    afterRace: suspend SnapshotLoader<Track>.() -> Unit = {}
+  ): List<Track> {
+    val dao = database.trackDao()
+    val repository = TrackRepositoryImpl(dao, mockk(), mockk())
+    return repository.getAll(TrackSortField.TITLE, SortOrder.ASC).asSnapshot {
+      scrollTo(index = 0)
+      Thread.sleep(SETTLE_MILLIS)
+      commitBatchWhileNextBatchHoldsTheWriter { dao.insertAll(listOf(track(INSERTED_TITLE))) }
+      scrollTo(index = PAGED_INITIAL_LOAD_SIZE + SCROLL_PAST_BOUNDARY)
+      afterRace()
     }
-    return snapshot.map(id)
-  }
-
-  private suspend fun SnapshotLoader<*>.settleInitialLoad() {
-    scrollTo(index = 0)
-    Thread.sleep(SETTLE_MILLIS)
   }
 
   private fun commitBatchWhileNextBatchHoldsTheWriter(commitBatch: () -> Unit) {
@@ -162,29 +135,10 @@ class PagedListSyncRaceTest {
     Thread.sleep(SETTLE_MILLIS)
   }
 
-  private fun assertNoRepeats(ids: List<Long>) {
-    assertWithMessage("loaded past the first page, otherwise nothing could repeat")
-      .that(ids.size)
-      .isGreaterThan(INITIAL_LOAD_SIZE)
-    assertWithMessage("ids a LazyColumn would be handed as keys")
-      .that(ids)
-      .containsNoDuplicates()
+  private fun track(title: String) = tracks.generateTrack {
+    this.title = title
+    src = "/music/$title.mp3"
   }
-
-  private fun track(title: String) = TrackEntity(
-    artist = "Artist",
-    title = title,
-    src = "/music/$title.mp3",
-    trackno = 1,
-    disc = 1,
-    albumArtist = "Artist",
-    album = "Album",
-    genre = "Rock",
-    year = "2026",
-    sortableYear = "2026"
-  )
-
-  private fun dispatchers() = mockk<AppCoroutineDispatchers>()
 
   /** Queues work while closed, so a test decides when Room's background refresh may start. */
   private class GatedExecutor(private val delegate: Executor) : Executor {
@@ -209,11 +163,11 @@ class PagedListSyncRaceTest {
 
   private companion object {
     const val DB_NAME = "paged-list-sync-race.db"
+    const val INSERTED_TITLE = "A new track"
     const val POOL_SIZE = 4
     const val ROW_COUNT = 300
-    const val INITIAL_LOAD_SIZE = 100
-    const val SCROLL_PAST_FIRST_PAGE = 120
+    const val SCROLL_PAST_BOUNDARY = 20
     const val SETTLE_MILLIS = 300L
-    const val TIMEOUT_SECONDS = 60L
+    const val SHUTDOWN_SECONDS = 10L
   }
 }

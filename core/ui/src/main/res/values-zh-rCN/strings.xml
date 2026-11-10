@@ -19,4 +19,7 @@
   <!-- Queue results -->
   <string name="queue_result__failure">加入播放队列失败</string>
   <string name="queue_result__success">已将 %1$s 添加到播放队列</string>
+
+  <!-- Errors -->
+  <string name="paging_load_failed">无法加载此列表</string>
 </resources>

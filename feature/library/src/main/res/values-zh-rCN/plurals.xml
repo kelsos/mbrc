@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <plurals name="track">
+    <item quantity="other">%d 首曲目</item>
+  </plurals>
+  <plurals name="genre">
+    <item quantity="other">%d 个流派</item>
+  </plurals>
+  <plurals name="album">
+    <item quantity="other">%d 张专辑</item>
+  </plurals>
+  <plurals name="artist">
+    <item quantity="other">%d 位艺术家</item>
+  </plurals>
+  <plurals name="playlist">
+    <item quantity="other">%d 个播放列表</item>
+  </plurals>
+</resources>

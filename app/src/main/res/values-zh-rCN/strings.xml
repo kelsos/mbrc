@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <!-- App branding -->
+  <string name="application_description">MusicBee 远程控制应用</string>
   <string name="application_starting">正在尝试建立连接…</string>
 
   <!-- Playback actions (used in notification) -->
@@ -19,6 +20,7 @@
   <string name="connection_error_unsupported_protocol">插件版本不受支持。请更新插件。</string>
   <string name="connection_error_all_retries_exhausted">多次尝试后仍无法连接。请检查你的设置。</string>
   <string name="connection_error_unknown">连接错误：%1$s</string>
+  <string name="connect_link_connecting_to">正在连接到 %1$s</string>
   <string name="connection_error_not_allowed">不允许此设备连接到 MusicBee。</string>
   <string name="connection_error_party_mode">Party 模式下无法使用此命令。</string>
   <string name="plugin_update_available">有插件更新可用。更新以获得最佳体验。</string>

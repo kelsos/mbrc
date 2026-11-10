@@ -32,6 +32,30 @@
   <string name="connection_manager_scan">扫描</string>
   <string name="connection_manager_scanning">正在扫描网络上的 MusicBee…</string>
 
+  <!-- Connect link (QR code) -->
+  <string name="connect_link_title">连接到 MusicBee</string>
+  <string name="connect_link_message">添加这台电脑并连接到它吗？</string>
+  <string name="connect_link_message_saved">%1$s 已保存。要将它设为默认并连接吗？</string>
+  <string name="connect_link_already_connected_title">已设置</string>
+  <string name="connect_link_already_connected_message">%1$s 已是你的默认电脑，MusicBee Remote 已连接或正在连接到它。</string>
+  <string name="connect_link_addresses">地址</string>
+  <string name="connect_link_port">端口 %1$d</string>
+  <string name="connect_link_connect">连接</string>
+  <string name="connect_link_connecting">正在查找 MusicBee…</string>
+  <string name="connect_link_unreachable_title">MusicBee 没有响应</string>
+  <string name="connect_link_unreachable_message">这些地址都没有响应。请确认手机和电脑在同一网络中，并且 MusicBee 正在运行。</string>
+  <string name="connect_link_try_again">重试</string>
+  <string name="connect_link_local_network_title">本地网络访问已关闭</string>
+  <string name="connect_link_local_network_message">MusicBee Remote 需要访问本地网络上的设备才能连接这台电脑。请先授予权限，然后再连接。</string>
+  <string name="connect_link_grant_access">授予权限</string>
+  <string name="connect_link_save_failed_title">无法添加这台电脑</string>
+  <string name="connect_link_save_failed_message">MusicBee 已响应，但应用无法保存或连接这台电脑。请重试。</string>
+  <string name="connect_link_rejected_title">无法使用此链接</string>
+  <string name="connect_link_error_not_a_link">这不是 MusicBee Remote 连接链接。</string>
+  <string name="connect_link_error_newer_version">此链接来自较新版本的插件。请更新 MusicBee Remote 后再使用。</string>
+  <string name="connect_link_error_malformed">此链接不完整或已损坏。请在插件中重新显示二维码，然后再次扫描。</string>
+  <string name="connect_link_error_no_local_address">此链接指向你的本地网络之外，因此未被使用。</string>
+
   <!-- Connection dialog -->
   <string name="settings_dialog_hint_host">主机名 / IP</string>
   <string name="settings_dialog_hint_name">计算机名称</string>

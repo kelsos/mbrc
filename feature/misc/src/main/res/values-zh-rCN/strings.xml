@@ -24,7 +24,7 @@
   <string name="entry_type_removed">已移除</string>
   <string name="whats_new_empty">暂无更新日志</string>
   <string name="whats_new_got_it">知道了</string>
-  <string name="whats_new_latest_badge">最新</string>
+  <string name="whats_new_latest_badge">新</string>
   <string name="whats_new_subtitle">最近的更新与改进</string>
   <string name="whats_new_title">更新内容</string>
   <string name="whats_new_version">版本 %1$s</string>

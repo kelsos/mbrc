@@ -39,7 +39,7 @@
   <string name="menu_play_artist">立即播放（艺术家）</string>
   <string name="menu_play_queue_all">立即播放（全部加入队列）</string>
   <string name="menu_queue_last">添加到队列末尾</string>
-  <string name="menu_queue_next">下一首播放</string>
+  <string name="menu_queue_next">添加到正在播放的曲目之后</string>
   <string name="menu_play_all">全部播放</string>
   <string name="menu_shuffle_all">全部随机播放</string>
   <string name="library__play_all_success">播放整个音乐库</string>

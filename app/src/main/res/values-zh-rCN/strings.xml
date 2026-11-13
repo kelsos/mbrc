@@ -30,7 +30,7 @@
   <string name="local_network_rationale_message">MusicBee Remote 通过本地网络控制你电脑上的 MusicBee。Android 需要你授予相应权限。如果没有该权限，应用将无法发现或连接你的电脑。</string>
   <string name="local_network_rationale_continue">继续</string>
   <string name="local_network_rationale_not_now">以后再说</string>
-  <string name="local_network_denied_banner">本地网络访问已关闭，因此无法连接到 MusicBee。</string>
+  <string name="local_network_denied_banner">未授予查找、连接“附近设备”的权限，因此无法连接到 MusicBee。</string>
   <string name="local_network_denied_grant">允许</string>
   <string name="drawer_connection_local_network_denied">需要授权</string>
   <plurals name="connection_commands_dropped">

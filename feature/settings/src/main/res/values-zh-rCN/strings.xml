@@ -19,7 +19,7 @@
   <string name="connection_manager_delete_confirm_message">%1$s 将被移除。此操作无法撤销。</string>
   <string name="connection_manager_discovery_no_wifi">没有可用的 WiFi 连接</string>
   <string name="connection_manager_discovery_not_found">网络上未找到 MusicBee 插件</string>
-  <string name="connection_manager_discovery_local_network_denied">本地网络访问已关闭，因此无法扫描</string>
+  <string name="connection_manager_discovery_local_network_denied">未授予查找、连接“附近设备”的权限，因此无法扫描</string>
   <plurals name="connection_manager_discovery_success_count">
     <item quantity="other">在网络上发现了 %d 个 MusicBee 插件</item>
   </plurals>
@@ -45,7 +45,7 @@
   <string name="connect_link_unreachable_title">MusicBee 没有响应</string>
   <string name="connect_link_unreachable_message">这些地址都没有响应。请确认手机和电脑在同一网络中，并且 MusicBee 正在运行。</string>
   <string name="connect_link_try_again">重试</string>
-  <string name="connect_link_local_network_title">本地网络访问已关闭</string>
+  <string name="connect_link_local_network_title">未授予查找、连接“附近设备”的权限</string>
   <string name="connect_link_local_network_message">MusicBee Remote 需要访问本地网络上的设备才能连接这台电脑。请先授予权限，然后再连接。</string>
   <string name="connect_link_grant_access">授予权限</string>
   <string name="connect_link_save_failed_title">无法添加这台电脑</string>
